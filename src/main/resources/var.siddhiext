@@ -15,4 +15,3 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-historical=org.wso2.siddhi.extension.var.HistoricalSimulationFunctionExtension
