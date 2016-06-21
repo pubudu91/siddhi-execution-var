@@ -16,13 +16,13 @@ public abstract class VaRCalculator {
         calcInterval = calcInt;
 
     }
-    protected abstract void addEvent(Object[] data);
+    protected abstract void addEvent(Object data);
 
     protected abstract void removeEvent();
 
-    protected abstract Object[] processData();
+    protected abstract Object processData();
 
-    public Object[] calculateValueAtRisk(Object[] data) {
+    public Object calculateValueAtRisk(Object data) {
 
         addEvent(data);
 
