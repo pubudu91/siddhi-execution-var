@@ -7,13 +7,10 @@ public abstract class VaRCalculator {
     protected double confidenceInterval = 0.95;
     protected int eventCount = 0;
     protected int batchSize = 1000000000;
-    protected int incCounter =0;
-    protected int calcInterval;
 
-    public VaRCalculator(int calcInt, int limit, double ci) {
+    public VaRCalculator(int limit, double ci) {
         confidenceInterval = ci;
         batchSize = limit;
-        calcInterval = calcInt;
 
     }
     protected abstract void addEvent(Object data);
@@ -30,10 +27,12 @@ public abstract class VaRCalculator {
         if(eventCount > batchSize){
             eventCount--;
             removeEvent();
+            //whenever a new event comes, calculate the var
+            return processData();
         }
 
         // processing at a user specified calculation interval
-        if(incCounter % calcInterval != 0){
+        if(eventCount % batchSize != 0){
             return null;
         }
         return  processData();

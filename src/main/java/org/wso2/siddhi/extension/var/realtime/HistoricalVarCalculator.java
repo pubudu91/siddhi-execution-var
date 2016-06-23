@@ -13,14 +13,13 @@ public class HistoricalVarCalculator extends VaRCalculator{
     private List<Double> priceList = new LinkedList<Double>();
     private double price;
 
-    public HistoricalVarCalculator(int calcInt, int limit, double ci) {
-        super(calcInt, limit, ci);
+    public HistoricalVarCalculator(int limit, double ci) {
+        super(limit, ci);
     }
 
     @Override
     protected void addEvent(Object data) {
         eventCount++;
-        incCounter++;
 
         price = ((Number) data).doubleValue();
         priceList.add(price);
@@ -34,9 +33,12 @@ public class HistoricalVarCalculator extends VaRCalculator{
 
     @Override
     protected Object processData() {
-        double var = 0.0;
         DescriptiveStatistics stat = new DescriptiveStatistics();
 
+        //the stream length is greater than the calculation interval length
+//        if(eventCount > calcInterval){
+//            priceList = priceList.subList(eventCount - 1 - calcInterval, eventCount - 1);
+//        }
         Double[] priceArray = priceList.toArray(new Double[eventCount]);
 
         //calculate the return values from the prices

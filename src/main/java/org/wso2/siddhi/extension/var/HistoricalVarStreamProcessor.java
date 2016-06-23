@@ -24,7 +24,6 @@ import java.util.List;
  */
 public class HistoricalVarStreamProcessor extends StreamProcessor {
 
-    private int calcInterval = 1;                                       // The frequency of regression calculation
     private int batchSize = 251;                                        // Maximum # of events, used for regression calculation
     private double ci = 0.95;                                           // Confidence Interval
     private VaRCalculator varCalculator = null;
@@ -35,22 +34,21 @@ public class HistoricalVarStreamProcessor extends StreamProcessor {
 
         // Capture constant inputs
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
-            paramPosition = 3;
+            paramPosition = 2;
             try {
-                calcInterval = ((Integer) attributeExpressionExecutors[0].execute(null));
-                batchSize = ((Integer) attributeExpressionExecutors[1].execute(null));
+                batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Calculation interval, batch size and range should be of type int");
             }
             try {
-                ci = ((Double) attributeExpressionExecutors[2].execute(null));
+                ci = ((Double) attributeExpressionExecutors[1].execute(null));
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value between 0 and 1");
             }
         }
 
         // set the var calculator
-        varCalculator = new HistoricalVarCalculator(calcInterval, batchSize, ci);
+        varCalculator = new HistoricalVarCalculator(batchSize, ci);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);
