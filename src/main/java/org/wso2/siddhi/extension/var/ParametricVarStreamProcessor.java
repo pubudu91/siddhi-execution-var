@@ -36,22 +36,21 @@ public class ParametricVarStreamProcessor extends StreamProcessor {
     protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
         // Capture constant inputs
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
-            paramPosition = 3;
+            paramPosition = 2;
             try {
-                calcInterval = ((Integer) attributeExpressionExecutors[0].execute(null));
-                batchSize = ((Integer) attributeExpressionExecutors[1].execute(null));
+                batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Calculation interval, batch size and range should be of type int");
             }
             try {
-                ci = ((Double) attributeExpressionExecutors[2].execute(null));
+                ci = ((Double) attributeExpressionExecutors[1].execute(null));
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value between 0 and 1");
             }
         }
 
 
-        varCalculator = new ParametricVarCalculator(calcInterval, batchSize, ci);
+        varCalculator = new ParametricVarCalculator(batchSize, ci);
 
         // Add attributes for standard error and all beta values
 

@@ -13,14 +13,13 @@ public class ParametricVarCalculator extends VaRCalculator {
 
     private List<Double> priceList = new LinkedList<Double>();
 
-    public ParametricVarCalculator(int calcInt, int limit, double ci) {
-        super(calcInt, limit, ci);
+    public ParametricVarCalculator(int limit, double ci) {
+        super(limit, ci);
     }
 
     @Override
     protected void addEvent(Object data) {
         eventCount++;
-        incCounter++;
 
         priceList.add(((Number) data).doubleValue());
 
