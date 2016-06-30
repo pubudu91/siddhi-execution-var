@@ -1,27 +1,25 @@
 package org.wso2.siddhi.extension.var.models;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Created by flash on 6/30/16.
  */
 public class Asset {
-    private double historicalValue[];
+    private List<Double> historicalValues;
     private double currentStockPrice;
     private String label;
     private int numberOfShares;
 
-    public Asset(double[] historicalValue, double currentStockPrice, String label, int numberOfShares) {
-        this.historicalValue = historicalValue;
-        this.currentStockPrice = currentStockPrice;
+    public Asset(String label, int numberOfShares){
         this.label = label;
         this.numberOfShares = numberOfShares;
+        historicalValues = new LinkedList<Double>();
     }
 
-    public double[] getHistoricalValue() {
-        return historicalValue;
-    }
-
-    public void setHistoricalValue(double[] historicalValue) {
-        this.historicalValue = historicalValue;
+    public List<Double> getHistoricalValues() {
+        return historicalValues;
     }
 
     public double getCurrentStockPrice() {
@@ -46,5 +44,9 @@ public class Asset {
 
     public void setNumberOfShares(int numberOfShares) {
         this.numberOfShares = numberOfShares;
+    }
+
+    public void addHistoricalValue(double price){
+        historicalValues.add(price);
     }
 }
