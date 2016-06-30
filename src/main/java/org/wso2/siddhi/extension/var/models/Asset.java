@@ -1,7 +1,6 @@
 package org.wso2.siddhi.extension.var.models;
 
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by flash on 6/30/16.
@@ -12,30 +11,13 @@ public class Asset {
     private String label;
     private int numberOfShares;
 
-    public Asset(String label, int numberOfShares){
-        this.label = label;
+    public Asset(int numberOfShares){
         this.numberOfShares = numberOfShares;
         historicalValues = new LinkedList<Double>();
     }
 
     public LinkedList<Double> getHistoricalValues() {
         return historicalValues;
-    }
-
-    public double getCurrentStockPrice() {
-        return currentStockPrice;
-    }
-
-    public void setCurrentStockPrice(double currentStockPrice) {
-        this.currentStockPrice = currentStockPrice;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
     }
 
     public int getNumberOfShares() {

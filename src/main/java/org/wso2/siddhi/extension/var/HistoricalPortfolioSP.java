@@ -11,13 +11,13 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
+import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalcForPortfolio;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by dilini92 on 6/26/16.
@@ -27,8 +27,7 @@ public class HistoricalPortfolioSP extends StreamProcessor {
     private double ci = 0.95;                                           // Confidence Interval
     private VaRPortfolioCalc varCalculator = null;
     private int paramPosition = 0;
-    private String symbols[];
-    private int noOfShares[];
+    private Map<String, Asset> portfolio = new HashMap<String, Asset>();
 
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor, StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
@@ -65,11 +64,11 @@ public class HistoricalPortfolioSP extends StreamProcessor {
             }
             try {
                 ci = ((Double) attributeExpressionExecutors[1].execute(null));
-                symbols = new String[(attributeExpressionLength - 4)/2];
-                noOfShares = new int[(attributeExpressionLength - 4)/2];
-                for (int i = 0; i < symbols.length; i++) {
-                    symbols[i] = attributeExpressionExecutors[i + 4].execute(null).toString();
-                    noOfShares[i] = ((Integer)attributeExpressionExecutors[paramPosition + i].execute(null));
+                String symbol;
+                for (int i = 0; i < (attributeExpressionLength - 4)/2; i++) {
+                    symbol = attributeExpressionExecutors[i + 4].execute(null).toString();
+                    Asset asset = new Asset(((Integer)attributeExpressionExecutors[paramPosition + i].execute(null)));
+                    portfolio.put(symbol, asset);
                 }
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value between 0 and 1");
@@ -77,7 +76,7 @@ public class HistoricalPortfolioSP extends StreamProcessor {
         }
 
         // set the var calculator
-        varCalculator = new HistoricalVaRCalcForPortfolio(batchSize, ci, symbols, noOfShares);
+        varCalculator = new HistoricalVaRCalcForPortfolio(batchSize, ci, portfolio);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);
