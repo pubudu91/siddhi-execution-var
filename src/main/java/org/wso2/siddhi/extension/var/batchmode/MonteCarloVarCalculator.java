@@ -2,10 +2,14 @@ package org.wso2.siddhi.extension.var.batchmode;
 
 //import
 
+import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by flash on 6/29/16.
@@ -28,17 +32,24 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc{
     }
 
     @Override
-    protected Object processData(String[] symbols) {
+    protected Object processData(List<Asset> assetCollection) {
         double [] terminalStockValues;
         int numberOfTrials=0;
         int calculationsPerDay=0;
-        double [] historicalValue={};
         double timeSlice=0;
-        double currentStockPrice=0;
-        int numberOfPortfolios;
+        Asset tempAsset;
+        LinkedList<Double> historicalValues;
 
-        MonteCarloSimulation monteCarloSimulation= new MonteCarloSimulation();
-        terminalStockValues=monteCarloSimulation.simulation(numberOfTrials,calculationsPerDay,historicalValue,timeSlice,currentStockPrice);
+        Iterator<Asset> assets=assetCollection.iterator();
+
+        while (assets.hasNext()){
+            tempAsset=assets.next();
+            historicalValues=tempAsset.getHistoricalValues();
+            historicalValues.size();
+            double[] hsar = historicalValues.stream().mapToDouble(d -> d).toArray();
+            terminalStockValues=new MonteCarloSimulation().simulation(numberOfTrials,calculationsPerDay,hsar,timeSlice,historicalValues.getLast());
+
+        }
 
         return null;
     }

@@ -7,7 +7,7 @@ import java.util.List;
  * Created by flash on 6/30/16.
  */
 public class Asset {
-    private List<Double> historicalValues;
+    private LinkedList<Double> historicalValues;
     private double currentStockPrice;
     private String label;
     private int numberOfShares;
@@ -18,7 +18,7 @@ public class Asset {
         historicalValues = new LinkedList<Double>();
     }
 
-    public List<Double> getHistoricalValues() {
+    public LinkedList<Double> getHistoricalValues() {
         return historicalValues;
     }
 
