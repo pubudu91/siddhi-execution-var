@@ -1,9 +1,9 @@
 package org.wso2.siddhi.extension.var.realtime;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.wso2.siddhi.extension.var.models.Asset;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by dilini92 on 6/26/16.
@@ -13,8 +13,8 @@ public class HistoricalVaRCalcForPortfolio extends VaRPortfolioCalc{
     private double price;
     private String symbol;
 
-    public HistoricalVaRCalcForPortfolio(int limit, double ci, String symbols[], int[] shares) {
-        super(limit, ci, symbols, shares);
+    public HistoricalVaRCalcForPortfolio(int limit, double ci, Map<String, Asset> assets) {
+        super(limit, ci, assets);
     }
 
     @Override
@@ -22,37 +22,35 @@ public class HistoricalVaRCalcForPortfolio extends VaRPortfolioCalc{
         price = ((Number) data[0]).doubleValue();
         symbol = data[1].toString();
 
-        if(priceLists.get(symbol) != null){
-            priceLists.get(symbol).add(price);
-
-        }else{
-            List<Double> newList = new LinkedList<Double>();
-            newList.add(price);
-            priceLists.put(symbol, newList);
+        //if portfolio does not have the given symbol, then we drop the event.
+        if(portfolio.get(symbol) != null){
+            portfolio.get(symbol).addHistoricalValue(price);
         }
     }
 
     @Override
     protected void removeEvent(String symbol) {
-        List<Double> priceList = priceLists.get(symbol);
+        List<Double> priceList = portfolio.get(symbol).getHistoricalValues();
         priceList.remove(0);
     }
 
     @Override
-    protected Object processData(String symbols[]) {
-        double priceReturns[][] = new double[batchSize - 1][symbols.length];
+    protected Object processData() {
+        double priceReturns[][] = new double[batchSize - 1][portfolio.size()];
         double portfolioTotal = 0.0;
 
         //calculate the latest market value of the portfolio
-        for (int i = 0; i < symbols.length; i++) {
-            portfolioTotal += priceLists.get(symbols[i]).get(batchSize - 1) * noOfShares[i];
-        }
+        Set<String> keys = portfolio.keySet();
+        String symbols[] = keys.toArray(new String[portfolio.size()]);
+        Asset asset;
+        LinkedList<Double> priceList;
+        for (int i = 0; i < symbols.length; i++){
+            asset = portfolio.get(symbols[i]);
+            priceList = asset.getHistoricalValues();
+            portfolioTotal += priceList.getLast() * asset.getNumberOfShares();
 
-        for (int i = 0; i < symbols.length; i++) {
-            for (int j = 0; j < batchSize - 1; j++) {
-                List<Double> priceList = priceLists.get(symbols[i]);
-                Double priceArray[] = priceList.toArray(new Double[batchSize]);
-
+            Double priceArray[] = priceList.toArray(new Double[batchSize]);
+            for (int j = 0; j < priceArray.length; i++) {
                 //calculate the price return value Rj = ln(Sj+1/Sj)
                 priceReturns[i][j] = Math.log(priceArray[j+1]/priceArray[j]);
 
@@ -60,7 +58,7 @@ public class HistoricalVaRCalcForPortfolio extends VaRPortfolioCalc{
                 priceReturns[i][j] = (priceReturns[i][j] + 1) * priceArray[batchSize - 1];
 
                 //calculate market value for each event Mj = Sj * noOfShares
-                priceReturns[i][j] = priceReturns[i][j] * noOfShares[i];
+                priceReturns[i][j] = priceReturns[i][j] * asset.getNumberOfShares();
             }
         }
 
@@ -69,7 +67,7 @@ public class HistoricalVaRCalcForPortfolio extends VaRPortfolioCalc{
             for (int j = 0; j < symbols.length; j++) {
                 total += priceReturns[j][i];
             }
-
+            //add each value to create the histogram
             stat.addValue(portfolioTotal - total);
         }
         return stat.getPercentile((1 - confidenceInterval) * 100);
