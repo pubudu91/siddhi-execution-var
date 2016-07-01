@@ -18,6 +18,7 @@ import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Created by dilini92 on 6/26/16.
@@ -35,8 +36,8 @@ public class HistoricalPortfolioSP extends StreamProcessor {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
                 Object inputData[] = new Object[2];
-                inputData[0] = attributeExpressionExecutors[paramPosition].execute(complexEvent);
-                inputData[1] = attributeExpressionExecutors[paramPosition + 1].execute(complexEvent);
+                inputData[0] = attributeExpressionExecutors[2].execute(complexEvent);
+                inputData[1] = attributeExpressionExecutors[3].execute(complexEvent);
 
                 Object outputData[] = new Object[1];
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
@@ -46,6 +47,7 @@ public class HistoricalPortfolioSP extends StreamProcessor {
                     streamEventChunk.remove();
                 } else {
                     complexEventPopulater.populateComplexEvent(complexEvent, outputData);
+
                 }
             }
         }
