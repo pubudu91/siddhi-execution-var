@@ -1,86 +1,74 @@
 package org.wso2.siddhi.extension.var.batchmode;
 
-//import
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.wso2.siddhi.extension.var.models.Asset;
+import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 
-import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
-
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Created by flash on 6/29/16.
  */
-public class MonteCarloVarCalculator extends VaRCalculator{
+public class MonteCarloVarCalculator extends VaRPortfolioCalc{
 
-    public MonteCarloVarCalculator(int limit, double ci) {
-        super(limit, ci);
+    private int numberOfTrials;
+    private int calculationsPerDay;
+    private double timeSlice;
+    private double price;
+    private String symbol;
+
+    public MonteCarloVarCalculator(int limit, double ci, Map<String, Asset> assets,
+                                   int numberOfTrials,int calculationsPerDay,double timeSlice) {
+        super(limit, ci, assets);
+        this.numberOfTrials=numberOfTrials;
+        this.calculationsPerDay=calculationsPerDay;
+        this.timeSlice=timeSlice;
     }
 
     @Override
-    protected void addEvent(Object data) {
+    protected void addEvent(Object data[]) {
+        price = ((Number) data[0]).doubleValue();
+        symbol = data[1].toString();
 
+        //if portfolio does not have the given symbol, then we drop the event.
+        if(portfolio.get(symbol) != null){
+            portfolio.get(symbol).addHistoricalValue(price);
+        }
     }
 
     @Override
-    protected void removeEvent() {
-
+    protected void removeEvent(String symbol) {
+        List<Double> priceList = portfolio.get(symbol).getHistoricalValues();
+        priceList.remove(0);
     }
 
     @Override
     protected Object processData() {
         double [] terminalStockValues;
-        int numberOfTrials=0;
-        int calculationsPerDay=0;
-        double [] historicalValue={};
-        double timeSlice=0;
-        double currentStockPrice=0;
-        ArrayList <Portfolio> portfolioList=new ArrayList<Portfolio>();
-        int numberOfPortfolios;
+        double [] finalPortfolioValues=new double[numberOfTrials];
+        String [] keys = portfolio.keySet().toArray(new String[portfolio.size()]);
+        Asset tempAsset;
+        LinkedList<Double> historicalValues;
+        double todayMarketValue=0;
 
-        numberOfPortfolios = portfolioList.size();
+        for (int i = 0; i < numberOfTrials; i++) {
+            finalPortfolioValues[i]=0;
+        }
 
-        MonteCarloSimulation monteCarloSimulation= new MonteCarloSimulation();
-        terminalStockValues=monteCarloSimulation.simulation(numberOfTrials,calculationsPerDay,historicalValue,timeSlice,currentStockPrice);
+        for (int i = 0; i < keys.length ; i++) {
 
+            tempAsset=portfolio.get(keys[i]);
+            todayMarketValue=(tempAsset.getHistoricalValues().getLast()*tempAsset.getNumberOfShares());
+            historicalValues=tempAsset.getHistoricalValues();
+            terminalStockValues=new MonteCarloSimulation().simulation(this.numberOfTrials,this.calculationsPerDay,
+                    historicalValues.stream().mapToDouble(d->d).toArray(),this.timeSlice,historicalValues.getLast());
 
-        return null;
+            for (int j = 0; j <terminalStockValues.length ; j++) {
+                finalPortfolioValues[j]+=(todayMarketValue - (terminalStockValues[i]*tempAsset.getNumberOfShares()));
+            }
+        }
+
+        return new DescriptiveStatistics(finalPortfolioValues).getPercentile((1 - confidenceInterval) * 100);
     }
 
-    class Portfolio{
-        private double historicalValue[];
-        private double currentStockPrice;
-        private String label;
-        private int numberOfShares;
-        private int ID;
-
-        public Portfolio(double[] historicalValue, double currentStockPrice, String label, int numberOfShares) {
-            this.historicalValue = historicalValue;
-            this.currentStockPrice = currentStockPrice;
-            this.label = label;
-            this.numberOfShares = numberOfShares;
-        }
-
-        public int getNumberOfShares() {
-            return numberOfShares;
-        }
-
-        public int getID() {
-            return ID;
-        }
-
-        public void setID(int ID) {
-            this.ID = ID;
-        }
-
-        public double[] getHistoricalValue() {
-            return historicalValue;
-        }
-
-        public double getCurrentStockPrice() {
-            return currentStockPrice;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-    }
 }

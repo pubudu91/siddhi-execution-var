@@ -7,6 +7,8 @@ import java.util.LinkedList;
  */
 public class Asset {
     private LinkedList<Double> historicalValues;
+    private double currentStockPrice;
+    private String label;
     private int numberOfShares;
 
     public Asset(int numberOfShares){
