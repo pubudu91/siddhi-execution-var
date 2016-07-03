@@ -45,7 +45,8 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
     }
 
     /**
-     *  calculate the var metric using monte carlo simulation
+     * calculate the var metric using monte carlo simulation
+     *
      * @return
      */
     @Override

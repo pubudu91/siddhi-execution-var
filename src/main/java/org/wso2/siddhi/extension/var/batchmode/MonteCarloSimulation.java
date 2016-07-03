@@ -101,6 +101,12 @@ public class MonteCarloSimulation {
         return this.distribution;
     }
 
+    /**
+     * return mean and standard deviation of the historical returns
+     *
+     * @param historicalValues
+     * @return
+     */
     public Map<String, Double> getMeanReturnAndStandardDeviation(double[] historicalValues) {
         DescriptiveStatistics stat = new DescriptiveStatistics();
         for (int i = 0; i < historicalValues.length - 1; i++) {
