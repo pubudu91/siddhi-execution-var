@@ -25,30 +25,25 @@ public abstract class VaRPortfolioCalc {
     protected abstract Object processData();
 
     public Object calculateValueAtRisk(Object data[]) {
-
+        addEvent(data);
         LinkedList<Double> list = portfolio.get(data[0]).getHistoricalValues();
-        if(!list.get(list.size() - 1).equals(data[1])){
-            addEvent(data);
 
-            if(list.size() > batchSize){
-                removeEvent(data[0].toString());
-            }
-
-            //counts the number of stock symbols which have already had the given batch size number of events
-            int count = 0;
-            Set<String> symbols = portfolio.keySet();
-            Iterator<String> itr = symbols.iterator();
-            while(itr.hasNext()){
-                String key = itr.next();
-                count += portfolio.get(key).getHistoricalValues().size();
-            }
-
-            if(count == batchSize * portfolio.size()){
-                return processData();
-            }
-            return null;
-        }else {
-            return null;
+        if(list.size() > batchSize){
+            removeEvent(data[0].toString());
         }
+
+        //counts the number of stock symbols which have already had the given batch size number of events
+        int count = 0;
+        Set<String> symbols = portfolio.keySet();
+        Iterator<String> itr = symbols.iterator();
+        while(itr.hasNext()){
+            String key = itr.next();
+            count += portfolio.get(key).getHistoricalValues().size();
+        }
+
+        if(count == batchSize * portfolio.size()){
+            return processData();
+        }
+        return null;
     }
 }

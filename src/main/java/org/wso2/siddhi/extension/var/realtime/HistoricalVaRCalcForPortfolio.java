@@ -19,8 +19,8 @@ public class HistoricalVaRCalcForPortfolio extends VaRPortfolioCalc{
 
     @Override
     protected void addEvent(Object data[]) {
-        price = ((Number) data[0]).doubleValue();
-        symbol = data[1].toString();
+        price = ((Number) data[1]).doubleValue();
+        symbol = data[0].toString();
 
         //if portfolio does not have the given symbol, then we drop the event.
         if(portfolio.get(symbol) != null){
@@ -30,7 +30,7 @@ public class HistoricalVaRCalcForPortfolio extends VaRPortfolioCalc{
 
     @Override
     protected void removeEvent(String symbol) {
-        List<Double> priceList = portfolio.get(symbol).getHistoricalValues();
+        LinkedList<Double> priceList = portfolio.get(symbol).getHistoricalValues();
         priceList.remove(0);
     }
 
@@ -50,22 +50,22 @@ public class HistoricalVaRCalcForPortfolio extends VaRPortfolioCalc{
             portfolioTotal += priceList.getLast() * asset.getNumberOfShares();
 
             Double priceArray[] = priceList.toArray(new Double[batchSize]);
-            for (int j = 0; j < priceArray.length; i++) {
+            for (int j = 0; j < priceArray.length - 1; j++) {
                 //calculate the price return value Rj = ln(Sj+1/Sj)
-                priceReturns[i][j] = Math.log(priceArray[j+1]/priceArray[j]);
+                priceReturns[j][i] = Math.log(priceArray[j+1]/priceArray[j]);
 
                 //generate stock prices based on the return value Sj = (1 + Rj) * S_latest
-                priceReturns[i][j] = (priceReturns[i][j] + 1) * priceArray[batchSize - 1];
+                priceReturns[j][i] = (priceReturns[j][i] + 1) * priceArray[batchSize - 1];
 
                 //calculate market value for each event Mj = Sj * noOfShares
-                priceReturns[i][j] = priceReturns[i][j] * asset.getNumberOfShares();
+                priceReturns[j][i] = priceReturns[j][i] * asset.getNumberOfShares();
             }
         }
 
         for (int i = 0; i < batchSize - 1; i++) {
             double total = 0;
             for (int j = 0; j < symbols.length; j++) {
-                total += priceReturns[j][i];
+                total += priceReturns[i][j];
             }
             //add each value to create the histogram
             stat.addValue(portfolioTotal - total);
