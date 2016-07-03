@@ -71,7 +71,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
                     historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
 
             for (int j = 0; j < terminalStockValues.length; j++) {
-                finalPortfolioValues[j] += (todayMarketValue - (terminalStockValues[i] * tempAsset.getNumberOfShares()));
+                finalPortfolioValues[j] += (todayMarketValue - (terminalStockValues[j] * tempAsset.getNumberOfShares()));
             }
         }
 

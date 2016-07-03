@@ -39,9 +39,10 @@ public class MonteCarloSimulation {
      */
     protected double getBrownianMotionOutput(Map<String, Double> parameters) {
 
-        double drift = (parameters.get("distributionMean") - (parameters.get("standardDeviation") * parameters.get("standardDeviation")) / 2) * parameters.get("timeSlice");
-        double stochasticOffset = parameters.get("standardDeviation") * this.getRandomZVal() * Math.sqrt(parameters.get("timeSlice"));
-
+        double drift = (parameters.get("distributionMean") - (parameters.get("standardDeviation") *
+                parameters.get("standardDeviation")) / 2) * parameters.get("timeSlice");
+        double stochasticOffset = parameters.get("standardDeviation") * this.getRandomZVal() *
+                Math.sqrt(parameters.get("timeSlice"));
         return parameters.get("currentStockValue") * Math.exp(drift + stochasticOffset);
     }
 
@@ -57,7 +58,7 @@ public class MonteCarloSimulation {
      */
     public double[] simulation(int numberOfTrials, int calculationsPerDay, double[] historicalValue, double timeSlice, double currentStockPrice) {
         double terminalStockValues[] = new double[numberOfTrials];
-//        DescriptiveStatistics tempStat = this.getStat(historicalValue);
+
         Map<String, Double> parameters, tempParameters;
         parameters = new HashMap<>();
         tempParameters = this.getMeanReturnAndStandardDeviation(historicalValue);
@@ -69,6 +70,7 @@ public class MonteCarloSimulation {
         parameters.put("currentStockValue", currentStockPrice);
 
         for (int i = 0; i < numberOfTrials; i++) {
+            parameters.put("currentStockValue", currentStockPrice);
             for (int j = 0; j < calculationsPerDay; j++) {
                 tempStockValue = this.getBrownianMotionOutput(parameters);
                 parameters.put("currentStockValue", tempStockValue);
