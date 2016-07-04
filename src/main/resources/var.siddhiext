@@ -14,4 +14,6 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-hist=org.wso2.siddhi.extension.var.HistoricalPortfolioSP
+historical=org.wso2.siddhi.extension.var.HistoricalPortfolioSP
+parametric=org.wso2.siddhi.extension.var.ParametricPortfolioSP
+montecarlo=org.wso2.siddhi.extension.var.HistoricalPortfolioSP
