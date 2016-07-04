@@ -15,4 +15,4 @@
 # specific language governing permissions and limitations
 # under the License.
 historical=org.wso2.siddhi.extension.var.HistoricalVaRStreamProcessor
-parametric=org.wso2.siddhi.extension.var.ParametricPortfolioSP
+parametric=org.wso2.siddhi.extension.var.ParametricVaRStreamProcessor

@@ -14,32 +14,51 @@ import java.util.Set;
 /**
  * Created by dilip on 30/06/16.
  */
-public class ParametricVaRCalcultorForPortfolio extends VaRPortfolioCalc {
+public class ParametricVaRCalculator extends VaRPortfolioCalc {
     private DescriptiveStatistics stat = new DescriptiveStatistics();
     private double price;
     private String symbol;
 
-    public ParametricVaRCalcultorForPortfolio(int limit, double ci, Map<String, Asset> assets) {
+    /**
+     *
+     * @param limit
+     * @param ci
+     * @param assets
+     */
+    public ParametricVaRCalculator(int limit, double ci, Map<String, Asset> assets) {
         super(limit, ci, assets);
     }
 
+    /**
+     *
+     * @param data
+     */
     @Override
     protected void addEvent(Object data[]) {
-        price = ((Number) data[0]).doubleValue();
-        symbol = data[1].toString();
+        price = ((Number) data[1]).doubleValue();
+        symbol = data[0].toString();
 
         //if portfolio does not have the given symbol, then we drop the event.
-        if (portfolio.get(symbol) != null) {
+        if(portfolio.get(symbol) != null){
             portfolio.get(symbol).addHistoricalValue(price);
         }
     }
 
+    /**
+     *
+     * @param symbol
+     */
     @Override
     protected void removeEvent(String symbol) {
-        List<Double> priceList = portfolio.get(symbol).getHistoricalValues();
+        //removes the oldest element
+        LinkedList<Double> priceList = portfolio.get(symbol).getHistoricalValues();
         priceList.remove(0);
     }
 
+    /**
+     *
+     * @return the var of the portfolio
+     */
     @Override
     protected Object processData() {
         double priceReturns[][] = new double[batchSize - 1][portfolio.size()];
@@ -97,7 +116,6 @@ public class ParametricVaRCalcultorForPortfolio extends VaRPortfolioCalc {
         double var = n.inverseCumulativeProbability(0.95) * Math.sqrt(pv);
 
         return var * portfolioTotal;
-
     }
 
 }

@@ -12,8 +12,7 @@ import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
 import org.wso2.siddhi.extension.var.models.Asset;
-import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalcForPortfolio;
-import org.wso2.siddhi.extension.var.realtime.ParametricVaRCalcultorForPortfolio;
+import org.wso2.siddhi.extension.var.realtime.ParametricVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
@@ -26,7 +25,7 @@ import java.util.Map;
 /**
  * Created by dilip on 30/06/16.
  */
-public class ParametricPortfolioSP extends StreamProcessor {
+public class ParametricVaRStreamProcessor extends StreamProcessor {
     private int batchSize = 251;                                        // Maximum # of events, used for regression calculation
     private double ci = 0.95;                                           // Confidence Interval
     private VaRPortfolioCalc varCalculator = null;
@@ -39,8 +38,8 @@ public class ParametricPortfolioSP extends StreamProcessor {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
                 Object inputData[] = new Object[2];
-                inputData[0] = attributeExpressionExecutors[paramPosition].execute(complexEvent);
-                inputData[1] = attributeExpressionExecutors[paramPosition + 1].execute(complexEvent);
+                inputData[0] = attributeExpressionExecutors[2].execute(complexEvent);
+                inputData[1] = attributeExpressionExecutors[3].execute(complexEvent);
 
                 Object outputData[] = new Object[1];
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
@@ -50,6 +49,7 @@ public class ParametricPortfolioSP extends StreamProcessor {
                     streamEventChunk.remove();
                 } else {
                     complexEventPopulater.populateComplexEvent(complexEvent, outputData);
+
                 }
             }
         }
@@ -80,7 +80,7 @@ public class ParametricPortfolioSP extends StreamProcessor {
         }
 
         // set the var calculator
-        varCalculator = new ParametricVaRCalcultorForPortfolio(batchSize, ci, portfolio);
+        varCalculator = new ParametricVaRCalculator(batchSize, ci, portfolio);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);
