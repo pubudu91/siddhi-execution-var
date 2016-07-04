@@ -12,18 +12,17 @@ import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
 import org.wso2.siddhi.extension.var.models.Asset;
-import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalcForPortfolio;
+import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * Created by dilini92 on 6/26/16.
  */
-public class HistoricalPortfolioSP extends StreamProcessor {
+public class HistoricalVaRStreamProcessor extends StreamProcessor {
     private int batchSize = 251;                                        // Maximum # of events, used for regression calculation
     private double ci = 0.95;                                           // Confidence Interval
     private VaRPortfolioCalc varCalculator = null;
@@ -78,7 +77,7 @@ public class HistoricalPortfolioSP extends StreamProcessor {
         }
 
         // set the var calculator
-        varCalculator = new HistoricalVaRCalcForPortfolio(batchSize, ci, portfolio);
+        varCalculator = new HistoricalVaRCalculator(batchSize, ci, portfolio);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);

@@ -8,15 +8,25 @@ import java.util.*;
 /**
  * Created by dilini92 on 6/26/16.
  */
-public class HistoricalVaRCalcForPortfolio extends VaRPortfolioCalc{
+public class HistoricalVaRCalculator extends VaRPortfolioCalc{
     private DescriptiveStatistics stat = new DescriptiveStatistics();
     private double price;
     private String symbol;
 
-    public HistoricalVaRCalcForPortfolio(int limit, double ci, Map<String, Asset> assets) {
+    /**
+     *
+     * @param limit
+     * @param ci
+     * @param assets
+     */
+    public HistoricalVaRCalculator(int limit, double ci, Map<String, Asset> assets) {
         super(limit, ci, assets);
     }
 
+    /**
+     *
+     * @param data
+     */
     @Override
     protected void addEvent(Object data[]) {
         price = ((Number) data[1]).doubleValue();
@@ -28,12 +38,21 @@ public class HistoricalVaRCalcForPortfolio extends VaRPortfolioCalc{
         }
     }
 
+    /**
+     *
+     * @param symbol
+     */
     @Override
     protected void removeEvent(String symbol) {
+        //removes the oldest element
         LinkedList<Double> priceList = portfolio.get(symbol).getHistoricalValues();
         priceList.remove(0);
     }
 
+    /**
+     *
+     * @return the var of the portfolio
+     */
     @Override
     protected Object processData() {
         double priceReturns[][] = new double[batchSize - 1][portfolio.size()];
