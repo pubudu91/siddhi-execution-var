@@ -42,8 +42,8 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
                 Object inputData[] = new Object[2];
-                inputData[0] = attributeExpressionExecutors[paramPosition].execute(complexEvent);
-                inputData[1] = attributeExpressionExecutors[paramPosition + 1].execute(complexEvent);
+                inputData[0] = attributeExpressionExecutors[2].execute(complexEvent);
+                inputData[1] = attributeExpressionExecutors[3].execute(complexEvent);
 
                 Object outputData[] = new Object[1];
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
