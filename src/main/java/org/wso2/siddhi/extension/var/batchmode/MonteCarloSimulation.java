@@ -113,7 +113,6 @@ public class MonteCarloSimulation {
         DescriptiveStatistics stat = new DescriptiveStatistics();
         for (int i = 0; i < historicalValues.length - 1; i++) {
             stat.addValue(Math.log(historicalValues[i + 1] / historicalValues[i]));
-//            System.out.println(Math.log(historicalValues[i + 1] / historicalValues[i]));
         }
         Map<String, Double> parameters = new HashMap<>();
         parameters.put("meanReturn", stat.getMean());
