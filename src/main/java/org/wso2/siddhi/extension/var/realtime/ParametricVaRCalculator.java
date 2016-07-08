@@ -7,7 +7,6 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.Asset;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,7 +66,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         //calculate the latest market value of the portfolio
         Set<String> keys = portfolio.keySet();
         String symbols[] = keys.toArray(new String[portfolio.size()]);
-        double[] means = new double[portfolio.size()];
+        double[][] means = new double[1][portfolio.size()];
 
         // System.out.println(batchSize + " " + portfolio.size() + " " + symbols.length + " " + portfolio.get("IBM").getHistoricalValues().size());
 
@@ -86,7 +85,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
                 priceReturns[j][i] = Math.log(priceArray[j + 1] / priceArray[j]);
                 stat.addValue(priceReturns[j][i]);
             }
-            means[i] = stat.getMean();
+            means[0][i] = stat.getMean();
         }
 
         for (int i = 0; i < symbols.length; i++) {
@@ -100,21 +99,28 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         double[][] excessReturns = new double[batchSize - 1][portfolio.size()];
         for (int i = 0; i < portfolio.size(); i++) {
             for (int j = 0; j < batchSize - 1; j++) {
-                excessReturns[j][i] = priceReturns[j][i] - means[i];
+                excessReturns[j][i] = priceReturns[j][i] - means[0][i];
             }
         }
 
         /* create a matrices from excess returns  and weight-age*/
         RealMatrix returnMatrix = new Array2DRowRealMatrix(excessReturns);
         RealMatrix weightageMatrix = new Array2DRowRealMatrix(weightage);
+        RealMatrix meanMatrix = new Array2DRowRealMatrix(means);
 
         RealMatrix VCV = (returnMatrix.transpose().multiply(returnMatrix)).scalarMultiply(1.0 / (batchSize - 1));
         RealMatrix PV = weightageMatrix.multiply(VCV).multiply(weightageMatrix.transpose());
+        RealMatrix PM = weightageMatrix.multiply(meanMatrix.transpose());
         double pv = PV.getData()[0][0];
+        double pm = PM.getData()[0][0];
+        double ps = Math.sqrt(pv);
 
-        NormalDistribution n = new NormalDistribution();
-        double var = n.inverseCumulativeProbability(0.95) * Math.sqrt(pv);
-
+        //NormalDistribution n = new NormalDistribution();
+        //double var = n.inverseCumulativeProbability(1-confidenceInterval) * ps;
+        //System.out.println(var*portfolioTotal);
+        NormalDistribution n = new NormalDistribution(pm,ps);
+        double var = n.inverseCumulativeProbability(1-confidenceInterval);
+        //System.out.println(var*portfolioTotal);
         return var * portfolioTotal;
     }
 
