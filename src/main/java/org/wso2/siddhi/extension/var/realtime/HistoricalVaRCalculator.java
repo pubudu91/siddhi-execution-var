@@ -81,6 +81,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc{
             }
         }
 
+        //get the summation of the market value of all assets in the portfolio for each observation
         for (int i = 0; i < batchSize - 1; i++) {
             double total = 0;
             for (int j = 0; j < symbols.length; j++) {
