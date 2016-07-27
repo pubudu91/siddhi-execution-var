@@ -14,5 +14,8 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
 historical=org.wso2.siddhi.extension.var.HistoricalVaRStreamProcessor
-parametric=org.wso2.siddhi.extension.var.ParametricPortfolioSP
+parametric=org.wso2.siddhi.extension.var.ParametricVaRStreamProcessor
+mc=org.wso2.siddhi.extension.var.MonteCarloPortfolioStreamProcessor
+

@@ -28,7 +28,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc{
      * @param data
      */
     @Override
-    protected void addEvent(Object data[]) {
+    public void addEvent(Object data[]) {
         price = ((Number) data[1]).doubleValue();
         symbol = data[0].toString();
 
@@ -43,7 +43,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc{
      * @param symbol
      */
     @Override
-    protected void removeEvent(String symbol) {
+    public void removeEvent(String symbol) {
         //removes the oldest element
         LinkedList<Double> priceList = portfolio.get(symbol).getHistoricalValues();
         priceList.remove(0);
@@ -54,7 +54,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc{
      * @return the var of the portfolio
      */
     @Override
-    protected Object processData() {
+    public Object processData() {
         double priceReturns[][] = new double[batchSize - 1][portfolio.size()];
         double portfolioTotal = 0.0;
 

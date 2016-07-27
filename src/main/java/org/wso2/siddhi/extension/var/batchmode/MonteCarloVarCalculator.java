@@ -29,8 +29,8 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
 
     @Override
     protected void addEvent(Object data[]) {
-        price = ((Number) data[0]).doubleValue();
-        symbol = data[1].toString();
+        price = ((Number) data[1]).doubleValue();
+        symbol = data[0].toString();
 
         //if portfolio does not have the given symbol, then we drop the event.
         if (portfolio.get(symbol) != null) {
