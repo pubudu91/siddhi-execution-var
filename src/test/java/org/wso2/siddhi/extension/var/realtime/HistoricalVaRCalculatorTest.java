@@ -10,13 +10,15 @@ import org.wso2.siddhi.extension.var.models.Asset;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
+import static org.junit.Assert.*;
 
 /**
- * Created by dilip on 06/07/16.
+ * Created by dilip on 15/07/16.
  */
-public class ParametricVaRCalculatorTest {
+public class HistoricalVaRCalculatorTest {
 
     @Test
     public void testAddEvent() throws Exception {
@@ -33,7 +35,7 @@ public class ParametricVaRCalculatorTest {
         int limit=1510;
         double ci=0.95;
 
-        ParametricVaRCalculator calc = new ParametricVaRCalculator(limit,ci,getData());
+        HistoricalVaRCalculator calc = new HistoricalVaRCalculator(limit,ci,getData());
         Assert.assertEquals(-6065.678833700333,calc.processData());
     }
 
