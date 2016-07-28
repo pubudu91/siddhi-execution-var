@@ -28,7 +28,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     private VaRPortfolioCalc varCalculator = null;
     private int paramPosition = 0;
     private Map<String, Asset> portfolio = new HashMap<String, Asset>();
-
+    private boolean hasWeight = false;
     /**
      *
      * @param streamEventChunk      the event chunk that need to be processed
@@ -74,6 +74,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         // Capture constant inputs
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
             paramPosition = (attributeExpressionLength + 4)/2;
+            System.out.println(executionPlanContext);
             try {
                 batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
             } catch (ClassCastException c) {
@@ -87,13 +88,15 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
                     Asset asset = new Asset(((Integer)attributeExpressionExecutors[paramPosition + i].execute(null)));
                     portfolio.put(symbol, asset);
                 }
+
+                hasWeight = (Boolean)attributeExpressionExecutors[attributeExpressionLength - 1].execute(null);
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value between 0 and 1");
             }
         }
 
         // set the var calculator
-        varCalculator = new HistoricalVaRCalculator(batchSize, ci, portfolio);
+        varCalculator = new HistoricalVaRCalculator(batchSize, ci, portfolio, hasWeight);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);

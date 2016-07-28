@@ -8,23 +8,23 @@ import java.util.*;
 /**
  * Created by dilini92 on 6/26/16.
  */
-public class HistoricalVaRCalculator extends VaRPortfolioCalc{
+public class HistoricalVaRCalculator extends VaRPortfolioCalc {
     private DescriptiveStatistics stat = new DescriptiveStatistics();
     private double price;
     private String symbol;
+    private boolean hasWeight;
 
     /**
-     *
      * @param limit
      * @param ci
      * @param assets
      */
-    public HistoricalVaRCalculator(int limit, double ci, Map<String, Asset> assets) {
+    public HistoricalVaRCalculator(int limit, double ci, Map<String, Asset> assets, boolean hasWeight) {
         super(limit, ci, assets);
+        this.hasWeight = hasWeight;
     }
 
     /**
-     *
      * @param data
      */
     @Override
@@ -33,13 +33,12 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc{
         symbol = data[0].toString();
 
         //if portfolio does not have the given symbol, then we drop the event.
-        if(portfolio.get(symbol) != null){
+        if (portfolio.get(symbol) != null) {
             portfolio.get(symbol).addHistoricalValue(price);
         }
     }
 
     /**
-     *
      * @param symbol
      */
     @Override
@@ -50,7 +49,6 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc{
     }
 
     /**
-     *
      * @return the var of the portfolio
      */
     @Override
@@ -63,7 +61,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc{
         String symbols[] = keys.toArray(new String[portfolio.size()]);
         Asset asset;
         LinkedList<Double> priceList;
-        for (int i = 0; i < symbols.length; i++){
+        for (int i = 0; i < symbols.length; i++) {
             asset = portfolio.get(symbols[i]);
             priceList = asset.getHistoricalValues();
             portfolioTotal += priceList.getLast() * asset.getNumberOfShares();
@@ -71,13 +69,15 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc{
             Double priceArray[] = priceList.toArray(new Double[batchSize]);
             for (int j = 0; j < priceArray.length - 1; j++) {
                 //calculate the price return value Rj = ln(Sj+1/Sj)
-                priceReturns[j][i] = Math.log(priceArray[j+1]/priceArray[j]);
+                priceReturns[j][i] = Math.log(priceArray[j + 1] / priceArray[j]);
 
-                //generate stock prices based on the return value Sj = (1 + Rj) * S_latest
-                priceReturns[j][i] = (priceReturns[j][i] + 1) * priceArray[batchSize - 1];
+                if(hasWeight){
+                    //generate stock prices based on the return value Sj = (1 + Rj) * S_latest
+                    priceReturns[j][i] = (priceReturns[j][i] + 1) * priceArray[batchSize - 1];
 
-                //calculate market value for each event Mj = Sj * noOfShares
-                priceReturns[j][i] = priceReturns[j][i] * asset.getNumberOfShares();
+                    //calculate market value for each event Mj = Sj * noOfShares
+                    priceReturns[j][i] = priceReturns[j][i] * asset.getNumberOfShares();
+                }
             }
         }
 
@@ -87,8 +87,13 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc{
             for (int j = 0; j < symbols.length; j++) {
                 total += priceReturns[i][j];
             }
-            //add each value to create the histogram
-            stat.addValue(portfolioTotal - total);
+
+            if(hasWeight) {
+                //add each value to create the histogram
+                stat.addValue(portfolioTotal - total);
+            }else{
+                stat.addValue(total);
+            }
         }
         return stat.getPercentile((1 - confidenceInterval) * 100);
     }
