@@ -5,6 +5,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.Asset;
+import org.wso2.siddhi.extension.var.models.Portfolio;
 
 import java.util.LinkedList;
 import java.util.Map;
@@ -14,9 +15,6 @@ import java.util.Set;
  * Created by dilip on 30/06/16.
  */
 public class ParametricVaRCalculator extends VaRPortfolioCalc {
-    private DescriptiveStatistics stat = new DescriptiveStatistics();
-    private double price;
-    private String symbol;
 
     /**
      *
@@ -24,34 +22,8 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
      * @param ci
      * @param assets
      */
-    public ParametricVaRCalculator(int limit, double ci, Map<String, Asset> assets) {
+    public ParametricVaRCalculator(int limit, double ci, Map<Integer, Portfolio> assets) {
         super(limit, ci, assets);
-    }
-
-    /**
-     *
-     * @param data
-     */
-    @Override
-    protected void addEvent(Object data[]) {
-        price = ((Number) data[1]).doubleValue();
-        symbol = data[0].toString();
-
-        //if portfolio does not have the given symbol, then we drop the event.
-        if(portfolio.get(symbol) != null){
-            portfolio.get(symbol).addHistoricalValue(price);
-        }
-    }
-
-    /**
-     *
-     * @param symbol
-     */
-    @Override
-    protected void removeEvent(String symbol) {
-        //removes the oldest element
-        LinkedList<Double> priceList = portfolio.get(symbol).getHistoricalValues();
-        priceList.remove(0);
     }
 
     /**
@@ -59,14 +31,14 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
      * @return the var of the portfolio
      */
     @Override
-    protected Object processData() {
-        double priceReturns[][] = new double[batchSize - 1][portfolio.size()];
+    protected Object processData(Portfolio portfolio) {
+        double priceReturns[][] = new double[batchSize - 1][portfolio.getAssets().size()];
         double portfolioTotal = 0.0;
-        double weightage[][] = new double[1][portfolio.size()];
+        double weightage[][] = new double[1][portfolio.getAssets().size()];
 
-        Set<String> keys = portfolio.keySet();
-        String symbols[] = keys.toArray(new String[portfolio.size()]);
-        double[][] means = new double[1][portfolio.size()];
+        Set<String> keys = portfolio.getAssets().keySet();
+        String symbols[] = keys.toArray(new String[portfolio.getAssets().size()]);
+        double[][] means = new double[1][portfolio.getAssets().size()];
 
         // System.out.println(batchSize + " " + portfolio.size() + " " + symbols.length + " " + portfolio.get("IBM").getHistoricalValues().size());
 
@@ -75,13 +47,12 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         Asset asset;
         LinkedList<Double> priceList;
         for (int i = 0; i < symbols.length; i++) {
-            asset = portfolio.get(symbols[i]);
+            asset = portfolio.getAssets().get(symbols[i]);
             priceList = asset.getHistoricalValues();
             weightage[0][i] = priceList.getLast() * asset.getNumberOfShares();
             portfolioTotal += weightage[0][i];
 
             Double priceArray[] = priceList.toArray(new Double[batchSize]);
-            DescriptiveStatistics stat = new DescriptiveStatistics();
             for (int j = 0; j < priceArray.length - 1; j++) {
                 priceReturns[j][i] = Math.log(priceArray[j + 1] / priceArray[j]);
                 stat.addValue(priceReturns[j][i]);
@@ -99,8 +70,8 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         /*
          * calculate excess returns
          */
-        double[][] excessReturns = new double[batchSize - 1][portfolio.size()];
-        for (int i = 0; i < portfolio.size(); i++) {
+        double[][] excessReturns = new double[batchSize - 1][portfolio.getAssets().size()];
+        for (int i = 0; i < portfolio.getAssets().size(); i++) {
             for (int j = 0; j < batchSize - 1; j++) {
                 excessReturns[j][i] = priceReturns[j][i] - means[0][i];
             }

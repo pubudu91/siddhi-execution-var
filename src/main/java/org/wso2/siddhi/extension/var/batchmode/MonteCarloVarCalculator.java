@@ -2,6 +2,7 @@ package org.wso2.siddhi.extension.var.batchmode;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.Asset;
+import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 
 import java.util.LinkedList;
@@ -16,32 +17,13 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
     private int numberOfTrials;
     private int calculationsPerDay;
     private double timeSlice;
-    private double price;
-    private String symbol;
 
-    public MonteCarloVarCalculator(int limit, double ci, Map<String, Asset> assets,
+    public MonteCarloVarCalculator(int limit, double ci, Map<Integer, Portfolio> assets,
                                    int numberOfTrials, int calculationsPerDay, double timeSlice) {
         super(limit, ci, assets);
         this.numberOfTrials = numberOfTrials;
         this.calculationsPerDay = calculationsPerDay;
         this.timeSlice = timeSlice;
-    }
-
-    @Override
-    protected void addEvent(Object data[]) {
-        price = ((Number) data[1]).doubleValue();
-        symbol = data[0].toString();
-
-        //if portfolio does not have the given symbol, then we drop the event.
-        if (portfolio.get(symbol) != null) {
-            portfolio.get(symbol).addHistoricalValue(price);
-        }
-    }
-
-    @Override
-    protected void removeEvent(String symbol) {
-        List<Double> priceList = portfolio.get(symbol).getHistoricalValues();
-        priceList.remove(0);
     }
 
     /**
@@ -50,10 +32,10 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
      * @return
      */
     @Override
-    protected Object processData() {
+    protected Object processData(Portfolio portfolio) {
         double[] terminalStockValues;
         double[] finalPortfolioValues = new double[numberOfTrials];
-        String[] keys = portfolio.keySet().toArray(new String[portfolio.size()]);
+        String[] keys = portfolio.getAssets().keySet().toArray(new String[portfolio.getAssets().size()]);
         Asset tempAsset;
         LinkedList<Double> historicalValues;
         double todayMarketValue = 0;
@@ -64,7 +46,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
 
         for (int i = 0; i < keys.length; i++) {
 
-            tempAsset = portfolio.get(keys[i]);
+            tempAsset = portfolio.getAssets().get(keys[i]);
             todayMarketValue = (tempAsset.getHistoricalValues().getLast() * tempAsset.getNumberOfShares());
             historicalValues = tempAsset.getHistoricalValues();
             terminalStockValues = new MonteCarloSimulation().simulation(this.numberOfTrials, this.calculationsPerDay,

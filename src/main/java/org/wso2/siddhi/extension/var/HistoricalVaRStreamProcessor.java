@@ -12,11 +12,20 @@ import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
 import org.wso2.siddhi.extension.var.models.Asset;
+import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
+import javax.sql.DataSource;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 /**
@@ -29,6 +38,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     private int paramPosition = 0;
     private Map<String, Asset> portfolio = new HashMap<String, Asset>();
     private boolean hasWeight = false;
+    private Map<Integer, Portfolio> portfolioList = new HashMap<>();
     /**
      *
      * @param streamEventChunk      the event chunk that need to be processed
@@ -51,11 +61,10 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
 
                 // Skip processing if user has specified calculation interval
-                if (outputData[0] == null) { //if there is no output
+                if (outputData[0].toString().isEmpty()) { //if there is no output
                     streamEventChunk.remove();
                 } else {    //if there is an output, publish it to the output stream
                     complexEventPopulater.populateComplexEvent(complexEvent, outputData);
-
                 }
             }
         }
@@ -74,7 +83,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         // Capture constant inputs
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
             paramPosition = (attributeExpressionLength + 4)/2;
-            System.out.println(executionPlanContext);
+            getPortfolioValues(executionPlanContext);
             try {
                 batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
             } catch (ClassCastException c) {
@@ -82,12 +91,12 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
             }
             try {
                 ci = ((Double) attributeExpressionExecutors[1].execute(null));
-                String symbol;
-                for (int i = 0; i < (attributeExpressionLength - 4)/2; i++) {
-                    symbol = attributeExpressionExecutors[i + 4].execute(null).toString();
-                    Asset asset = new Asset(((Integer)attributeExpressionExecutors[paramPosition + i].execute(null)));
-                    portfolio.put(symbol, asset);
-                }
+//                String symbol;
+//                for (int i = 0; i < (attributeExpressionLength - 4)/2; i++) {
+//                    symbol = attributeExpressionExecutors[i + 4].execute(null).toString();
+//                    Asset asset = new Asset(((Integer)attributeExpressionExecutors[paramPosition + i].execute(null)));
+//                    portfolio.put(symbol, asset);
+//                }
 
                 hasWeight = (Boolean)attributeExpressionExecutors[attributeExpressionLength - 1].execute(null);
             } catch (ClassCastException c) {
@@ -96,11 +105,11 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         }
 
         // set the var calculator
-        varCalculator = new HistoricalVaRCalculator(batchSize, ci, portfolio, hasWeight);
+        varCalculator = new HistoricalVaRCalculator(batchSize, ci, portfolioList, hasWeight);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);
-        attributes.add(new Attribute("var", Attribute.Type.DOUBLE));
+        attributes.add(new Attribute("var", Attribute.Type.STRING));
 
         return attributes;
     }
@@ -137,5 +146,37 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     @Override
     public void restoreState(Object[] state) {
 
+    }
+
+    private void getPortfolioValues(ExecutionPlanContext executionPlanContext){
+        //get the portfolio details from the database
+        try {
+            Connection connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
+            String sql = "SELECT distinct(portfolioID) FROM portfolio natural join portfolioDetails";
+            Statement stm = connection.createStatement();
+            ResultSet rst = stm.executeQuery(sql);
+
+            int portfolioID;
+
+            while(rst.next()){
+                portfolioID = rst.getInt(1);
+                Statement stm1 = connection.createStatement();
+                sql = "SELECT symbol, noOfShares from portfolioDetails where portfolioID = " + portfolioID;
+                ResultSet symbolList = stm1.executeQuery(sql);
+                Map<String, Asset> assets = new HashMap<>();
+                Portfolio portfolio;
+
+                while(symbolList.next()){
+                    Asset asset = new Asset(symbolList.getString(1), symbolList.getInt(2));
+                    assets.put(symbolList.getString(1), asset);
+                }
+
+                portfolio = new Portfolio(portfolioID, assets);
+                portfolioList.put(portfolioID, portfolio);
+            }
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
