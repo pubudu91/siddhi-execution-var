@@ -1,9 +1,14 @@
 package org.wso2.siddhi.extension.var.realtime;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 /**
@@ -21,12 +26,11 @@ public abstract class VaRPortfolioCalc {
      *
      * @param limit
      * @param ci
-     * @param portfolios
      */
-    public VaRPortfolioCalc(int limit, double ci, Map<Integer, Portfolio> portfolios) {
+    public VaRPortfolioCalc(int limit, double ci) {
         confidenceInterval = ci;
         batchSize = limit;
-        portfolioList = portfolios;
+        portfolioList = new HashMap<>();
     }
 
     /**
@@ -89,5 +93,37 @@ public abstract class VaRPortfolioCalc {
             }
         }
         return resultsString;
+    }
+
+    public void getPortfolioValues(ExecutionPlanContext executionPlanContext){
+        //get the portfolio details from the database
+        try {
+            Connection connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
+            String sql = "SELECT distinct(portfolioID) FROM portfolio natural join portfolioDetails";
+            Statement stm = connection.createStatement();
+            ResultSet rst = stm.executeQuery(sql);
+
+            int portfolioID;
+
+            while(rst.next()){
+                portfolioID = rst.getInt(1);
+                Statement stm1 = connection.createStatement();
+                sql = "SELECT symbol, noOfShares from portfolioDetails where portfolioID = " + portfolioID;
+                ResultSet symbolList = stm1.executeQuery(sql);
+                Map<String, Asset> assets = new HashMap<>();
+                Portfolio portfolio;
+
+                while(symbolList.next()){
+                    Asset asset = new Asset(symbolList.getString(1), symbolList.getInt(2));
+                    assets.put(symbolList.getString(1), asset);
+                }
+
+                portfolio = new Portfolio(portfolioID, assets);
+                portfolioList.put(portfolioID, portfolio);
+            }
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

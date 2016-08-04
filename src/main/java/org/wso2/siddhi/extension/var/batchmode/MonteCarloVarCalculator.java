@@ -18,9 +18,9 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
     private int calculationsPerDay;
     private double timeSlice;
 
-    public MonteCarloVarCalculator(int limit, double ci, Map<Integer, Portfolio> assets,
+    public MonteCarloVarCalculator(int limit, double ci,
                                    int numberOfTrials, int calculationsPerDay, double timeSlice) {
-        super(limit, ci, assets);
+        super(limit, ci);
         this.numberOfTrials = numberOfTrials;
         this.calculationsPerDay = calculationsPerDay;
         this.timeSlice = timeSlice;
@@ -38,7 +38,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
         String[] keys = portfolio.getAssets().keySet().toArray(new String[portfolio.getAssets().size()]);
         Asset tempAsset;
         LinkedList<Double> historicalValues;
-        double todayMarketValue = 0;
+        double todayMarketValue;
 
         for (int i = 0; i < numberOfTrials; i++) {
             finalPortfolioValues[i] = 0;

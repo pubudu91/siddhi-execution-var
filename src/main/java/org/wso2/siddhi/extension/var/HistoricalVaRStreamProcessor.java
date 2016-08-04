@@ -36,9 +36,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     private double ci = 0.95;                                           // Confidence Interval
     private VaRPortfolioCalc varCalculator = null;
     private int paramPosition = 0;
-    private Map<String, Asset> portfolio = new HashMap<String, Asset>();
     private boolean hasWeight = false;
-    private Map<Integer, Portfolio> portfolioList = new HashMap<>();
     /**
      *
      * @param streamEventChunk      the event chunk that need to be processed
@@ -83,7 +81,6 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         // Capture constant inputs
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
             paramPosition = (attributeExpressionLength + 4)/2;
-            getPortfolioValues(executionPlanContext);
             try {
                 batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
             } catch (ClassCastException c) {
@@ -91,13 +88,6 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
             }
             try {
                 ci = ((Double) attributeExpressionExecutors[1].execute(null));
-//                String symbol;
-//                for (int i = 0; i < (attributeExpressionLength - 4)/2; i++) {
-//                    symbol = attributeExpressionExecutors[i + 4].execute(null).toString();
-//                    Asset asset = new Asset(((Integer)attributeExpressionExecutors[paramPosition + i].execute(null)));
-//                    portfolio.put(symbol, asset);
-//                }
-
                 hasWeight = (Boolean)attributeExpressionExecutors[attributeExpressionLength - 1].execute(null);
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value between 0 and 1");
@@ -105,7 +95,8 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         }
 
         // set the var calculator
-        varCalculator = new HistoricalVaRCalculator(batchSize, ci, portfolioList, hasWeight);
+        varCalculator = new HistoricalVaRCalculator(batchSize, ci, hasWeight);
+        varCalculator.getPortfolioValues(executionPlanContext);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);
@@ -146,37 +137,5 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     @Override
     public void restoreState(Object[] state) {
 
-    }
-
-    private void getPortfolioValues(ExecutionPlanContext executionPlanContext){
-        //get the portfolio details from the database
-        try {
-            Connection connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
-            String sql = "SELECT distinct(portfolioID) FROM portfolio natural join portfolioDetails";
-            Statement stm = connection.createStatement();
-            ResultSet rst = stm.executeQuery(sql);
-
-            int portfolioID;
-
-            while(rst.next()){
-                portfolioID = rst.getInt(1);
-                Statement stm1 = connection.createStatement();
-                sql = "SELECT symbol, noOfShares from portfolioDetails where portfolioID = " + portfolioID;
-                ResultSet symbolList = stm1.executeQuery(sql);
-                Map<String, Asset> assets = new HashMap<>();
-                Portfolio portfolio;
-
-                while(symbolList.next()){
-                    Asset asset = new Asset(symbolList.getString(1), symbolList.getInt(2));
-                    assets.put(symbolList.getString(1), asset);
-                }
-
-                portfolio = new Portfolio(portfolioID, assets);
-                portfolioList.put(portfolioID, portfolio);
-            }
-            connection.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 }

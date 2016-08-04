@@ -1,11 +1,8 @@
 package org.wso2.siddhi.extension.var.realtime;
 
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
-import org.wso2.siddhi.query.api.expression.condition.In;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -18,11 +15,10 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
      *
      * @param limit
      * @param ci
-     * @param portfolioList
      * @param hasWeight
      */
-    public HistoricalVaRCalculator(int limit, double ci, Map<Integer, Portfolio> portfolioList, boolean hasWeight) {
-        super(limit, ci, portfolioList);
+    public HistoricalVaRCalculator(int limit, double ci, boolean hasWeight) {
+        super(limit, ci);
         this.hasWeight = hasWeight;
     }
 

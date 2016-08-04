@@ -33,7 +33,6 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
     private int numberOfTrials = 2000;
     private int calculationsPerDay = 200;
     private double timeSlice = 0.01;
-    private Map<String, Asset> portfolio = new HashMap<String, Asset>();
 
 
     @Override
@@ -49,7 +48,7 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
 
                 // Skip processing if user has specified calculation interval
-                if (outputData[0] == null) {
+                if (outputData[0].toString().isEmpty()) {
                     streamEventChunk.remove();
                 } else {
                     complexEventPopulater.populateComplexEvent(complexEvent, outputData);
@@ -71,24 +70,19 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
             }
             try {
                 ci = ((Double) attributeExpressionExecutors[1].execute(null));
-                String symbol;
-                for (int i = 0; i < (attributeExpressionLength - 4) / 2; i++) {
-                    symbol = attributeExpressionExecutors[i + 4].execute(null).toString();
-                    Asset asset = new Asset(((Integer) attributeExpressionExecutors[paramPosition + i].execute(null)));
-                    portfolio.put(symbol, asset);
-                }
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value between 0 and 1");
             }
         }
 
         // set the var calculator
-        varCalculator = new MonteCarloVarCalculator(batchSize, ci, portfolio,
+        varCalculator = new MonteCarloVarCalculator(batchSize, ci,
                 numberOfTrials, calculationsPerDay, timeSlice);
+        varCalculator.getPortfolioValues(executionPlanContext);
 
         // Add attribute for var
-        ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);
-        attributes.add(new Attribute("var", Attribute.Type.DOUBLE));
+        ArrayList<Attribute> attributes = new ArrayList<>(1);
+        attributes.add(new Attribute("var", Attribute.Type.STRING));
 
         return attributes;
     }

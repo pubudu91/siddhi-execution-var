@@ -20,10 +20,9 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
      *
      * @param limit
      * @param ci
-     * @param assets
      */
-    public ParametricVaRCalculator(int limit, double ci, Map<Integer, Portfolio> assets) {
-        super(limit, ci, assets);
+    public ParametricVaRCalculator(int limit, double ci) {
+        super(limit, ci);
     }
 
     /**
