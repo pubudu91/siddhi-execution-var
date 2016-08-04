@@ -3,12 +3,10 @@ package org.wso2.siddhi.extension.var.realtime;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Set;
 
 /**
