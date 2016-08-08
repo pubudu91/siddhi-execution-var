@@ -19,7 +19,6 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
     private String symbol;
 
     /**
-     *
      * @param limit
      * @param ci
      * @param assets
@@ -29,37 +28,34 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
     }
 
     /**
-     *
      * @param data
      */
     @Override
-    protected void addEvent(Object data[]) {
+    public void addEvent(Object data[]) {
         price = ((Number) data[1]).doubleValue();
         symbol = data[0].toString();
 
         //if portfolio does not have the given symbol, then we drop the event.
-        if(portfolio.get(symbol) != null){
+        if (portfolio.get(symbol) != null) {
             portfolio.get(symbol).addHistoricalValue(price);
         }
     }
 
     /**
-     *
      * @param symbol
      */
     @Override
-    protected void removeEvent(String symbol) {
+    public void removeEvent(String symbol) {
         //removes the oldest element
         LinkedList<Double> priceList = portfolio.get(symbol).getHistoricalValues();
         priceList.remove(0);
     }
 
     /**
-     *
      * @return the var of the portfolio
      */
     @Override
-    protected Object processData() {
+    public Object processData() {
         double priceReturns[][] = new double[batchSize - 1][portfolio.size()];
         double portfolioTotal = 0.0;
         double weightage[][] = new double[1][portfolio.size()];
@@ -118,8 +114,8 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         //NormalDistribution n = new NormalDistribution();
         //double var = n.inverseCumulativeProbability(1-confidenceInterval) * ps;
         //System.out.println(var*portfolioTotal);
-        NormalDistribution n = new NormalDistribution(pm,ps);
-        double var = n.inverseCumulativeProbability(1-confidenceInterval);
+        NormalDistribution n = new NormalDistribution(pm, ps);
+        double var = n.inverseCumulativeProbability(1 - confidenceInterval);
         //System.out.println(var*portfolioTotal);
         return var * portfolioTotal;
     }

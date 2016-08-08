@@ -24,9 +24,10 @@ public class HistoricalCalculatorAssertion extends VarModelAssertion {
     protected Double[] calculateVar() throws IOException {
         Double tempVar[] = new Double[this.getSampleSize()];
 
-        Map<String, ArrayList<Double>> priceLists = this.getData();
+        Map<String, ArrayList<Double>> priceLists = this.getDataFromFile();
         String[] key = this.getPortfolio().keySet().toArray(new String[this.getPortfolio().size()]);
         calculator = new HistoricalVaRCalculator(this.getBatchSize(), this.getConfidenceInterval(), this.getPortfolio());
+
         for (int i = 0; i < tempVar.length; i++) {
             for (int j = 0; j < key.length; j++) {
                 Object input[] = {key[j], priceLists.get(key[j]).get(i + this.getBatchSize())};

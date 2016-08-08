@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,14 +84,14 @@ public abstract class VarModelAssertion {
 //            endOfList = (sampleSet * sampleSize) > priceListTemp.size() ? priceListTemp.size() : sampleSet * sampleSize;
             endOfList = (sampleSet + 1) * sampleSize;
             sharesAmount = portfolio.get(key[i]).getNumberOfShares();
-            for (int j = sampleSize * (sampleSet); j < endOfList; j++) {
+            for (int j = sampleSize * (sampleSet)+this.getBatchSize(); j < endOfList; j++) {
                 actualValue[j - (sampleSize * sampleSet)] += sharesAmount * priceListTemp.get(j);
             }
         }
         return actualValue;
     }
 
-    protected HashMap<String, ArrayList<Double>> getData() throws IOException {
+    protected HashMap<String, ArrayList<Double>> getDataFromFile() throws IOException {
 
         ClassLoader classLoader = getClass().getClassLoader();
         File inputFile = new File(classLoader.getResource("data.xlsx").getFile());
@@ -120,7 +121,7 @@ public abstract class VarModelAssertion {
         double actualPriceTemp = 0;
         this.setHistoricalValues();
         this.var = this.calculateVar();
-        this.actualValue = this.calculateOriginal(this.getData(), sampleSet);
+        this.actualValue = this.calculateOriginal(this.getDataFromFile(), sampleSet);
 
         for (int i = 0; i < sampleSize - 1; i++) {
             actualPriceTemp = this.actualValue[i + 1] - this.actualValue[i];
@@ -136,7 +137,10 @@ public abstract class VarModelAssertion {
                 }
             }
         }
-        System.out.println(numberOfExceptions);
+//        System.out.println(numberOfExceptions);
+//        System.out.println(Arrays.toString(this.var));
+//        System.out.println("Line Break");
+//        System.out.println(Arrays.toString(this.actualValue));
         return this.calculateProbability(numberOfExceptions);
     }
 
@@ -152,7 +156,7 @@ public abstract class VarModelAssertion {
     public void setHistoricalValues() throws IOException {
         String[] key = this.portfolio.keySet().toArray(new String[this.portfolio.size()]);
         ArrayList<Double> tempList = null;
-        Map<String, ArrayList<Double>> priceLists = this.getData();
+        Map<String, ArrayList<Double>> priceLists = this.getDataFromFile();
         for (int i = 0; i < key.length; i++) {
             tempList = priceLists.get(key[i]);
             for (int j = 0; j < this.batchSize; j++) {
@@ -164,7 +168,7 @@ public abstract class VarModelAssertion {
 //    public static void main(String[] args) {
 //        VarModelAssertion tm = new VarModelAssertion();
 //        try {
-//            HashMap<String,ArrayList<Double>> data = tm.getData();
+//            HashMap<String,ArrayList<Double>> data = tm.getDataFromFile();
 //            Set<String> keys = data.keySet();
 //            String symbols[] = keys.toArray(new String[keys.size()]);
 //            for (int i = 0; i < symbols.length ; i++) {
