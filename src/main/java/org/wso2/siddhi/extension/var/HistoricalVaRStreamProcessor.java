@@ -11,7 +11,6 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
@@ -27,13 +26,21 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     private double ci = 0.95;                                           // Confidence Interval
     private VaRPortfolioCalc varCalculator = null;
     private int paramPosition = 0;
-    private Map<String, Asset> portfolio = new HashMap<String, Asset>();
-
+    private boolean hasWeight = false;
+    /**
+     *
+     * @param streamEventChunk      the event chunk that need to be processed
+     * @param nextProcessor         the next processor to which the success events need to be passed
+     * @param streamEventCloner     helps to clone the incoming event for local storage or modification
+     * @param complexEventPopulater helps to populate the events with the resultant attributes
+     */
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor, StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
+
+                //get the symbol and price attributes from the stream to process
                 Object inputData[] = new Object[2];
                 inputData[0] = attributeExpressionExecutors[2].execute(complexEvent);
                 inputData[1] = attributeExpressionExecutors[3].execute(complexEvent);
@@ -42,17 +49,23 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
 
                 // Skip processing if user has specified calculation interval
-                if (outputData[0] == null) {
+                if (outputData[0].toString().isEmpty()) { //if there is no output
                     streamEventChunk.remove();
-                } else {
+                } else {    //if there is an output, publish it to the output stream
                     complexEventPopulater.populateComplexEvent(complexEvent, outputData);
-
                 }
             }
         }
-        nextProcessor.process(streamEventChunk);
+        nextProcessor.process(streamEventChunk); //process the next stream event
     }
 
+    /**
+     *
+     * @param inputDefinition
+     * @param attributeExpressionExecutors
+     * @param executionPlanContext
+     * @return
+     */
     @Override
     protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
         // Capture constant inputs
@@ -65,42 +78,52 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
             }
             try {
                 ci = ((Double) attributeExpressionExecutors[1].execute(null));
-                String symbol;
-                for (int i = 0; i < (attributeExpressionLength - 4)/2; i++) {
-                    symbol = attributeExpressionExecutors[i + 4].execute(null).toString();
-                    Asset asset = new Asset(((Integer)attributeExpressionExecutors[paramPosition + i].execute(null)));
-                    portfolio.put(symbol, asset);
-                }
+                hasWeight = (Boolean)attributeExpressionExecutors[attributeExpressionLength - 1].execute(null);
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value between 0 and 1");
             }
         }
 
         // set the var calculator
-        varCalculator = new HistoricalVaRCalculator(batchSize, ci, portfolio);
+        varCalculator = new HistoricalVaRCalculator(batchSize, ci, hasWeight);
+        varCalculator.getPortfolioValues(executionPlanContext);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);
-        attributes.add(new Attribute("var", Attribute.Type.DOUBLE));
+        attributes.add(new Attribute("var", Attribute.Type.STRING));
 
         return attributes;
     }
 
+    /**
+     *
+     */
     @Override
     public void start() {
 
     }
 
+    /**
+     *
+     */
     @Override
     public void stop() {
 
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public Object[] currentState() {
         return new Object[0];
     }
 
+    /**
+     *
+     * @param state the stateful objects of the element as an array on
+     */
     @Override
     public void restoreState(Object[] state) {
 

@@ -8,13 +8,20 @@ import java.util.LinkedList;
 public class Asset {
     private LinkedList<Double> historicalValues;
     private double currentStockPrice;
-    private String label;
+    private String symbol;
     private int numberOfShares;
 
     public Asset(int numberOfShares){
         this.numberOfShares = numberOfShares;
         historicalValues = new LinkedList<Double>();
     }
+
+    public Asset(String label, int numberOfShares){
+        this.numberOfShares = numberOfShares;
+        historicalValues = new LinkedList<Double>();
+        this.symbol = label;
+    }
+
 
     public LinkedList<Double> getHistoricalValues() {
         return historicalValues;
@@ -31,4 +38,6 @@ public class Asset {
     public void addHistoricalValue(double price){
         historicalValues.add(price);
     }
+
+    public String getSymbol(){ return symbol; }
 }
