@@ -15,7 +15,6 @@ import java.util.Set;
 public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
     /**
-     *
      * @param limit
      * @param ci
      */
@@ -24,18 +23,17 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
     }
 
     /**
-     *
      * @return the var of the portfolio
      */
     @Override
     protected Object processData(Portfolio portfolio) {
         double priceReturns[][] = new double[batchSize - 1][portfolio.getAssets().size()];
         double portfolioTotal = 0.0;
-        double weightage[][] = new double[1][portfolio.size()];
+        double weightage[][] = new double[1][portfolio.getAssets().size()];
         //calculate the latest market value of the portfolio
-        Set<String> keys = portfolio.keySet();
-        String symbols[] = keys.toArray(new String[portfolio.size()]);
-        double[][] means = new double[1][portfolio.size()];
+        Set<String> keys = portfolio.getAssets().keySet();
+        String symbols[] = keys.toArray(new String[portfolio.getAssets().size()]);
+        double[][] means = new double[1][portfolio.getAssets().size()];
 
         // System.out.println(batchSize + " " + portfolio.size() + " " + symbols.length + " " + portfolio.get("IBM").getHistoricalValues().size());
 
@@ -90,8 +88,8 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         //double var = n.inverseCumulativeProbability(1-confidenceInterval) * ps;
         //System.out.println(var*portfolioTotal);
 
-        NormalDistribution n = new NormalDistribution(pm,ps);
-        double var = n.inverseCumulativeProbability(1-confidenceInterval);
+        NormalDistribution n = new NormalDistribution(pm, ps);
+        double var = n.inverseCumulativeProbability(1 - confidenceInterval);
         return var * portfolioTotal;
     }
 
