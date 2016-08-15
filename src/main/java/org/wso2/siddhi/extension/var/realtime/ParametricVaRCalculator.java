@@ -3,6 +3,7 @@ package org.wso2.siddhi.extension.var.realtime;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 
@@ -13,6 +14,7 @@ import java.util.Set;
  * Created by dilip on 30/06/16.
  */
 public class ParametricVaRCalculator extends VaRPortfolioCalc {
+    private DescriptiveStatistics stat;
 
     /**
      *
@@ -32,6 +34,8 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         double priceReturns[][] = new double[batchSize - 1][portfolio.getAssets().size()];
         double portfolioTotal = 0.0;
         double weightage[][] = new double[1][portfolio.getAssets().size()];
+        stat = new DescriptiveStatistics();
+        stat.setWindowSize(batchSize - 1);
 
         Set<String> keys = portfolio.getAssets().keySet();
         String symbols[] = keys.toArray(new String[portfolio.getAssets().size()]);
@@ -39,14 +43,13 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
         // System.out.println(batchSize + " " + portfolio.size() + " " + symbols.length + " " + portfolio.get("IBM").getHistoricalValues().size());
 
-
         // calculating 
         Asset asset;
         LinkedList<Double> priceList;
         for (int i = 0; i < symbols.length; i++) {
-            asset = portfolio.getAssets().get(symbols[i]);
+            asset = assetList.get(symbols[i]);
             priceList = asset.getHistoricalValues();
-            weightage[0][i] = priceList.getLast() * asset.getNumberOfShares();
+            weightage[0][i] = priceList.getLast() * portfolio.getAssets().get(symbols[i]);
             portfolioTotal += weightage[0][i];
 
             Double priceArray[] = priceList.toArray(new Double[batchSize]);

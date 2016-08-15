@@ -11,14 +11,14 @@ public class Asset {
     private String symbol;
     private int numberOfShares;
 
-    public Asset(int numberOfShares){
-        this.numberOfShares = numberOfShares;
-        historicalValues = new LinkedList<Double>();
+    public Asset(String symbol){
+        this.symbol = symbol;
+        historicalValues = new LinkedList<>();
     }
 
     public Asset(String label, int numberOfShares){
         this.numberOfShares = numberOfShares;
-        historicalValues = new LinkedList<Double>();
+        historicalValues = new LinkedList<>();
         this.symbol = label;
     }
 
