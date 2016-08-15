@@ -72,6 +72,7 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
         // set the var calculator
         varCalculator = new ParametricVaRCalculator(batchSize, ci);
         varCalculator.getPortfolioValues(executionPlanContext);
+        varCalculator.readAssetList(executionPlanContext);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<>(1);

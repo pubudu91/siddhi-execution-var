@@ -49,7 +49,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
 
                 // Skip processing if user has specified calculation interval
-                if (outputData[0].toString().isEmpty()) { //if there is no output
+                if (outputData[0].toString().isEmpty() || outputData[0].toString().startsWith("=")) { //if there is no output
                     streamEventChunk.remove();
                 } else {    //if there is an output, publish it to the output stream
                     complexEventPopulater.populateComplexEvent(complexEvent, outputData);
@@ -87,6 +87,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         // set the var calculator
         varCalculator = new HistoricalVaRCalculator(batchSize, ci, hasWeight);
         varCalculator.getPortfolioValues(executionPlanContext);
+        varCalculator.readAssetList(executionPlanContext);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);

@@ -1,5 +1,6 @@
 package org.wso2.siddhi.extension.var.models;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -7,12 +8,13 @@ import java.util.Map;
  */
 public class Portfolio {
     private int ID;
-    private Map<String, Asset> assets;
+    private Map<String, Integer> assets;
 
     public Portfolio() {
+        assets = new HashMap<>();
     }
 
-    public Portfolio(int ID, Map<String, Asset> assets) {
+    public Portfolio(int ID, Map<String, Integer> assets) {
         this.ID = ID;
         this.assets = assets;
     }
@@ -25,11 +27,11 @@ public class Portfolio {
         this.ID = ID;
     }
 
-    public Map<String, Asset> getAssets() {
+    public Map<String, Integer> getAssets() {
         return assets;
     }
 
-    public void setAssets(Map<String, Asset> assets) {
+    public void setAssets(Map<String, Integer> assets) {
         this.assets = assets;
     }
 }

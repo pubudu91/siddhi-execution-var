@@ -76,6 +76,7 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
         varCalculator = new MonteCarloVarCalculator(batchSize, ci,
                 numberOfTrials, calculationsPerDay, timeSlice);
         varCalculator.getPortfolioValues(executionPlanContext);
+        varCalculator.readAssetList(executionPlanContext);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<>(1);

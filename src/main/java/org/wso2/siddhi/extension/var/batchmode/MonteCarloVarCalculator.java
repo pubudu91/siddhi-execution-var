@@ -46,7 +46,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
 
         for (int i = 0; i < keys.length; i++) {
 
-            tempAsset = portfolio.getAssets().get(keys[i]);
+            tempAsset = assetList.get(keys[i]);
             todayMarketValue = (tempAsset.getHistoricalValues().getLast() * tempAsset.getNumberOfShares());
             historicalValues = tempAsset.getHistoricalValues();
             terminalStockValues = new MonteCarloSimulation().simulation(this.numberOfTrials, this.calculationsPerDay,

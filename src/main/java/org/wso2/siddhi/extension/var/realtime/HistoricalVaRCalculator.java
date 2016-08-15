@@ -1,5 +1,6 @@
 package org.wso2.siddhi.extension.var.realtime;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 
@@ -10,6 +11,7 @@ import java.util.*;
  */
 public class HistoricalVaRCalculator extends VaRPortfolioCalc {
     private boolean hasWeight;
+    private DescriptiveStatistics stat;
 
     /**
      *
@@ -30,13 +32,18 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
         double priceReturns[][] = new double[batchSize - 1][portfolio.getAssets().size()];
         double portfolioTotal = 0.0;
 
+        stat = new DescriptiveStatistics();
+        stat.setWindowSize(batchSize - 1);
+
         //calculate the latest market value of the portfolio
         Set<String> keys = portfolio.getAssets().keySet();
         String symbols[] = keys.toArray(new String[portfolio.getAssets().size()]);
         Asset asset;
+        int noOfShares;
         LinkedList<Double> priceList;
         for (int i = 0; i < symbols.length; i++) {
-            asset = portfolio.getAssets().get(symbols[i]);
+            asset = assetList.get(symbols[i]);
+            noOfShares = portfolio.getAssets().get(symbols[i]);
             priceList = asset.getHistoricalValues();
             portfolioTotal += priceList.getLast() * asset.getNumberOfShares();
 
@@ -50,7 +57,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
                     priceReturns[j][i] = (priceReturns[j][i] + 1) * priceArray[batchSize - 1];
 
                     //calculate market value for each event Mj = Sj * noOfShares
-                    priceReturns[j][i] = priceReturns[j][i] * asset.getNumberOfShares();
+                    priceReturns[j][i] = priceReturns[j][i] * noOfShares;
                 }
             }
         }

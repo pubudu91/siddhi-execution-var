@@ -15,12 +15,13 @@ import java.util.*;
  * Created by dilini92 on 6/26/16.
  */
 public abstract class VaRPortfolioCalc {
+    private int outputEventCount = 0;
     protected double confidenceInterval = 0.95;
     protected int batchSize = 1000000000;
     protected Map<Integer, Portfolio> portfolioList;
+    protected Map<String, Asset> assetList;
     protected double price;
     protected String symbol;
-    protected DescriptiveStatistics stat = new DescriptiveStatistics();
 
     /**
      *
@@ -31,65 +32,74 @@ public abstract class VaRPortfolioCalc {
         confidenceInterval = ci;
         batchSize = limit;
         portfolioList = new HashMap<>();
+        assetList = new HashMap<>();
     }
 
     /**
      *
      * @param data
      */
-    protected void addEvent(Object data[], Portfolio portfolio){
+    public void addEvent(Object data[]){
         price = ((Number) data[1]).doubleValue();
         symbol = data[0].toString();
 
         //if portfolio does not have the given symbol, then we drop the event.
-        if (portfolio.getAssets().get(symbol) != null) {
-            portfolio.getAssets().get(symbol).addHistoricalValue(price);
+        if (assetList.get(symbol) != null) {
+            assetList.get(symbol).addHistoricalValue(price);
         }
     }
 
     /**
      * removes the oldest element from a given portfolio
      * @param symbol
-     * @param portfolio
      */
-    protected void removeEvent(String symbol, Portfolio portfolio){
-        LinkedList<Double> priceList = portfolio.getAssets().get(symbol).getHistoricalValues();
+    public void removeEvent(String symbol){
+        LinkedList<Double> priceList = assetList.get(symbol).getHistoricalValues();
         priceList.remove(0);
     }
     protected abstract Object processData(Portfolio portfolio);
 
     public Object calculateValueAtRisk(Object data[]) {
+        addEvent(data);
+        //if the given portfolio has the symbol and number of historical value exceeds the batch size, remove the event
+        if (assetList.get(data[0]) != null && assetList.get(data[0]).getHistoricalValues().size() > batchSize) {
+            removeEvent(data[0].toString());
+        }
+
         String resultsString = "";
         Set<Integer> keys = portfolioList.keySet();
         Iterator<Integer> iterator = keys.iterator();
         int key;
-        //for each portfolio
-        while(iterator.hasNext()) {
-            key = iterator.next();
-            Portfolio portfolio = portfolioList.get(key);
-            addEvent(data, portfolio);
+        double var = -1.0;
+        if(assetList.get(data[0]) != null){
+            //for each portfolio
+            while(iterator.hasNext()) {
+                key = iterator.next();
+                Portfolio portfolio = portfolioList.get(key);
 
-            //if the given portfolio has the symbol and number of historical value exceeds the batch size, remove the event
-            if(portfolio.getAssets().get(data[0]) != null && portfolio.getAssets().get(data[0]).getHistoricalValues().size() > batchSize){
-                removeEvent(data[0].toString(), portfolio);
-            }
+                //if the portfolio has the asset, calculate VaR
+                if(portfolio.getAssets().get(data[0]) != null) {
+                    //counts the number of stock symbols which have already had the given batch size number of events
+                    int count = 0;
 
-            //counts the number of stock symbols which have already had the given batch size number of events
-            int count = 0;
-            Set assetsKeys = portfolio.getAssets().keySet();
-            Iterator<String> assetIterator = assetsKeys.iterator();
-            //for each asset
-            while(assetIterator.hasNext()){
-                String assetKey = assetIterator.next();
-                count += portfolio.getAssets().get(assetKey).getHistoricalValues().size();
-            }
+                    Set assetsKeys = portfolio.getAssets().keySet();
+                    Iterator<String> assetIterator = assetsKeys.iterator();
+                    //for each asset
+                    while (assetIterator.hasNext()) {
+                        String assetKey = assetIterator.next();
+                        count += assetList.get(assetKey).getHistoricalValues().size();
+                    }
 
-            double var;
-            if(count == batchSize * portfolio.getAssets().size()){
-                if(portfolio.getAssets().get(data[0]) != null){
-                    var = Double.parseDouble(processData(portfolio).toString());
-                    resultsString = resultsString.concat("Portfolio " + portfolio.getID() + ": " + var + "\n");
+                    if (count == batchSize * portfolio.getAssets().size()) {
+                        var = Double.parseDouble(processData(portfolio).toString());
+                        resultsString = resultsString.concat("Portfolio " + portfolio.getID() + ": " + var + "\n");
+                    }
                 }
+            }
+            if(Double.compare(var, -1.0) != 0){
+                outputEventCount++;
+                resultsString = resultsString.concat("=============================================================" +
+                        "========= " + outputEventCount + "   " + data[0] + "   " + data[1]);
             }
         }
         return resultsString;
@@ -110,12 +120,11 @@ public abstract class VaRPortfolioCalc {
                 Statement stm1 = connection.createStatement();
                 sql = "SELECT symbol, noOfShares from portfolioDetails where portfolioID = " + portfolioID;
                 ResultSet symbolList = stm1.executeQuery(sql);
-                Map<String, Asset> assets = new HashMap<>();
+                Map<String, Integer> assets = new HashMap<>();
                 Portfolio portfolio;
 
                 while(symbolList.next()){
-                    Asset asset = new Asset(symbolList.getString(1), symbolList.getInt(2));
-                    assets.put(symbolList.getString(1), asset);
+                    assets.put(symbolList.getString(1), symbolList.getInt(2));
                 }
 
                 portfolio = new Portfolio(portfolioID, assets);
@@ -126,4 +135,27 @@ public abstract class VaRPortfolioCalc {
             e.printStackTrace();
         }
     }
+
+    public Map<Integer, Portfolio> getPortfolioList(){
+        return portfolioList;
+    }
+
+    public void readAssetList(ExecutionPlanContext executionPlanContext){
+        Connection connection;
+        try {
+            connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
+            String sql = "select distinct(symbol) from symbol natural join portfolioDetails";
+            Statement stm = connection.createStatement();
+            ResultSet rst = stm.executeQuery(sql);
+            Asset asset;
+
+            while(rst.next()){
+                asset = new Asset(rst.getString(1));
+                assetList.put(rst.getString(1), asset);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
+

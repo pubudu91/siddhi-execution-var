@@ -20,13 +20,12 @@ public class HistoricalCalculatorAssertionTestCase {
         portfolio.put("APPL", new Asset(175));
         portfolio.put("EBAY", new Asset(300));
         try {
-            System.out.println(new ParametricCalculatorAssertion(25, portfolio, 0.95, 250).AssertMethodValidity(1));
-//            System.out.println(new HistoricalCalculatorAssertion(25, portfolio, 0.95, 250).AssertMethodValidity(2));
-
+            System.out.println(new HistoricalCalculatorAssertion(250, portfolio, 0.95, 250).AssertMethodValidity(1));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
 
 }
