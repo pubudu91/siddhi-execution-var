@@ -1,6 +1,7 @@
 package org.wso2.siddhi.extension.var.realtime;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.json.JSONObject;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
@@ -67,10 +68,13 @@ public abstract class VaRPortfolioCalc {
         }
 
         String resultsString = "";
+        JSONObject result = new JSONObject();
         Set<Integer> keys = portfolioList.keySet();
         Iterator<Integer> iterator = keys.iterator();
         int key;
         double var = -1.0;
+
+        //if the given symbol is in the assetList
         if(assetList.get(data[0]) != null){
             //for each portfolio
             while(iterator.hasNext()) {
@@ -92,13 +96,14 @@ public abstract class VaRPortfolioCalc {
 
                     if (count == batchSize * portfolio.getAssets().size()) {
                         var = Double.parseDouble(processData(portfolio).toString());
-                        resultsString = resultsString.concat("Portfolio " + portfolio.getID() + ": " + var + "\n");
+                        result.put("Portfolio: " + portfolio.getID(), var);
                     }
                 }
             }
+
             if(Double.compare(var, -1.0) != 0){
                 outputEventCount++;
-                resultsString = resultsString.concat("=============================================================" +
+                resultsString = result.toString().concat("=============================================================" +
                         "========= " + outputEventCount + "   " + data[0] + "   " + data[1]);
             }
         }
@@ -115,6 +120,7 @@ public abstract class VaRPortfolioCalc {
 
             int portfolioID;
 
+            //for each portfolio
             while(rst.next()){
                 portfolioID = rst.getInt(1);
                 Statement stm1 = connection.createStatement();

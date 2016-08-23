@@ -69,6 +69,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
                 total += priceReturns[i][j];
             }
 
+            //If user wants to consider the no of shares
             if(hasWeight) {
                 //add each value to create the histogram
                 stat.addValue(portfolioTotal - total);
