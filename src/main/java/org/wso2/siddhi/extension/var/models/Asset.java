@@ -16,13 +16,6 @@ public class Asset {
         historicalValues = new LinkedList<>();
     }
 
-    public Asset(String label, int numberOfShares){
-        this.numberOfShares = numberOfShares;
-        historicalValues = new LinkedList<>();
-        this.symbol = label;
-    }
-
-
     public LinkedList<Double> getHistoricalValues() {
         return historicalValues;
     }

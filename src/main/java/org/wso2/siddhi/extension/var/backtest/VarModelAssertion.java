@@ -1,5 +1,6 @@
 package org.wso2.siddhi.extension.var.backtest;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -21,6 +22,7 @@ public abstract class VarModelAssertion {
     private double actualValue[];
     private int sampleSize = 250;
     private double confidenceInterval = 0.95;
+    private double significanceLevelForBacktest = 0.05;
     private int batchSize = 250;
     private Map<String, Asset> portfolio = null;
 
@@ -115,12 +117,13 @@ public abstract class VarModelAssertion {
         return data;
     }
 
-    public double AssertMethodValidity(int sampleSet) throws IOException {
+    public boolean AssertMethodValidity(int sampleSet, double significanceLevelForBacktest) throws IOException {
         int numberOfExceptions = 0;
         double actualPriceTemp = 0;
         this.setHistoricalValues();
         this.var = this.calculateVar();
         this.actualValue = this.calculateOriginal(this.getData(), sampleSet);
+        NormalDistribution dist = new NormalDistribution();
 
         for (int i = 0; i < sampleSize - 1; i++) {
             actualPriceTemp = this.actualValue[i + 1] - this.actualValue[i];
@@ -136,17 +139,19 @@ public abstract class VarModelAssertion {
                 }
             }
         }
-        System.out.println(numberOfExceptions);
-        return this.calculateProbability(numberOfExceptions);
-    }
 
-    protected double calculateProbability(int numberOfExceptions) {
-        double probability = Math.pow(numberOfExceptions, 1 - confidenceInterval) *
-                Math.pow((sampleSize - numberOfExceptions), confidenceInterval) *
-                CombinatoricsUtils.factorialDouble(sampleSize) /
-                (CombinatoricsUtils.factorialDouble(numberOfExceptions) *
-                        CombinatoricsUtils.factorialDouble(sampleSize - numberOfExceptions));
-        return probability;
+        double leftEnd = dist.inverseCumulativeProbability(significanceLevelForBacktest / 2);
+        leftEnd = leftEnd * Math.sqrt(sampleSet * this.confidenceInterval * (1 - this.confidenceInterval)) +
+                (sampleSet * this.confidenceInterval);
+        double rightEnd = dist.inverseCumulativeProbability(1 - (significanceLevelForBacktest / 2));
+        rightEnd = rightEnd * Math.sqrt(sampleSet * this.confidenceInterval * (1 - this.confidenceInterval)) +
+                (sampleSet * this.confidenceInterval);
+
+        if (rightEnd >= numberOfExceptions && leftEnd <= numberOfExceptions) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void setHistoricalValues() throws IOException {
@@ -160,25 +165,5 @@ public abstract class VarModelAssertion {
             }
         }
     }
-
-//    public static void main(String[] args) {
-//        VarModelAssertion tm = new VarModelAssertion();
-//        try {
-//            HashMap<String,ArrayList<Double>> data = tm.getData();
-//            Set<String> keys = data.keySet();
-//            String symbols[] = keys.toArray(new String[keys.size()]);
-//            for (int i = 0; i < symbols.length ; i++) {
-//                System.out.print(symbols[i] + " ");
-//                ArrayList<Double> temp = data.get(symbols[i]);
-//                for (int j = 0; j < temp.size() ; j++) {
-//                    System.out.print(temp.get(j) + " ");
-//                }
-//                System.out.println("");
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
 
 }
