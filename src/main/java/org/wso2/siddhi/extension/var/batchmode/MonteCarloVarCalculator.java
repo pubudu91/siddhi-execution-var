@@ -30,14 +30,14 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
      * @return
      */
     @Override
-    protected Object processData(Portfolio portfolio) {
+    public Object processData(Portfolio portfolio) {
         double[] terminalStockValues;
         double[] finalPortfolioValues = new double[numberOfTrials];
         String[] keys = portfolio.getAssets().keySet().toArray(new String[portfolio.getAssets().size()]);
         Asset tempAsset;
         LinkedList<Double> historicalValues;
         double todayMarketValue;
-        int numberOfShares=0;
+        int numberOfShares = 0;
 
         for (int i = 0; i < numberOfTrials; i++) {
             finalPortfolioValues[i] = 0;
@@ -46,7 +46,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
         for (int i = 0; i < keys.length; i++) {
 
             tempAsset = assetList.get(keys[i]);
-            numberOfShares=portfolio.getAssets().get(keys[i]);
+            numberOfShares = portfolio.getAssets().get(keys[i]);
             todayMarketValue = (tempAsset.getHistoricalValues().getLast() * numberOfShares);
             historicalValues = tempAsset.getHistoricalValues();
             terminalStockValues = new MonteCarloSimulation().simulation(this.numberOfTrials, this.calculationsPerDay,

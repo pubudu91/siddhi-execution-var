@@ -30,7 +30,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
      * @return the var of the portfolio
      */
     @Override
-    protected Object processData(Portfolio portfolio) {
+    public Object processData(Portfolio portfolio) {
         double priceReturns[][] = new double[batchSize - 1][portfolio.getAssets().size()];
         double portfolioTotal = 0.0;
         double weightage[][] = new double[1][portfolio.getAssets().size()];
