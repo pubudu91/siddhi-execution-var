@@ -80,13 +80,13 @@ public abstract class VarModelAssertion {
         for (int i = 0; i < sampleSize; i++) {
             actualValue[i] = 0;
         }
+
         for (int i = 0; i < key.length; i++) {
             priceListTemp = priceList.get(key[i]);
-//            endOfList = (sampleSet * sampleSize) > priceListTemp.size() ? priceListTemp.size() : sampleSet * sampleSize;
             endOfList = (sampleSetNumber + 1) * sampleSize;
             sharesAmount = portfolio.get(key[i]);
-            for (int j = this.getBatchSize() + (sampleSize * (sampleSetNumber)); j < endOfList; j++) {
-                actualValue[j - (sampleSize * sampleSetNumber)] += sharesAmount * priceListTemp.get(j);
+            for (int j = this.getBatchSize() + (sampleSize * (sampleSetNumber)); j < this.getBatchSize() + endOfList; j++) {
+                actualValue[j - (sampleSize * sampleSetNumber) - this.getBatchSize()] += sharesAmount * priceListTemp.get(j);
             }
         }
         return actualValue;
@@ -117,11 +117,12 @@ public abstract class VarModelAssertion {
         return data;
     }
 
-    public boolean AssertMethodValidity(int sampleSetNumber, double significanceLevelForBacktest) throws IOException {
+    public boolean StandardCoverageTest(int sampleSetNumber, double significanceLevelForBacktest) throws IOException {
         int numberOfExceptions = 0;
         double actualPriceTemp = 0;
         this.var = this.calculateVar();
         this.actualValue = this.calculateOriginal(this.getData(), sampleSetNumber);
+
         NormalDistribution dist = new NormalDistribution();
 
         for (int i = 0; i < sampleSize - 1; i++) {
@@ -132,11 +133,12 @@ public abstract class VarModelAssertion {
         }
 
         double leftEnd = dist.inverseCumulativeProbability(significanceLevelForBacktest / 2);
+
         leftEnd = leftEnd * Math.sqrt(sampleSize * this.confidenceInterval * (1 - this.confidenceInterval)) +
-                (sampleSize * this.confidenceInterval);
+                (sampleSize * (1 - this.confidenceInterval));
         double rightEnd = dist.inverseCumulativeProbability(1 - (significanceLevelForBacktest / 2));
         rightEnd = rightEnd * Math.sqrt(sampleSize * this.confidenceInterval * (1 - this.confidenceInterval)) +
-                (sampleSize * this.confidenceInterval);
+                (sampleSize * (1 - this.confidenceInterval));
 
         if (rightEnd >= numberOfExceptions && leftEnd <= numberOfExceptions) {
             return true;
