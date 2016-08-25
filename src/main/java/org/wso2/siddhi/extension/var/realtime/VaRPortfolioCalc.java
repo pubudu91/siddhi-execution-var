@@ -15,7 +15,6 @@ import java.util.*;
  * Created by dilini92 on 6/26/16.
  */
 public abstract class VaRPortfolioCalc {
-    private int outputEventCount = 0;
     protected double confidenceInterval = 0.95;
     protected int batchSize = 1000000000;
     protected Map<Integer, Portfolio> portfolioList;
@@ -66,7 +65,6 @@ public abstract class VaRPortfolioCalc {
             removeEvent(data[0].toString());
         }
 
-        String resultsString = "";
         JSONObject result = new JSONObject();
         Set<Integer> keys = portfolioList.keySet();
         Iterator<Integer> iterator = keys.iterator();
@@ -99,21 +97,15 @@ public abstract class VaRPortfolioCalc {
                     }
                 }
             }
-
-            if(Double.compare(var, -1.0) != 0){
-                outputEventCount++;
-                resultsString = result.toString().concat("=============================================================" +
-                        "========= " + outputEventCount + "   " + data[0] + "   " + data[1]);
-            }
         }
-        return result;
+        return result.toString();
     }
 
     public void getPortfolioValues(ExecutionPlanContext executionPlanContext){
         //get the portfolio details from the database
         try {
             Connection connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
-            String sql = "SELECT distinct(portfolioID) FROM portfolio natural join portfolioDetail";
+            String sql = "SELECT distinct(portfolioID) FROM portfolio natural join portfolioDetails";
             Statement stm = connection.createStatement();
             ResultSet rst = stm.executeQuery(sql);
 
@@ -123,7 +115,7 @@ public abstract class VaRPortfolioCalc {
             while(rst.next()){
                 portfolioID = rst.getInt(1);
                 Statement stm1 = connection.createStatement();
-                sql = "SELECT symbol, noOfShares from portfolioDetail where portfolioID = " + portfolioID;
+                sql = "SELECT symbol, noOfShares from portfolioDetails where portfolioID = " + portfolioID;
                 ResultSet symbolList = stm1.executeQuery(sql);
                 Map<String, Integer> assets = new HashMap<>();
                 Portfolio portfolio;
@@ -149,7 +141,7 @@ public abstract class VaRPortfolioCalc {
         Connection connection;
         try {
             connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
-            String sql = "select distinct(symbol) from symbol natural join portfolioDetail";
+            String sql = "select distinct(symbol) from symbol natural join portfolioDetails";
             Statement stm = connection.createStatement();
             ResultSet rst = stm.executeQuery(sql);
             Asset asset;
