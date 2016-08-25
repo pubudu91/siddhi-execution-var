@@ -1,26 +1,23 @@
 package org.wso2.siddhi.extension.var.backtest;
 
-import java.io.IOException;
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by flash on 7/14/16.
+ * Created by flash on 8/24/16.
  */
-public class HistoricalCalculatorAssertionTestCase {
+public class MonteCarloAssertionTest {
 
-    @org.junit.Test
-    public void testCalculateVar() throws IOException {
-
+    @Test
+    public void testCalculateVar() throws Exception {
         Map<String, Integer> portfolio = new HashMap<>();
         portfolio.put("FCBK", 210);
         portfolio.put("GOGL", 115);
         portfolio.put("APPL", 280);
 
-        HistoricalCalculatorAssertion calc = new HistoricalCalculatorAssertion(5, portfolio, 0.95, 251);
+        MonteCarloAssertion calc = new MonteCarloAssertion(500, portfolio, 0.95, 251);
         System.out.println(calc.StandardCoverageTest(0, 0.05));
-
     }
-
-
 }

@@ -1,10 +1,11 @@
 package org.wso2.siddhi.extension.var.backtest;
 
-import org.apache.commons.math3.util.CombinatoricsUtils;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.wso2.siddhi.extension.var.models.Asset;
+import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,8 +22,9 @@ public abstract class VarModelAssertion {
     private double actualValue[];
     private int sampleSize = 250;
     private double confidenceInterval = 0.95;
+    private double significanceLevelForBacktest = 0.05;
     private int batchSize = 250;
-    private Map<String, Asset> portfolio = null;
+    private Map<String, Integer> portfolio = null;
 
     public int getBatchSize() {
         return batchSize;
@@ -40,11 +42,11 @@ public abstract class VarModelAssertion {
         this.confidenceInterval = confidenceInterval;
     }
 
-    public Map<String, Asset> getPortfolio() {
+    public Map<String, Integer> getPortfolio() {
         return portfolio;
     }
 
-    public VarModelAssertion(int sampleSize, Map<String, Asset> portfolio, double confidenceInterval, int batchSize) {
+    public VarModelAssertion(int sampleSize, Map<String, Integer> portfolio, double confidenceInterval, int batchSize) {
         this.sampleSize = sampleSize;
         this.batchSize = batchSize;
         this.portfolio = portfolio;
@@ -66,10 +68,10 @@ public abstract class VarModelAssertion {
      * set of sample size of the price list
      *
      * @param priceList
-     * @param sampleSet
+     * @param sampleSetNumber
      * @return
      */
-    protected double[] calculateOriginal(Map<String, ArrayList<Double>> priceList, int sampleSet) {
+    protected double[] calculateOriginal(Map<String, ArrayList<Double>> priceList, int sampleSetNumber) {
         double[] actualValue = new double[this.sampleSize];
         ArrayList<Double> priceListTemp = null;
         int sharesAmount = 0, endOfList = 0;
@@ -78,13 +80,13 @@ public abstract class VarModelAssertion {
         for (int i = 0; i < sampleSize; i++) {
             actualValue[i] = 0;
         }
+
         for (int i = 0; i < key.length; i++) {
             priceListTemp = priceList.get(key[i]);
-//            endOfList = (sampleSet * sampleSize) > priceListTemp.size() ? priceListTemp.size() : sampleSet * sampleSize;
-            endOfList = (sampleSet + 1) * sampleSize;
-            sharesAmount = portfolio.get(key[i]).getNumberOfShares();
-            for (int j = sampleSize * (sampleSet); j < endOfList; j++) {
-                actualValue[j - (sampleSize * sampleSet)] += sharesAmount * priceListTemp.get(j);
+            endOfList = (sampleSetNumber + 1) * sampleSize;
+            sharesAmount = portfolio.get(key[i]);
+            for (int j = this.getBatchSize() + (sampleSize * (sampleSetNumber)); j < this.getBatchSize() + endOfList; j++) {
+                actualValue[j - (sampleSize * sampleSetNumber) - this.getBatchSize()] += sharesAmount * priceListTemp.get(j);
             }
         }
         return actualValue;
@@ -93,7 +95,7 @@ public abstract class VarModelAssertion {
     protected HashMap<String, ArrayList<Double>> getData() throws IOException {
 
         ClassLoader classLoader = getClass().getClassLoader();
-        File inputFile = new File(classLoader.getResource("data.xlsx").getFile());
+        File inputFile = new File(classLoader.getResource("datasorted.xlsx").getFile());
         FileInputStream inputStream = new FileInputStream(inputFile);
         HashMap<String, ArrayList<Double>> data = new HashMap<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -115,70 +117,51 @@ public abstract class VarModelAssertion {
         return data;
     }
 
-    public double AssertMethodValidity(int sampleSet) throws IOException {
+    public boolean StandardCoverageTest(int sampleSetNumber, double significanceLevelForBacktest) throws IOException {
         int numberOfExceptions = 0;
         double actualPriceTemp = 0;
-        this.setHistoricalValues();
         this.var = this.calculateVar();
-        this.actualValue = this.calculateOriginal(this.getData(), sampleSet);
+        this.actualValue = this.calculateOriginal(this.getData(), sampleSetNumber);
+
+        NormalDistribution dist = new NormalDistribution();
 
         for (int i = 0; i < sampleSize - 1; i++) {
             actualPriceTemp = this.actualValue[i + 1] - this.actualValue[i];
-            if (this.var[i] > 0 && actualPriceTemp < 0) {
+            if (this.var[i] > actualPriceTemp) {
                 numberOfExceptions++;
-            } else if (this.var[i] > 0 && actualPriceTemp > 0) {
-                if (actualPriceTemp > this.var[i]) {
-                    numberOfExceptions++;
-                }
-            } else if (this.var[i] > 0 && actualPriceTemp > 0) {
-                if (Math.abs(this.var[i]) < actualPriceTemp) {
-                    numberOfExceptions++;
-                }
             }
         }
-        System.out.println(numberOfExceptions);
-        return this.calculateProbability(numberOfExceptions);
+
+        double leftEnd = dist.inverseCumulativeProbability(significanceLevelForBacktest / 2);
+
+        leftEnd = leftEnd * Math.sqrt(sampleSize * this.confidenceInterval * (1 - this.confidenceInterval)) +
+                (sampleSize * (1 - this.confidenceInterval));
+        double rightEnd = dist.inverseCumulativeProbability(1 - (significanceLevelForBacktest / 2));
+        rightEnd = rightEnd * Math.sqrt(sampleSize * this.confidenceInterval * (1 - this.confidenceInterval)) +
+                (sampleSize * (1 - this.confidenceInterval));
+
+        if (rightEnd >= numberOfExceptions && leftEnd <= numberOfExceptions) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    protected double calculateProbability(int numberOfExceptions) {
-        double probability = Math.pow(numberOfExceptions, 1 - confidenceInterval) *
-                Math.pow((sampleSize - numberOfExceptions), confidenceInterval) *
-                CombinatoricsUtils.factorialDouble(sampleSize) /
-                (CombinatoricsUtils.factorialDouble(numberOfExceptions) *
-                        CombinatoricsUtils.factorialDouble(sampleSize - numberOfExceptions));
-        return probability;
-    }
-
-    public void setHistoricalValues() throws IOException {
+    public void setHistoricalValues(VaRPortfolioCalc portfolioHead) throws IOException {
         String[] key = this.portfolio.keySet().toArray(new String[this.portfolio.size()]);
-        ArrayList<Double> tempList = null;
-        Map<String, ArrayList<Double>> priceLists = this.getData();
+        Map<String, Asset> assetList = new HashMap<>();
+        Asset tempAsset;
+        HashMap<String, ArrayList<Double>> assetListPool = this.getData();
+        ArrayList<Double> priceList;
         for (int i = 0; i < key.length; i++) {
-            tempList = priceLists.get(key[i]);
-            for (int j = 0; j < this.batchSize; j++) {
-                portfolio.get(key[i]).addHistoricalValue(tempList.get(j));
+            priceList = assetListPool.get(key[i]);
+            tempAsset = new Asset(key[i]);
+            for (int j = 0; j < this.getBatchSize(); j++) {
+                tempAsset.addHistoricalValue(priceList.get(i));
             }
+            assetList.put(key[i], tempAsset);
         }
+        portfolioHead.assetList = assetList;
     }
-
-//    public static void main(String[] args) {
-//        VarModelAssertion tm = new VarModelAssertion();
-//        try {
-//            HashMap<String,ArrayList<Double>> data = tm.getData();
-//            Set<String> keys = data.keySet();
-//            String symbols[] = keys.toArray(new String[keys.size()]);
-//            for (int i = 0; i < symbols.length ; i++) {
-//                System.out.print(symbols[i] + " ");
-//                ArrayList<Double> temp = data.get(symbols[i]);
-//                for (int j = 0; j < temp.size() ; j++) {
-//                    System.out.print(temp.get(j) + " ");
-//                }
-//                System.out.println("");
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
 
 }

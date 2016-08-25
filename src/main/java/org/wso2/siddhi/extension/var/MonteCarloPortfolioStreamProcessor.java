@@ -28,7 +28,7 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
     private VaRPortfolioCalc varCalculator = null;
     private int paramPosition = 0;
     private int numberOfTrials = 2000;
-    private int calculationsPerDay = 200;
+    private int calculationsPerDay = 100;
     private double timeSlice = 0.01;
 
 
@@ -61,7 +61,10 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
             paramPosition = (attributeExpressionLength + 4) / 2;
             try {
-                batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
+                this.batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
+                this.timeSlice = ((double) attributeExpressionExecutors[4].execute(null));
+                this.numberOfTrials = ((Integer) attributeExpressionExecutors[5].execute(null));
+                this.calculationsPerDay = ((Integer) attributeExpressionExecutors[6].execute(null));
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Calculation interval, batch size and range should be of type int");
             }

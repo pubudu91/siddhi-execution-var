@@ -1,6 +1,5 @@
 package org.wso2.siddhi.extension.var.realtime;
 
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.json.JSONObject;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.extension.var.models.Asset;
@@ -20,7 +19,7 @@ public abstract class VaRPortfolioCalc {
     protected double confidenceInterval = 0.95;
     protected int batchSize = 1000000000;
     protected Map<Integer, Portfolio> portfolioList;
-    protected Map<String, Asset> assetList;
+    public Map<String, Asset> assetList;
     protected double price;
     protected String symbol;
 
@@ -107,14 +106,14 @@ public abstract class VaRPortfolioCalc {
                         "========= " + outputEventCount + "   " + data[0] + "   " + data[1]);
             }
         }
-        return resultsString;
+        return result;
     }
 
     public void getPortfolioValues(ExecutionPlanContext executionPlanContext){
         //get the portfolio details from the database
         try {
             Connection connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
-            String sql = "SELECT distinct(portfolioID) FROM portfolio natural join portfolioDetails";
+            String sql = "SELECT distinct(portfolioID) FROM portfolio natural join portfolioDetail";
             Statement stm = connection.createStatement();
             ResultSet rst = stm.executeQuery(sql);
 
@@ -124,7 +123,7 @@ public abstract class VaRPortfolioCalc {
             while(rst.next()){
                 portfolioID = rst.getInt(1);
                 Statement stm1 = connection.createStatement();
-                sql = "SELECT symbol, noOfShares from portfolioDetails where portfolioID = " + portfolioID;
+                sql = "SELECT symbol, noOfShares from portfolioDetail where portfolioID = " + portfolioID;
                 ResultSet symbolList = stm1.executeQuery(sql);
                 Map<String, Integer> assets = new HashMap<>();
                 Portfolio portfolio;
@@ -150,7 +149,7 @@ public abstract class VaRPortfolioCalc {
         Connection connection;
         try {
             connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
-            String sql = "select distinct(symbol) from symbol natural join portfolioDetails";
+            String sql = "select distinct(symbol) from symbol natural join portfolioDetail";
             Statement stm = connection.createStatement();
             ResultSet rst = stm.executeQuery(sql);
             Asset asset;

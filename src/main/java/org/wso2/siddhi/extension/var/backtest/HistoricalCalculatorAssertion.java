@@ -1,6 +1,6 @@
 package org.wso2.siddhi.extension.var.backtest;
 
-import org.wso2.siddhi.extension.var.models.Asset;
+import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
 
 import java.io.IOException;
@@ -11,10 +11,18 @@ import java.util.Map;
  * Created by flash on 7/14/16.
  */
 public class HistoricalCalculatorAssertion extends VarModelAssertion {
-    //    private Map<String, Asset> assets;
+
     private HistoricalVaRCalculator calculator = null;
 
-    public HistoricalCalculatorAssertion(int sampleSize, Map<String, Asset> portfolio,
+    /**
+     * sample size indicate number of actual p&l's and the calculated var values
+     * portfolio add symbol and number of shares hold by particular asset
+     * @param sampleSize
+     * @param portfolio
+     * @param confidenceInterval
+     * @param limit
+     */
+    public HistoricalCalculatorAssertion(int sampleSize, Map<String, Integer> portfolio,
                                          double confidenceInterval, int limit) {
         super(sampleSize, portfolio, confidenceInterval, limit);
 
@@ -23,17 +31,19 @@ public class HistoricalCalculatorAssertion extends VarModelAssertion {
     @Override
     protected Double[] calculateVar() throws IOException {
         Double tempVar[] = new Double[this.getSampleSize()];
-
+        Portfolio _portfolio = new Portfolio(1, this.getPortfolio());
         Map<String, ArrayList<Double>> priceLists = this.getData();
         String[] key = this.getPortfolio().keySet().toArray(new String[this.getPortfolio().size()]);
-        calculator = new HistoricalVaRCalculator(this.getBatchSize(), this.getConfidenceInterval(), this.getPortfolio());
+        calculator = new HistoricalVaRCalculator(this.getBatchSize(), this.getConfidenceInterval(), true);
+        this.setHistoricalValues(calculator);
+
         for (int i = 0; i < tempVar.length; i++) {
             for (int j = 0; j < key.length; j++) {
                 Object input[] = {key[j], priceLists.get(key[j]).get(i + this.getBatchSize())};
                 calculator.addEvent(input);
                 calculator.removeEvent(key[j]);
             }
-            tempVar[i] = (Double) calculator.processData();
+            tempVar[i] = (Double) calculator.processData(_portfolio);
         }
         return tempVar;
     }

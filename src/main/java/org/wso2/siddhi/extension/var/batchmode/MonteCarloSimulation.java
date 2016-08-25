@@ -67,7 +67,7 @@ public class MonteCarloSimulation {
         parameters.put("distributionMean", tempParameters.get("meanReturn"));
         parameters.put("standardDeviation", tempParameters.get("meanStandardDeviation"));
         parameters.put("timeSlice", timeSlice);
-        parameters.put("currentStockValue", currentStockPrice);
+//        parameters.put("currentStockValue", currentStockPrice);
 
         for (int i = 0; i < numberOfTrials; i++) {
             parameters.put("currentStockValue", currentStockPrice);
