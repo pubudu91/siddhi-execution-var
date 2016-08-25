@@ -45,7 +45,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
             asset = assetList.get(symbols[i]);
             noOfShares = portfolio.getAssets().get(symbols[i]);
             priceList = asset.getHistoricalValues();
-            portfolioTotal += priceList.getLast() * asset.getNumberOfShares();
+            portfolioTotal += priceList.getLast() * noOfShares;
 
             Double priceArray[] = priceList.toArray(new Double[batchSize]);
             for (int j = 0; j < priceArray.length - 1; j++) {
