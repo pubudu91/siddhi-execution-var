@@ -27,6 +27,7 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
     private double ci = 0.95;                                           // Confidence Interval
     private VaRPortfolioCalc varCalculator = null;
     private int paramPosition = 0;
+    private int i = 0;
 
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor, StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
@@ -36,9 +37,9 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
                 Object inputData[] = new Object[2];
                 inputData[0] = attributeExpressionExecutors[2].execute(complexEvent);
                 inputData[1] = attributeExpressionExecutors[3].execute(complexEvent);
-
+                i++;
                 Object outputData[] = new Object[1];
-                outputData[0] = varCalculator.calculateValueAtRisk(inputData);
+                outputData[0] = varCalculator.calculateValueAtRisk(inputData, i);
 
                 // Skip processing if user has specified calculation interval
                 if (outputData[0].toString().isEmpty()) {
@@ -56,7 +57,7 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
     protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
         // Capture constant inputs
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
-            paramPosition = (attributeExpressionLength + 4)/2;
+            paramPosition = (attributeExpressionLength + 4) / 2;
             try {
                 batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
             } catch (ClassCastException c) {
