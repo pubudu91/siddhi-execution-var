@@ -41,7 +41,7 @@ public class MonteCarloSimulation {
 
         double drift = (parameters.get("distributionMean") - (parameters.get("standardDeviation") *
                 parameters.get("standardDeviation")) / 2) * parameters.get("timeSlice");
-        double stochasticOffset = parameters.get("standardDeviation") * this.getRandomZVal() *
+        double stochasticOffset = parameters.get("standardDeviation") * parameters.get("randomValue") *
                 Math.sqrt(parameters.get("timeSlice"));
         return parameters.get("currentStockValue") * Math.exp(drift + stochasticOffset);
     }
@@ -67,6 +67,7 @@ public class MonteCarloSimulation {
         parameters.put("distributionMean", tempParameters.get("meanReturn"));
         parameters.put("standardDeviation", tempParameters.get("meanStandardDeviation"));
         parameters.put("timeSlice", timeSlice);
+        parameters.put("randomValue", this.getRandomZVal());
 //        parameters.put("currentStockValue", currentStockPrice);
 
         for (int i = 0; i < numberOfTrials; i++) {

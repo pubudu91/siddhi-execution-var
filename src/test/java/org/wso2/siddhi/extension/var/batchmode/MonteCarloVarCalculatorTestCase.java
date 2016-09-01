@@ -28,22 +28,17 @@ public class MonteCarloVarCalculatorTestCase {
         Map<String, Asset> assets = new HashMap<>();
         Asset asset_1 = new Asset("APPL");
         Asset asset_2 = new Asset("GOOG");
-//        Asset asset_3=new Asset(150);
+
         for (int i = 0; i < historicValues_1.length; i++) {
-//            asset_1.addHistoricalValue(new Random().nextInt(4)+20+new Random().nextDouble());
             asset_1.addHistoricalValue(historicValues_1[i]);
         }
 
         assets.put("GOOGL", asset_1);
         for (int i = 0; i < set_2.length; i++) {
-//            asset_2.addHistoricalValue(new Random().nextInt(8) + 30 + new Random().nextDouble());
             asset_2.addHistoricalValue(set_2[i]);
         }
         assets.put("APPL", asset_2);
-//        for (int i = 0; i < 250; i++) {
-//            asset_3.addHistoricalValue(new Random().nextInt(6) + 20 + new Random().nextDouble());
-//        }
-//        assets.put("APPL", asset_3);
+
         Map<String, Integer> assetSet = new HashMap<>();
         assetSet.put("APPL", 100);
         assetSet.put("GOOG", 130);
