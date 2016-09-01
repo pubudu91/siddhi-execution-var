@@ -49,7 +49,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
 
                 // Skip processing if user has specified calculation interval
-                if (outputData[0].toString().isEmpty() || outputData[0].toString().startsWith("=")) { //if there is no output
+                if (outputData[0] == null) { //if there is no output
                     streamEventChunk.remove();
                 } else {    //if there is an output, publish it to the output stream
                     complexEventPopulater.populateComplexEvent(complexEvent, outputData);
