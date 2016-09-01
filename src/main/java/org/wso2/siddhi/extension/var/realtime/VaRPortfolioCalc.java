@@ -24,6 +24,7 @@ public abstract class VaRPortfolioCalc {
     protected String symbol;
 
     /**
+     *
      * @param limit
      * @param ci
      */
@@ -35,9 +36,10 @@ public abstract class VaRPortfolioCalc {
     }
 
     /**
+     *
      * @param data
      */
-    public void addEvent(Object data[]) {
+    public void addEvent(Object data[]){
         price = ((Number) data[1]).doubleValue();
         symbol = data[0].toString();
 
@@ -49,26 +51,15 @@ public abstract class VaRPortfolioCalc {
 
     /**
      * removes the oldest element from a given portfolio
-     *
      * @param symbol
      */
-    public void removeEvent(String symbol) {
+    public void removeEvent(String symbol){
         LinkedList<Double> priceList = assetList.get(symbol).getHistoricalValues();
-//        System.out.println(symbol);
-//        System.out.println("B4");
-//        System.out.println(priceList.size());
-//        System.out.println(priceList.getFirst());
-//        System.out.println(priceList.getLast());
         priceList.remove(0);
-//        System.out.println("AFTER");
-//        System.out.println(priceList.size());
-//        System.out.println(priceList.getFirst());
-//        System.out.println(priceList.getLast());
     }
-
     protected abstract Object processData(Portfolio portfolio);
 
-    public Object calculateValueAtRisk(Object data[], int i) {
+    public Object calculateValueAtRisk(Object data[]) {
         addEvent(data);
         //if the given portfolio has the symbol and number of historical value exceeds the batch size, remove the event
         if (assetList.get(data[0]) != null && assetList.get(data[0]).getHistoricalValues().size() > batchSize) {
@@ -83,14 +74,14 @@ public abstract class VaRPortfolioCalc {
         double var = -1.0;
 
         //if the given symbol is in the assetList
-        if (assetList.get(data[0]) != null) {
+        if(assetList.get(data[0]) != null){
             //for each portfolio
-            while (iterator.hasNext()) {
+            while(iterator.hasNext()) {
                 key = iterator.next();
                 Portfolio portfolio = portfolioList.get(key);
 
                 //if the portfolio has the asset, calculate VaR
-                if (portfolio.getAssets().get(data[0]) != null) {
+                if(portfolio.getAssets().get(data[0]) != null) {
                     //counts the number of stock symbols which have already had the given batch size number of events
                     int count = 0;
 
@@ -108,36 +99,30 @@ public abstract class VaRPortfolioCalc {
                     }
                 }
             }
-
-            if (Double.compare(var, -1.0) != 0) {
-                outputEventCount++;
-                resultsString = result.toString().concat("=============================================================" +
-                        "========= " + outputEventCount + "   " + data[0] + "   " + data[1]);
-            }
         }
-        return result + " event number : " + i;
+        return result.toString();
     }
 
-    public void getPortfolioValues(ExecutionPlanContext executionPlanContext) {
+    public void getPortfolioValues(ExecutionPlanContext executionPlanContext){
         //get the portfolio details from the database
         try {
             Connection connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
-            String sql = "SELECT distinct(portfolioID) FROM portfolio natural join portfolioDetails";
+            String sql = "SELECT distinct(portfolioID) FROM portfolio natural join portfolioDetail";
             Statement stm = connection.createStatement();
             ResultSet rst = stm.executeQuery(sql);
 
             int portfolioID;
 
             //for each portfolio
-            while (rst.next()) {
+            while(rst.next()){
                 portfolioID = rst.getInt(1);
                 Statement stm1 = connection.createStatement();
-                sql = "SELECT symbol, noOfShares from portfolioDetails where portfolioID = " + portfolioID;
+                sql = "SELECT symbol, noOfShares from portfolioDetail where portfolioID = " + portfolioID;
                 ResultSet symbolList = stm1.executeQuery(sql);
                 Map<String, Integer> assets = new HashMap<>();
                 Portfolio portfolio;
 
-                while (symbolList.next()) {
+                while(symbolList.next()){
                     assets.put(symbolList.getString(1), symbolList.getInt(2));
                 }
 
@@ -150,20 +135,20 @@ public abstract class VaRPortfolioCalc {
         }
     }
 
-    public Map<Integer, Portfolio> getPortfolioList() {
+    public Map<Integer, Portfolio> getPortfolioList(){
         return portfolioList;
     }
 
-    public void readAssetList(ExecutionPlanContext executionPlanContext) {
+    public void readAssetList(ExecutionPlanContext executionPlanContext){
         Connection connection;
         try {
             connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
-            String sql = "select distinct(symbol) from symbol natural join portfolioDetails";
+            String sql = "select distinct(symbol) from symbol natural join portfolioDetail";
             Statement stm = connection.createStatement();
             ResultSet rst = stm.executeQuery(sql);
             Asset asset;
 
-            while (rst.next()) {
+            while(rst.next()){
                 asset = new Asset(rst.getString(1));
                 assetList.put(rst.getString(1), asset);
             }
