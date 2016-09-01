@@ -47,7 +47,7 @@ i++;
                 inputData[1] = attributeExpressionExecutors[3].execute(complexEvent);
 
                 Object outputData[] = new Object[1];
-                outputData[0] = varCalculator.calculateValueAtRisk(inputData,i);
+                outputData[0] = varCalculator.calculateValueAtRisk(inputData);
 
                 // Skip processing if user has specified calculation interval
                 if (outputData[0] == null) { //if there is no output
