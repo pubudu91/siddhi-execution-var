@@ -30,7 +30,7 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
     private int numberOfTrials = 2000;
     private int calculationsPerDay = 100;
     private double timeSlice = 0.01;
-
+private int i=0;
 
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor, StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
@@ -40,9 +40,9 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
                 Object inputData[] = new Object[2];
                 inputData[0] = attributeExpressionExecutors[2].execute(complexEvent);
                 inputData[1] = attributeExpressionExecutors[3].execute(complexEvent);
-
+i++;
                 Object outputData[] = new Object[1];
-                outputData[0] = varCalculator.calculateValueAtRisk(inputData);
+                outputData[0] = varCalculator.calculateValueAtRisk(inputData,i);
 
                 // Skip processing if user has specified calculation interval
                 if (outputData[0] == null) { //if there is no output

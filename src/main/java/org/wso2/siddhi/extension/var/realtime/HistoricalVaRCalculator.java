@@ -45,8 +45,11 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
             asset = assetList.get(symbols[i]);
             noOfShares = portfolio.getAssets().get(symbols[i]);
             priceList = asset.getHistoricalValues();
-            portfolioTotal += priceList.getLast() * noOfShares;
 
+            portfolioTotal += priceList.getLast() * noOfShares;
+//            System.out.println(priceList.getFirst());
+//            System.out.println(priceList.getLast());
+//            System.out.println(priceList.size());
             Double priceArray[] = priceList.toArray(new Double[batchSize]);
             for (int j = 0; j < priceArray.length - 1; j++) {
                 //calculate the price return value Rj = ln(Sj+1/Sj)
@@ -73,10 +76,12 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
             if(hasWeight) {
                 //add each value to create the histogram
                 stat.addValue(portfolioTotal - total);
+
             }else{
                 stat.addValue(total);
             }
         }
+
         return stat.getPercentile((1 - confidenceInterval) * 100);
     }
 }

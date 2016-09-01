@@ -5,6 +5,7 @@ import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -17,14 +18,15 @@ public class HistoricalCalculatorAssertion extends VarModelAssertion {
     /**
      * sample size indicate number of actual p&l's and the calculated var values
      * portfolio add symbol and number of shares hold by particular asset
+     *
      * @param sampleSize
      * @param portfolio
      * @param confidenceInterval
      * @param limit
      */
     public HistoricalCalculatorAssertion(int sampleSize, Map<String, Integer> portfolio,
-                                         double confidenceInterval, int limit) {
-        super(sampleSize, portfolio, confidenceInterval, limit);
+                                         double confidenceInterval, int limit, int sampleSetNumber) {
+        super(sampleSize, portfolio, confidenceInterval, limit, sampleSetNumber);
 
     }
 
@@ -39,7 +41,8 @@ public class HistoricalCalculatorAssertion extends VarModelAssertion {
 
         for (int i = 0; i < tempVar.length; i++) {
             for (int j = 0; j < key.length; j++) {
-                Object input[] = {key[j], priceLists.get(key[j]).get(i + this.getBatchSize())};
+                Object input[] = {key[j], priceLists.get(key[j]).get(i + this.getBatchSize() + (this.getSampleSize() *
+                        this.getSampleSetNumber()))};
                 calculator.addEvent(input);
                 calculator.removeEvent(key[j]);
             }

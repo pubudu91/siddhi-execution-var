@@ -15,6 +15,7 @@ import java.util.*;
  * Created by dilini92 on 6/26/16.
  */
 public abstract class VaRPortfolioCalc {
+    private int outputEventCount = 0;
     protected double confidenceInterval = 0.95;
     protected int batchSize = 1000000000;
     protected Map<Integer, Portfolio> portfolioList;
@@ -65,6 +66,7 @@ public abstract class VaRPortfolioCalc {
             removeEvent(data[0].toString());
         }
 
+        String resultsString = "";
         JSONObject result = new JSONObject();
         Set<Integer> keys = portfolioList.keySet();
         Iterator<Integer> iterator = keys.iterator();
