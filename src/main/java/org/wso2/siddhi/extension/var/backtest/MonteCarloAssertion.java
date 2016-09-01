@@ -12,8 +12,8 @@ import java.util.Map;
  */
 public class MonteCarloAssertion extends VarModelAssertion {
 
-    public MonteCarloAssertion(int sampleSize, Map<String, Integer> portfolio, double confidenceInterval, int batchSize) {
-        super(sampleSize, portfolio, confidenceInterval, batchSize);
+    public MonteCarloAssertion(int sampleSize, Map<String, Integer> portfolio, double confidenceInterval, int batchSize,int sampleSetNumber) {
+        super(sampleSize, portfolio, confidenceInterval, batchSize,sampleSetNumber);
     }
 
     @Override
@@ -27,7 +27,8 @@ public class MonteCarloAssertion extends VarModelAssertion {
 
         for (int i = 0; i < tempVar.length; i++) {
             for (int j = 0; j < key.length; j++) {
-                Object input[] = {key[j], priceLists.get(key[j]).get(i + this.getBatchSize())};
+                Object input[] = {key[j], priceLists.get(key[j]).get(i + this.getBatchSize() + (this.getSampleSize() *
+                        this.getSampleSetNumber()))};
                 calculator.addEvent(input);
                 calculator.removeEvent(key[j]);
             }

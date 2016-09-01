@@ -15,6 +15,7 @@ import java.util.*;
  * Created by dilini92 on 6/26/16.
  */
 public abstract class VaRPortfolioCalc {
+    private int outputEventCount = 0;
     protected double confidenceInterval = 0.95;
     protected int batchSize = 1000000000;
     protected Map<Integer, Portfolio> portfolioList;
@@ -65,9 +66,11 @@ public abstract class VaRPortfolioCalc {
             removeEvent(data[0].toString());
         }
 
+        String resultsString = "";
         JSONObject result = new JSONObject();
         Set<Integer> keys = portfolioList.keySet();
         Iterator<Integer> iterator = keys.iterator();
+        String resultString = "";
         int key;
         double var = -1.0;
 
@@ -93,21 +96,26 @@ public abstract class VaRPortfolioCalc {
 
                     if (count == batchSize * portfolio.getAssets().size()) {
                         var = Double.parseDouble(processData(portfolio).toString());
-                        result.put("Portfolio: " + portfolio.getID(), var);
+                        result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
                     }
                 }
             }
         }
-        return result.toString();
+
+        //if no var has been calculated
+        if(result.length() == 0)
+            return null;
+        return result.toString().concat(resultString);
     }
 
     public void getPortfolioValues(ExecutionPlanContext executionPlanContext){
         //get the portfolio details from the database
         try {
-            Connection connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
-            String sql = "SELECT distinct(portfolioID) FROM portfolio natural join portfolioDetails";
+            Connection connection = executionPlanContext.getSiddhiContext().
+                    getSiddhiDataSource(RealTimeVaRConstants.DATA_SOURCE_NAME).getConnection();
+            String sql;
             Statement stm = connection.createStatement();
-            ResultSet rst = stm.executeQuery(sql);
+            ResultSet rst = stm.executeQuery(RealTimeVaRConstants.PORTFOLIO_IDS_SQL);
 
             int portfolioID;
 
@@ -115,7 +123,7 @@ public abstract class VaRPortfolioCalc {
             while(rst.next()){
                 portfolioID = rst.getInt(1);
                 Statement stm1 = connection.createStatement();
-                sql = "SELECT symbol, noOfShares from portfolioDetails where portfolioID = " + portfolioID;
+                sql = RealTimeVaRConstants.PORTFOLIO_DETAILS_SQL + portfolioID;
                 ResultSet symbolList = stm1.executeQuery(sql);
                 Map<String, Integer> assets = new HashMap<>();
                 Portfolio portfolio;
@@ -133,15 +141,12 @@ public abstract class VaRPortfolioCalc {
         }
     }
 
-    public Map<Integer, Portfolio> getPortfolioList(){
-        return portfolioList;
-    }
-
     public void readAssetList(ExecutionPlanContext executionPlanContext){
         Connection connection;
         try {
-            connection = executionPlanContext.getSiddhiContext().getSiddhiDataSource("AnalyticsDataSource").getConnection();
-            String sql = "select distinct(symbol) from symbol natural join portfolioDetails";
+            connection = executionPlanContext.getSiddhiContext().
+                    getSiddhiDataSource(RealTimeVaRConstants.DATA_SOURCE_NAME).getConnection();
+            String sql = RealTimeVaRConstants.SYMBOLS_SQL;
             Statement stm = connection.createStatement();
             ResultSet rst = stm.executeQuery(sql);
             Asset asset;

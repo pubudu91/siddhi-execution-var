@@ -13,16 +13,6 @@ import java.util.Map;
 public class MonteCarloVarCalculatorTestCase {
 
     @Test
-    public void testAddEvent() throws Exception {
-
-    }
-
-    @Test
-    public void testRemoveEvent() throws Exception {
-
-    }
-
-    @Test
     public void testProcessData() throws Exception {
         int limit = 250, calculationsPerDay = 100, numberOfTrials = 20;
         double historicValues_1[] = {
