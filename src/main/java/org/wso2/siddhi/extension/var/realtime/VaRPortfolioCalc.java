@@ -15,7 +15,6 @@ import java.util.*;
  * Created by dilini92 on 6/26/16.
  */
 public abstract class VaRPortfolioCalc {
-    private int outputEventCount = 0;
     protected double confidenceInterval = 0.95;
     protected int batchSize = 1000000000;
     protected Map<Integer, Portfolio> portfolioList;
@@ -33,6 +32,14 @@ public abstract class VaRPortfolioCalc {
         batchSize = limit;
         portfolioList = new HashMap<>();
         assetList = new HashMap<>();
+    }
+
+    /**
+     * for testing purposes
+     * @param assetList
+     */
+    public void setAssetList(Map<String, Asset> assetList){
+        this.assetList = assetList;
     }
 
     /**
@@ -57,8 +64,19 @@ public abstract class VaRPortfolioCalc {
         LinkedList<Double> priceList = assetList.get(symbol).getHistoricalValues();
         priceList.remove(0);
     }
+
+    /**
+     *
+     * @param portfolio
+     * @return
+     */
     protected abstract Object processData(Portfolio portfolio);
 
+    /**
+     *
+     * @param data
+     * @return
+     */
     public Object calculateValueAtRisk(Object data[]) {
         addEvent(data);
         //if the given portfolio has the symbol and number of historical value exceeds the batch size, remove the event
@@ -66,13 +84,12 @@ public abstract class VaRPortfolioCalc {
             removeEvent(data[0].toString());
         }
 
-        String resultsString = "";
         JSONObject result = new JSONObject();
         Set<Integer> keys = portfolioList.keySet();
         Iterator<Integer> iterator = keys.iterator();
         String resultString = "";
         int key;
-        double var = -1.0;
+        double var;
 
         //if the given symbol is in the assetList
         if(assetList.get(data[0]) != null){
@@ -108,6 +125,10 @@ public abstract class VaRPortfolioCalc {
         return result.toString().concat(resultString);
     }
 
+    /**
+     *
+     * @param executionPlanContext
+     */
     public void getPortfolioValues(ExecutionPlanContext executionPlanContext){
         //get the portfolio details from the database
         try {
@@ -141,6 +162,10 @@ public abstract class VaRPortfolioCalc {
         }
     }
 
+    /**
+     *
+     * @param executionPlanContext
+     */
     public void readAssetList(ExecutionPlanContext executionPlanContext){
         Connection connection;
         try {

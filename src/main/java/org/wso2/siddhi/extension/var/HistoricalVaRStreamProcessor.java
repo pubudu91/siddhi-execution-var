@@ -27,7 +27,6 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     private VaRPortfolioCalc varCalculator = null;
     private int paramPosition = 0;
     private boolean hasWeight = false;
-    private int i=0;
     /**
      *
      * @param streamEventChunk      the event chunk that need to be processed
@@ -40,7 +39,6 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
-i++;
                 //get the symbol and price attributes from the stream to process
                 Object inputData[] = new Object[2];
                 inputData[0] = attributeExpressionExecutors[2].execute(complexEvent);
