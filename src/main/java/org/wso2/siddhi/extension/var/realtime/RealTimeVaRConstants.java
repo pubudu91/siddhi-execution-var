@@ -5,11 +5,11 @@ package org.wso2.siddhi.extension.var.realtime;
  */
 public class RealTimeVaRConstants {
     public static String PORTFOLIO = "Portfolio";
-    public static String DATA_SOURCE_NAME = "AnalyticsDataSource";
+    public static String DATA_SOURCE_NAME = "VAR_CONFIGURATIONS";
 
     //SQL queries
     public static String PORTFOLIO_IDS_SQL = "SELECT distinct(portfolioID) FROM portfolio natural join " +
-            "portfolioDetails";
+            "portfolioDetails where portfolio.portfolioID= 3";
     public static String PORTFOLIO_DETAILS_SQL = "SELECT symbol, noOfShares from portfolioDetails where portfolioID = ";
     public static String SYMBOLS_SQL = "select distinct(symbol) from symbol natural join portfolioDetails";
 }

@@ -68,12 +68,13 @@ public class MonteCarloSimulation {
         parameters.put("standardDeviation", tempParameters.get("meanStandardDeviation"));
         parameters.put("timeSlice", timeSlice);
         parameters.put("randomValue", this.getRandomZVal());
-//        parameters.put("currentStockValue", currentStockPrice);
+        parameters.put("currentStockValue", currentStockPrice);
 
         for (int i = 0; i < numberOfTrials; i++) {
             parameters.put("currentStockValue", currentStockPrice);
             for (int j = 0; j < calculationsPerDay; j++) {
                 tempStockValue = this.getBrownianMotionOutput(parameters);
+                parameters.put("randomValue", this.getRandomZVal());
                 parameters.put("currentStockValue", tempStockValue);
             }
             terminalStockValues[i] = tempStockValue;
