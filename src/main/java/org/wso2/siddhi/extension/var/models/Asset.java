@@ -10,10 +10,19 @@ public class Asset {
     private double currentStockPrice;
     private String symbol;
     private int numberOfShares;
+    private double[] simulatedList;
 
-    public Asset(String symbol){
+    public Asset(String symbol) {
         this.symbol = symbol;
         historicalValues = new LinkedList<>();
+    }
+
+    public double[] getSimulatedList() {
+        return simulatedList;
+    }
+
+    public void setSimulatedList(double[] simulatedList) {
+        this.simulatedList = simulatedList;
     }
 
     public LinkedList<Double> getHistoricalValues() {
@@ -28,9 +37,11 @@ public class Asset {
         this.numberOfShares = numberOfShares;
     }
 
-    public void addHistoricalValue(double price){
+    public void addHistoricalValue(double price) {
         historicalValues.add(price);
     }
 
-    public String getSymbol(){ return symbol; }
+    public String getSymbol() {
+        return symbol;
+    }
 }

@@ -9,6 +9,24 @@ import java.util.Map;
 public class Portfolio {
     private int ID;
     private Map<String, Integer> assets;
+    private double[] returnList;
+    private String incomingEventLabel = null;
+
+    public String getIncomingEventLabel() {
+        return incomingEventLabel;
+    }
+
+    public void setIncomingEventLabel(String incomingEventLabel) {
+        this.incomingEventLabel = incomingEventLabel;
+    }
+
+    public double[] getReturnList() {
+        return returnList;
+    }
+
+    public void setReturnList(double[] returnList) {
+        this.returnList = returnList;
+    }
 
     public Portfolio() {
         assets = new HashMap<>();

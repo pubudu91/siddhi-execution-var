@@ -9,7 +9,7 @@ public class RealTimeVaRConstants {
 
     //SQL queries
     public static String PORTFOLIO_IDS_SQL = "SELECT distinct(portfolioID) FROM portfolio natural join " +
-            "portfolioDetails where portfolio.portfolioID= 3";
+            "portfolioDetails";
     public static String PORTFOLIO_DETAILS_SQL = "SELECT symbol, noOfShares from portfolioDetails where portfolioID = ";
     public static String SYMBOLS_SQL = "select distinct(symbol) from symbol natural join portfolioDetails";
 }
