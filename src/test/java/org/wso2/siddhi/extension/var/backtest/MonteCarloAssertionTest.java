@@ -18,11 +18,10 @@ public class MonteCarloAssertionTest {
         int i = 0, passedCount = 0;
         Random rnd = new Random();
         Map<String, Integer> portfolio = new HashMap<>();
-//        for (int j = 0; j < 10; j++) {
             portfolio.put("IBM", rnd.nextInt(100));
             portfolio.put("GE", rnd.nextInt(300));
             portfolio.put("XOM", rnd.nextInt(500));
-        System.out.println("Nipuns Sanklapa");
+
             while (true) {
                 calc = new MonteCarloAssertion(500, portfolio, 0.95, 251, i);
                 try {
@@ -38,6 +37,6 @@ public class MonteCarloAssertionTest {
 
             System.out.println(passedCount);
             System.out.println("Passed Probability:" + passedCount / i);
-//        }
+
     }
 }
