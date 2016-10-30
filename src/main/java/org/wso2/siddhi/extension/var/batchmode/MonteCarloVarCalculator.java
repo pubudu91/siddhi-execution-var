@@ -15,6 +15,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
     private int numberOfTrials;
     private int calculationsPerDay;
     private double timeSlice;
+    private boolean toggle = true;
 
     public MonteCarloVarCalculator(int limit, double ci,
                                    int numberOfTrials, int calculationsPerDay, double timeSlice) {
@@ -42,21 +43,52 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
         for (int i = 0; i < numberOfTrials; i++) {
             finalPortfolioValues[i] = 0;
         }
+//do simulation for all the assets in the portfolio
+        if (toggle == true) {
+            for (int i = 0; i < keys.length; i++) {
 
-        for (int i = 0; i < keys.length; i++) {
-
-            tempAsset = assetList.get(keys[i]);
-            numberOfShares = portfolio.getAssets().get(keys[i]);
-            todayMarketValue = (tempAsset.getHistoricalValues().getLast() * numberOfShares);
+                tempAsset = assetList.get(keys[i]);
+                numberOfShares = portfolio.getAssets().get(keys[i]);
+                todayMarketValue = (tempAsset.getHistoricalValues().getLast() * numberOfShares);
+                historicalValues = tempAsset.getHistoricalValues();
+                terminalStockValues = new MonteCarloSimulation().simulation(this.numberOfTrials, this.calculationsPerDay,
+                        historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
+                tempAsset.setSimulatedList(terminalStockValues);
+                for (int j = 0; j < terminalStockValues.length; j++) {
+                    finalPortfolioValues[j] += (todayMarketValue - (terminalStockValues[j] * numberOfShares));
+                }
+            }
+            toggle = false;
+        } else {
+            /*
+            do simulation for the changed asset only
+             */
+            tempAsset = assetList.get(portfolio.getIncomingEventLabel());
+//            numberOfShares = portfolio.getAssets().get(portfolio.getIncomingEventLabel());
+//            todayMarketValue = (tempAsset.getHistoricalValues().getLast() * numberOfShares);
             historicalValues = tempAsset.getHistoricalValues();
             terminalStockValues = new MonteCarloSimulation().simulation(this.numberOfTrials, this.calculationsPerDay,
                     historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
+            tempAsset.setSimulatedList(terminalStockValues);
 
-            for (int j = 0; j < terminalStockValues.length; j++) {
-                finalPortfolioValues[j] += (todayMarketValue - (terminalStockValues[j] * numberOfShares));
+
+            for (int i = 0; i < keys.length; i++) {
+
+                tempAsset = assetList.get(keys[i]);
+                numberOfShares = portfolio.getAssets().get(keys[i]);
+                todayMarketValue = (tempAsset.getHistoricalValues().getLast() * numberOfShares);
+//                historicalValues = tempAsset.getHistoricalValues();
+//                terminalStockValues = new MonteCarloSimulation().simulation(this.numberOfTrials, this.calculationsPerDay,
+//                        historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
+//                tempAsset.setSimulatedList(terminalStockValues);
+                terminalStockValues = tempAsset.getSimulatedList();
+                for (int j = 0; j < terminalStockValues.length; j++) {
+                    finalPortfolioValues[j] += (todayMarketValue - (terminalStockValues[j] * numberOfShares));
+                }
             }
-        }
 
+        }
+        portfolio.setReturnList(finalPortfolioValues);
         return new DescriptiveStatistics(finalPortfolioValues).getPercentile((1 - confidenceInterval) * 100);
     }
 
