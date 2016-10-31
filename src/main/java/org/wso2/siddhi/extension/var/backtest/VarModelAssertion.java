@@ -89,7 +89,7 @@ public abstract class VarModelAssertion {
     protected HashMap<String, ArrayList<Double>> getData() throws IOException {
 
         ClassLoader classLoader = getClass().getClassLoader();
-        File inputFile = new File(classLoader.getResource("Stock_Data.xlsx").getFile());
+        File inputFile = new File(classLoader.getResource("Stock_Data_edited.xlsx").getFile());
         FileInputStream inputStream = new FileInputStream(inputFile);
         HashMap<String, ArrayList<Double>> data = new HashMap<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
