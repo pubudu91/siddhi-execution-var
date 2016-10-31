@@ -29,12 +29,12 @@ public class ParametricCalculatorAssertion extends VarModelAssertion {
         this.setHistoricalValues(calculator);
 
         for (int i = 0; i < tempVar.length; i++) {
-            int j = rand.nextInt(key.length - 1);
-            Object input[] = {key[j], priceLists.get(key[j]).get(i + this.getBatchSize() + (this.getSampleSize() *
-                    this.getSampleSetNumber()))};
-            calculator.addEvent(input);
-            calculator.removeEvent(key[j]);
-
+            for (int j = 0; j < key.length; j++) {
+                Object input[] = {key[j], priceLists.get(key[j]).get(i + this.getBatchSize() + (this.getSampleSize() *
+                        this.getSampleSetNumber()))};
+                calculator.addEvent(input);
+                calculator.removeEvent(key[j]);
+            }
             tempVar[i] = (Double) calculator.processData(_portfolio);
         }
         return tempVar;
