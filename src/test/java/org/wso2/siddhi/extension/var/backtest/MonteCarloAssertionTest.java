@@ -21,8 +21,6 @@ public class MonteCarloAssertionTest {
         portfolio.put("IBM", rnd.nextInt(100));
         portfolio.put("GE", rnd.nextInt(300));
         portfolio.put("XOM", rnd.nextInt(500));
-<<<<<<< HEAD
-=======
         portfolio.put("APPL", rnd.nextInt(500));
         portfolio.put("MCSFT", rnd.nextInt(500));
         portfolio.put("NOK", rnd.nextInt(500));
@@ -34,7 +32,7 @@ public class MonteCarloAssertionTest {
         portfolio.put("ASS_1", rnd.nextInt(500));
         portfolio.put("ASS_2", rnd.nextInt(500));
         portfolio.put("ASS_3", rnd.nextInt(500));
->>>>>>> var_methods_refined
+
 
         while (true) {
             calc = new MonteCarloAssertion(500, portfolio, 0.95, 251, i);
@@ -50,11 +48,8 @@ public class MonteCarloAssertionTest {
         }
 
         System.out.println(passedCount);
-<<<<<<< HEAD
-        System.out.println("Passed Probability:" + (double) passedCount / i);
-=======
         System.out.println("Passed Probability: " + (double) (passedCount * 100 / i)+"%");
->>>>>>> var_methods_refined
+
 
     }
 }
