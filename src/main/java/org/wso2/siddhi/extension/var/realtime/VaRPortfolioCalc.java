@@ -111,6 +111,7 @@ public abstract class VaRPortfolioCalc {
                     }
 
                     if (count == batchSize * portfolio.getAssets().size()) {
+                        portfolio.setIncomingEventLabel((String) data[0]);
                         var = Double.parseDouble(processData(portfolio).toString());
                         long end = System.currentTimeMillis();
                         result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
