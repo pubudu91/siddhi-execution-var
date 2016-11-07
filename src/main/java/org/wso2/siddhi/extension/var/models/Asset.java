@@ -10,7 +10,15 @@ public class Asset {
     private double currentStockPrice;
     private String symbol;
     private int numberOfShares;
+    private double[] simulatedList;
 
+    public double[] getSimulatedList() {
+        return simulatedList;
+    }
+
+    public void setSimulatedList(double[] simulatedList) {
+        this.simulatedList = simulatedList;
+    }
 
     public Asset(String symbol) {
         this.symbol = symbol;
