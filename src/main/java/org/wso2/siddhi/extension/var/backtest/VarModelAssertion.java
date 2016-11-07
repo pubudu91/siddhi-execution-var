@@ -122,8 +122,6 @@ public abstract class VarModelAssertion {
 
         for (int i = 0; i < sampleSize - 1; i++) {
             actualLoss = this.actualValue[i + 1] - this.actualValue[i];
-            System.out.println("Actual Loss :"+actualLoss);
-            System.out.println("Calculated Loss :"+this.var[i]);
             if (this.var[i] > actualLoss) {
                 numberOfExceptions++;
             }
