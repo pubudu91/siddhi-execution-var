@@ -16,6 +16,14 @@ public class MonteCarloSimulation {
     private NormalDistribution distribution = null;
     private DescriptiveStatistics stat = null;
     private double randomZValue = 0.0;
+    public static double[] finalSimulatedValues;
+
+    public MonteCarloSimulation() {
+    }
+
+    public MonteCarloSimulation(int numberOfTrials) {
+        MonteCarloSimulation.finalSimulatedValues = new double[numberOfTrials];
+    }
 
     public double getRandomZValue() {
         return randomZValue;
@@ -121,5 +129,91 @@ public class MonteCarloSimulation {
         parameters.put("meanStandardDeviation", stat.getStandardDeviation());
         return parameters;
     }
+
+    /**
+     * Do the simulation in parallel
+     *
+     * @param numberOfTrials
+     * @param calculationsPerDay
+     * @param historicalValue
+     * @param timeSlice
+     * @param currentStockPrice
+     * @return
+     */
+    public double[] parallelSimulation(int numberOfTrials, int calculationsPerDay, double[] historicalValue,
+                                       double timeSlice, double currentStockPrice) {
+        int cores = Runtime.getRuntime().availableProcessors();
+        int taskForOneThread = numberOfTrials / cores;
+        int remainingTask = numberOfTrials % cores;
+        int startingPoint;
+        MonteCarloSimulation simulation = new MonteCarloSimulation();
+        double mean = this.getMeanReturnAndStandardDeviation(historicalValue).get("meanReturn");
+        double std = this.getMeanReturnAndStandardDeviation(historicalValue).get("meanStandardDeviation");
+
+        Thread threads[] = new Thread[cores];
+
+        for (int i = 0; i < threads.length; i++) {
+            startingPoint = i * taskForOneThread;
+            //assign remaining tasks for the last thread
+            if (i == threads.length - 1) {
+                taskForOneThread = taskForOneThread + remainingTask;
+            }
+
+            threads[i] = new Thread(new ParallelSimulation(taskForOneThread, calculationsPerDay, mean, std, timeSlice,
+                    simulation, currentStockPrice, startingPoint), i + "");
+            threads[i].start();
+        }
+
+        for (int i = 0; i < threads.length; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return MonteCarloSimulation.finalSimulatedValues;
+    }
+
+    class ParallelSimulation implements Runnable {
+        private int numberOfTrials;
+        private int startingPoint;
+        private int calculationsPerDay;
+        Map<String, Double> parameters;
+        private MonteCarloSimulation simulationReference;
+        private double currentStockPrice;
+
+        public ParallelSimulation(int numberOfTrials, int calculationsPerDay, double mean, double std, double timeSlice,
+                                  MonteCarloSimulation simulationReference, double currentStockPrice, int startingPoint) {
+
+            this.numberOfTrials = numberOfTrials;
+            this.calculationsPerDay = calculationsPerDay;
+            this.simulationReference = simulationReference;
+            this.startingPoint = startingPoint;
+            this.currentStockPrice = currentStockPrice;
+            parameters = new HashMap<>();
+            parameters.put("distributionMean", mean);
+            parameters.put("standardDeviation", std);
+            parameters.put("timeSlice", timeSlice);
+            parameters.put("randomValue", this.simulationReference.getRandomZVal());
+            parameters.put("currentStockValue", currentStockPrice);
+        }
+
+        @Override
+        public void run() {
+            double tempStockValue = 0;
+            for (int i = startingPoint; i < startingPoint + numberOfTrials; i++) {
+                parameters.put("currentStockValue", currentStockPrice);
+                for (int j = 0; j < calculationsPerDay; j++) {
+                    tempStockValue = this.simulationReference.getBrownianMotionOutput(parameters);
+                    parameters.put("randomValue", this.simulationReference.getRandomZVal());
+                    parameters.put("currentStockValue", tempStockValue);
+                }
+                MonteCarloSimulation.finalSimulatedValues[i] = tempStockValue;
+            }
+
+        }
+    }
+
 
 }

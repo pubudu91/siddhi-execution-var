@@ -51,7 +51,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
                 numberOfShares = portfolio.getAssets().get(keys[i]);
                 todayMarketValue = (tempAsset.getHistoricalValues().getLast() * numberOfShares);
                 historicalValues = tempAsset.getHistoricalValues();
-                terminalStockValues = new MonteCarloSimulation().simulation(this.numberOfTrials, this.calculationsPerDay,
+                terminalStockValues = new MonteCarloSimulation(this.numberOfTrials).parallelSimulation(this.numberOfTrials, this.calculationsPerDay,
                         historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
                 tempAsset.setSimulatedList(terminalStockValues);
                 for (int j = 0; j < terminalStockValues.length; j++) {
@@ -67,7 +67,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
 //            numberOfShares = portfolio.getAssets().get(portfolio.getIncomingEventLabel());
 //            todayMarketValue = (tempAsset.getHistoricalValues().getLast() * numberOfShares);
             historicalValues = tempAsset.getHistoricalValues();
-            terminalStockValues = new MonteCarloSimulation().simulation(this.numberOfTrials, this.calculationsPerDay,
+            terminalStockValues = new MonteCarloSimulation(this.numberOfTrials).parallelSimulation(this.numberOfTrials, this.calculationsPerDay,
                     historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
             tempAsset.setSimulatedList(terminalStockValues);
 

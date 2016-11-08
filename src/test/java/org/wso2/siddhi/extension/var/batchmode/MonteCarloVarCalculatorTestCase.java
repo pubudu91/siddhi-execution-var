@@ -776,7 +776,7 @@ public class MonteCarloVarCalculatorTestCase {
         };
 
         double ci = 0.95, timeSlice = 0.01;
-        int limit = 250, calculationsPerDay = 100, numberOfTrials = 20;
+        int limit = 250, calculationsPerDay = 100, numberOfTrials = 500000;
 
         Map<String, Asset> assets = new HashMap<>();
         Asset asset_1 = new Asset("APPL");
@@ -811,6 +811,9 @@ public class MonteCarloVarCalculatorTestCase {
 
         MonteCarloVarCalculator calc = new MonteCarloVarCalculator(limit, ci, numberOfTrials, calculationsPerDay, timeSlice);
         calc.assetList = assetList;
+        long start = System.currentTimeMillis();
         System.out.println(calc.processData(portfolio));
+        long end = System.currentTimeMillis();
+        System.out.println((end - start) / 1000);
     }
 }
