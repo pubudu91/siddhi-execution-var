@@ -776,7 +776,7 @@ public class MonteCarloVarCalculatorTestCase {
         };
 
         double ci = 0.95, timeSlice = 0.01;
-        int limit = 250, calculationsPerDay = 100, numberOfTrials = 20;
+        int limit = 250, calculationsPerDay = 100, numberOfTrials = 500000;
 
         Map<String, Asset> assets = new HashMap<>();
         Asset asset_1 = new Asset("APPL");
