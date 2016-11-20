@@ -26,7 +26,6 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     private double ci = 0.95;                                           // Confidence Interval
     private VaRPortfolioCalc varCalculator = null;
     private int paramPosition = 0;
-    private boolean hasWeight = false;
     /**
      *
      * @param streamEventChunk      the event chunk that need to be processed
@@ -77,14 +76,13 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
             }
             try {
                 ci = ((Double) attributeExpressionExecutors[1].execute(null));
-                hasWeight = (Boolean)attributeExpressionExecutors[attributeExpressionLength - 1].execute(null);
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value between 0 and 1");
             }
         }
 
         // set the var calculator
-        varCalculator = new HistoricalVaRCalculator(batchSize, ci, hasWeight);
+        varCalculator = new HistoricalVaRCalculator(batchSize, ci);
         varCalculator.getPortfolioValues(executionPlanContext);
         varCalculator.readAssetList(executionPlanContext);
 

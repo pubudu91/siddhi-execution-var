@@ -1,6 +1,7 @@
 package org.wso2.siddhi.extension.var.models;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -9,6 +10,7 @@ import java.util.Map;
 public class Portfolio {
     private int ID;
     private Map<String, Integer> assets;
+    private String latestSymbol;
 
     public Portfolio() {
         assets = new HashMap<>();
@@ -33,5 +35,13 @@ public class Portfolio {
 
     public void setAssets(Map<String, Integer> assets) {
         this.assets = assets;
+    }
+
+    public void setLatestSymbol(String latestSymbol){
+        this.latestSymbol = latestSymbol;
+    }
+
+    public String getLatestSymbol(){
+        return latestSymbol;
     }
 }
