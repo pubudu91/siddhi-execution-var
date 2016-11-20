@@ -6,14 +6,16 @@ import org.wso2.siddhi.extension.var.models.Portfolio;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by flash on 7/14/16.
  */
 public class MonteCarloAssertion extends VarModelAssertion {
+    Random rand = new Random();
 
-    public MonteCarloAssertion(int sampleSize, Map<String, Integer> portfolio, double confidenceInterval, int batchSize,int sampleSetNumber) {
-        super(sampleSize, portfolio, confidenceInterval, batchSize,sampleSetNumber);
+    public MonteCarloAssertion(int sampleSize, Map<String, Integer> portfolio, double confidenceInterval, int batchSize, int sampleSetNumber) {
+        super(sampleSize, portfolio, confidenceInterval, batchSize, sampleSetNumber);
     }
 
     @Override

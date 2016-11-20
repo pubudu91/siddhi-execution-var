@@ -31,6 +31,7 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
     private int calculationsPerDay = 100;
     private double timeSlice = 0.01;
 
+
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor, StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         synchronized (this) {

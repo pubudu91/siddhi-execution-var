@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by flash on 7/14/16.
@@ -14,6 +15,7 @@ import java.util.Map;
 public class HistoricalCalculatorAssertion extends VarModelAssertion {
 
     private HistoricalVaRCalculator calculator = null;
+    Random rand = new Random();
 
     /**
      * sample size indicate number of actual p&l's and the calculated var values

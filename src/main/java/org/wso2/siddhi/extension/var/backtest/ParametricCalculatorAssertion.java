@@ -6,11 +6,13 @@ import org.wso2.siddhi.extension.var.realtime.ParametricVaRCalculator;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by flash on 7/14/16.
  */
 public class ParametricCalculatorAssertion extends VarModelAssertion {
+    Random rand = new Random();
 
     public ParametricCalculatorAssertion(int sampleSize, Map<String, Integer> portfolio, double confidenceInterval,
                                          int batchSize, int sampleSetNumber) {

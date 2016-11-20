@@ -23,7 +23,6 @@ public abstract class VaRPortfolioCalc {
     protected String symbol;
 
     /**
-     *
      * @param limit
      * @param ci
      */
@@ -36,17 +35,17 @@ public abstract class VaRPortfolioCalc {
 
     /**
      * for testing purposes
+     *
      * @param assetList
      */
-    public void setAssetList(Map<String, Asset> assetList){
+    public void setAssetList(Map<String, Asset> assetList) {
         this.assetList = assetList;
     }
 
     /**
-     *
      * @param data
      */
-    public void addEvent(Object data[]){
+    public void addEvent(Object data[]) {
         price = ((Number) data[1]).doubleValue();
         symbol = data[0].toString();
 
@@ -59,26 +58,26 @@ public abstract class VaRPortfolioCalc {
 
     /**
      * removes the oldest element from a given portfolio
+     *
      * @param symbol
      */
-    public void removeEvent(String symbol){
+    public void removeEvent(String symbol) {
         LinkedList<Double> priceList = assetList.get(symbol).getHistoricalValues();
         priceList.remove(0);
     }
 
     /**
-     *
      * @param portfolio
      * @return
      */
     protected abstract Object processData(Portfolio portfolio);
 
     /**
-     *
      * @param data
      * @return
      */
     public Object calculateValueAtRisk(Object data[]) {
+        long start = System.currentTimeMillis();
         addEvent(data);
         //if the given portfolio has the symbol and number of historical value exceeds the batch size, remove the event
         if (assetList.get(data[0]) != null && assetList.get(data[0]).getHistoricalValues().size() > batchSize) {
@@ -93,32 +92,52 @@ public abstract class VaRPortfolioCalc {
         double var;
 
         //if the given symbol is in the assetList
-        if(assetList.get(data[0]) != null){
+        if (assetList.get(data[0]) != null) {
             //for each portfolio
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 key = iterator.next();
                 Portfolio portfolio = portfolioList.get(key);
 
                 //if the portfolio has the asset, calculate VaR
                 if(portfolio.getAssets().get(data[0]) != null) {
-                    portfolio.setLatestSymbol(data[0].toString());
+                    portfolio.setIncomingEventLabel(data[0].toString());
                     var = Double.parseDouble(processData(portfolio).toString());
                     result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
+/*
+                if (portfolio.getAssets().get(data[0]) != null) {
+                    //counts the number of stock symbols which have already had the given batch size number of events
+                    int count = 0;
+
+                    Set assetsKeys = portfolio.getAssets().keySet();
+                    Iterator<String> assetIterator = assetsKeys.iterator();
+                    //for each asset
+                    while (assetIterator.hasNext()) {
+                        String assetKey = assetIterator.next();
+                        count += assetList.get(assetKey).getHistoricalValues().size();
+                    }
+
+                    if (count == batchSize * portfolio.getAssets().size()) {
+                        portfolio.setIncomingEventLabel((String) data[0]);
+                        var = Double.parseDouble(processData(portfolio).toString());
+                        long end = System.currentTimeMillis();
+                        result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
+                        result.put("Time elapse", (double) (end - start) / 1000);
+                    }
+*/
                 }
             }
         }
 
         //if no var has been calculated
-        if(result.length() == 0)
+        if (result.length() == 0)
             return null;
         return result.toString().concat(resultString);
     }
 
     /**
-     *
      * @param executionPlanContext
      */
-    public void getPortfolioValues(ExecutionPlanContext executionPlanContext){
+    public void getPortfolioValues(ExecutionPlanContext executionPlanContext) {
         //get the portfolio details from the database
         try {
             Connection connection = executionPlanContext.getSiddhiContext().
@@ -130,7 +149,7 @@ public abstract class VaRPortfolioCalc {
             int portfolioID;
 
             //for each portfolio
-            while(rst.next()){
+            while (rst.next()) {
                 portfolioID = rst.getInt(1);
                 Statement stm1 = connection.createStatement();
                 sql = RealTimeVaRConstants.PORTFOLIO_DETAILS_SQL + portfolioID;
@@ -138,7 +157,7 @@ public abstract class VaRPortfolioCalc {
                 Map<String, Integer> assets = new HashMap<>();
                 Portfolio portfolio;
 
-                while(symbolList.next()){
+                while (symbolList.next()) {
                     assets.put(symbolList.getString(1), symbolList.getInt(2));
                 }
 
@@ -152,10 +171,9 @@ public abstract class VaRPortfolioCalc {
     }
 
     /**
-     *
      * @param executionPlanContext
      */
-    public void readAssetList(ExecutionPlanContext executionPlanContext){
+    public void readAssetList(ExecutionPlanContext executionPlanContext) {
         Connection connection;
         try {
             connection = executionPlanContext.getSiddhiContext().
@@ -165,7 +183,7 @@ public abstract class VaRPortfolioCalc {
             ResultSet rst = stm.executeQuery(sql);
             Asset asset;
 
-            while(rst.next()){
+            while (rst.next()) {
                 asset = new Asset(rst.getString(1));
                 assetList.put(rst.getString(1), asset);
             }

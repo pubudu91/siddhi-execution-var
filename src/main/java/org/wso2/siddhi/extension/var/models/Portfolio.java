@@ -10,7 +10,15 @@ import java.util.Map;
 public class Portfolio {
     private int ID;
     private Map<String, Integer> assets;
-    private String latestSymbol;
+    private String incomingEventLabel = null;
+
+    public String getIncomingEventLabel() {
+        return incomingEventLabel;
+    }
+
+    public void setIncomingEventLabel(String incomingEventLabel) {
+        this.incomingEventLabel = incomingEventLabel;
+    }
 
     public Portfolio() {
         assets = new HashMap<>();
@@ -35,13 +43,5 @@ public class Portfolio {
 
     public void setAssets(Map<String, Integer> assets) {
         this.assets = assets;
-    }
-
-    public void setLatestSymbol(String latestSymbol){
-        this.latestSymbol = latestSymbol;
-    }
-
-    public String getLatestSymbol(){
-        return latestSymbol;
     }
 }
