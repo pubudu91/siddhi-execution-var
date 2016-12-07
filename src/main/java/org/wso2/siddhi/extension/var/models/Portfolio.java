@@ -11,6 +11,42 @@ public class Portfolio {
     private int ID;
     private Map<String, Integer> assets;
     private String incomingEventLabel = null;
+    private double currentTotalPortfolioValue = 0;
+    private Map<String, Integer> numberOfSharesBeforeChange;
+    private Map<String, double[]> recentSimulatedList = new HashMap<>();
+    private boolean toggle = true;
+
+    public boolean isToggle() {
+        return toggle;
+    }
+
+    public void setToggle(boolean toggle) {
+        this.toggle = toggle;
+    }
+
+    public Map<String, double[]> getRecentSimulatedList() {
+        return recentSimulatedList;
+    }
+
+//    public void setRecentSimulatedList(Map<String, double[]> recentSimulatedList) {
+//        this.recentSimulatedList = recentSimulatedList;
+//    }
+
+    public Map<String, Integer> getNumberOfSharesBeforeChange() {
+        return numberOfSharesBeforeChange;
+    }
+
+    public void setNumberOfSharesBeforeChange(Map<String, Integer> numberOfSharesBeforeChange) {
+        this.numberOfSharesBeforeChange = numberOfSharesBeforeChange;
+    }
+
+    public double getCurrentTotalPortfolioValue() {
+        return currentTotalPortfolioValue;
+    }
+
+    public void setCurrentTotalPortfolioValue(double currentTotalPortfolioValue) {
+        this.currentTotalPortfolioValue = currentTotalPortfolioValue;
+    }
 
     public String getIncomingEventLabel() {
         return incomingEventLabel;

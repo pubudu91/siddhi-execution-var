@@ -81,6 +81,7 @@ public abstract class VaRPortfolioCalc {
      * @return
      */
     public Object calculateValueAtRisk(Object data[]) {
+        long start = System.currentTimeMillis();
         addEvent(data);
         //if the given portfolio has the symbol and number of historical value exceeds the batch size, remove the event
         if (assetList.get(data[0]) != null && assetList.get(data[0]).getHistoricalValues().size() > batchSize) {

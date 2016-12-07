@@ -9,11 +9,20 @@ public class Asset {
     private LinkedList<Double> historicalValues;    //no need to keep this. only the last price and price before last price is needed
     private double currentStockPrice;
     private double priceBeforeLastPrice;
+    private double stockPriceBeforeChange;
     private String symbol;
     private int numberOfShares;
     private LinkedList<Double> latestReturnValues;
     private int numberOfHistoricalValues;
     private double[] simulatedList;
+
+    public double getStockPriceBeforeChange() {
+        return stockPriceBeforeChange;
+    }
+
+    public void setStockPriceBeforeChange(double stockPriceBeforeChange) {
+        this.stockPriceBeforeChange = stockPriceBeforeChange;
+    }
 
     public double[] getSimulatedList() {
         return simulatedList;
