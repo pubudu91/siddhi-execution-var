@@ -125,19 +125,6 @@ public abstract class VaRPortfolioCalc {
                         portfolio.setIncomingEventLabel((String) data[0]);
                         var = Double.parseDouble(processData(portfolio).toString());
                         result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
-//                        var_2 += Math.abs(var);
-//                        count_1++;
-//                        if (count_1 == 100) {
-//                            try {
-//                                PrintWriter writer = new PrintWriter("/var/www/html/FYP/avg.txt", "UTF-8");
-//                                writer.println((double) var_2 / count);
-//                                writer.close();
-//                                System.exit(0);
-//                            } catch (IOException e) {
-//                                // do something
-//                            }
-//                        }
-
                     }
                 }
             }
