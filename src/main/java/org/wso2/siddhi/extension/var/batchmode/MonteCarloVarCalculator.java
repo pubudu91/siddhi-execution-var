@@ -36,7 +36,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
         double[] finalPortfolioValues = new double[numberOfTrials];
         String[] keys = portfolio.getAssets().keySet().toArray(new String[portfolio.getAssets().size()]);
         Asset tempAsset;
-        LinkedList<Double> historicalValues;
+        LinkedList<Double> returnList;
         double todayMarketValue;
         int numberOfShares = 0;
         MonteCarloNativeSimulation calcNativeReference = new MonteCarloNativeSimulation();
@@ -59,19 +59,18 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
                 tempAsset = assetList.get(keys[i]);
                 numberOfShares = portfolio.getAssets().get(keys[i]);
                 //this price setting should be changed after streams has been changed
-                historicalValues = tempAsset.getHistoricalValues();
-
-                tempAsset.setStockPriceBeforeChange(tempAsset.getCurrentStockPrice());
+                returnList = tempAsset.getLatestReturnValues();
+                tempAsset.setPriceBeforeLastPrice(tempAsset.getCurrentStockPrice());
                 todayMarketValue = (tempAsset.getCurrentStockPrice() * numberOfShares);
                 latestMarketValue += todayMarketValue;
 
 //                terminalStockValues = calcReference.simulation(this.numberOfTrials, this.calculationsPerDay,
 //                        historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
 
-                mean = calcReference.getMeanReturnAndStandardDeviation(historicalValues.stream().mapToDouble(d -> d).toArray()).get("meanReturn");
-                std = calcReference.getMeanReturnAndStandardDeviation(historicalValues.stream().mapToDouble(d -> d).toArray()).get("meanStandardDeviation");
+                mean = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanReturn");
+                std = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanStandardDeviation");
                 terminalStockValues = calcNativeReference.simulation(mean, std, this.timeSlice,
-                        historicalValues.getLast(), this.numberOfTrials, this.calculationsPerDay);
+                        tempAsset.getCurrentStockPrice(), this.numberOfTrials, this.calculationsPerDay);
                 /*
                  * terminal stock values are local to a particular portfolio so we cant store it in assets.
                  * simulated list which used later in calculation
@@ -90,15 +89,15 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
             do simulation for the changed asset only
              */
             tempAsset = assetList.get(portfolio.getIncomingEventLabel());
-            historicalValues = tempAsset.getHistoricalValues();
+            returnList = tempAsset.getLatestReturnValues();
             numberOfShares = portfolio.getAssets().get(portfolio.getIncomingEventLabel());
 //            terminalStockValues = calcReference.simulation(this.numberOfTrials, this.calculationsPerDay,
 //                    historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
 
-            mean = calcReference.getMeanReturnAndStandardDeviation(historicalValues.stream().mapToDouble(d -> d).toArray()).get("meanReturn");
-            std = calcReference.getMeanReturnAndStandardDeviation(historicalValues.stream().mapToDouble(d -> d).toArray()).get("meanStandardDeviation");
+            mean = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanReturn");
+            std = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanStandardDeviation");
             terminalStockValues = calcNativeReference.simulation(mean, std, this.timeSlice,
-                    historicalValues.getLast(), this.numberOfTrials, this.calculationsPerDay);
+                    tempAsset.getCurrentStockPrice(), this.numberOfTrials, this.calculationsPerDay);
 
             /**
              * newly added part for simulation improvement
@@ -111,8 +110,8 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
                 unchangedSimulatedListCollection[i] = lastPortfolioValue - (simulatedListBeforeChange[i] * numberOfShares + finalPortfolioValuesBeforeUpdate[i]);
             }
 //calculate latest portfolio value and store it in portfolio. set the latest stock price as recentStock price in the changed asset
-            latestMarketValue = portfolio.getCurrentTotalPortfolioValue() - tempAsset.getStockPriceBeforeChange() * numberOfShares + historicalValues.getLast() * numberOfShares;
-            tempAsset.setStockPriceBeforeChange(historicalValues.getLast());
+            latestMarketValue = portfolio.getCurrentTotalPortfolioValue() - tempAsset.getPriceBeforeLastPrice() * numberOfShares + tempAsset.getCurrentStockPrice() * numberOfShares;
+            tempAsset.setPriceBeforeLastPrice(tempAsset.getCurrentStockPrice());
             portfolio.setCurrentTotalPortfolioValue(latestMarketValue);
 
             for (int i = 0; i < this.numberOfTrials; i++) {

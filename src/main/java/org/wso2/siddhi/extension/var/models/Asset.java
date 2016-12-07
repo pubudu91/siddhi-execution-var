@@ -8,7 +8,7 @@ import java.util.LinkedList;
 public class Asset {
     private LinkedList<Double> historicalValues;    //no need to keep this. only the last price and price before last price is needed
     private double currentStockPrice;
-    private double stockPriceBeforeChange;
+    private double priceBeforeLastPrice;
     private String symbol;
     private int numberOfShares;
     private LinkedList<Double> latestReturnValues;
@@ -59,12 +59,12 @@ public class Asset {
         return historicalValues.size();
     }
 
-    public double getStockPriceBeforeChange(){
-        return stockPriceBeforeChange;
+    public double getPriceBeforeLastPrice(){
+        return priceBeforeLastPrice;
     }
 
-    public void setStockPriceBeforeChange(double priceBeforeLastPrice){
-        this.stockPriceBeforeChange = priceBeforeLastPrice;
+    public void setPriceBeforeLastPrice(double priceBeforeLastPrice){
+        this.priceBeforeLastPrice = priceBeforeLastPrice;
     }
 
     public double getCurrentStockPrice(){

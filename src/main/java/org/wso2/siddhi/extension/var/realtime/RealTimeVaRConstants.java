@@ -5,10 +5,7 @@ package org.wso2.siddhi.extension.var.realtime;
  */
 public class RealTimeVaRConstants {
     public static String PORTFOLIO = "Portfolio ";
-    public static String DATA_SOURCE_NAME = "AnalyticsDataSource";
-
-    /*public static String PORTFOLIO = "Portfolio";
-    public static String DATA_SOURCE_NAME = "VAR_CONFIGURATIONS";*/
+    public static String DATA_SOURCE_NAME = "VAR_CONFIGURATIONS";
 
     //SQL queries
     public static String PORTFOLIO_IDS_SQL = "SELECT distinct(portfolioID) FROM portfolio natural join " +
