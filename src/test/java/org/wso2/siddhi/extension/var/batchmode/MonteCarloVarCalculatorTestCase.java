@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -812,6 +813,12 @@ public class MonteCarloVarCalculatorTestCase {
         MonteCarloVarCalculator calc = new MonteCarloVarCalculator(limit, ci, numberOfTrials, calculationsPerDay, timeSlice);
         calc.assetList = assetList;
         long start = System.currentTimeMillis();
+        System.out.println(calc.processData(portfolio));
+        portfolio.setIncomingEventLabel("APPL");
+        System.out.println(calc.processData(portfolio));
+        portfolio.setIncomingEventLabel("APPL");
+        System.out.println(calc.processData(portfolio));
+        portfolio.setIncomingEventLabel("GOOG");
         System.out.println(calc.processData(portfolio));
         long end = System.currentTimeMillis();
         System.out.println((end - start) / 1000);

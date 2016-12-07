@@ -7,8 +7,10 @@ package org.wso2.siddhi.extension.var.batchmode;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class MonteCarloSimulation {
 
@@ -17,6 +19,7 @@ public class MonteCarloSimulation {
     private DescriptiveStatistics stat = null;
     private double randomZValue = 0.0;
     public static double[] finalSimulatedValues;
+    Random rnd = new Random(1);
 
     public MonteCarloSimulation() {
     }
@@ -69,11 +72,11 @@ public class MonteCarloSimulation {
 
         Map<String, Double> parameters, tempParameters;
         parameters = new HashMap<>();
-        tempParameters = this.getMeanReturnAndStandardDeviation(historicalValue);
+//        tempParameters = this.getMeanReturnAndStandardDeviation(historicalValue);
         double tempStockValue = 0;
 
-        parameters.put("distributionMean", tempParameters.get("meanReturn"));
-        parameters.put("standardDeviation", tempParameters.get("meanStandardDeviation"));
+        parameters.put("distributionMean", 0.001216);
+        parameters.put("standardDeviation", 0.01960);
         parameters.put("timeSlice", timeSlice);
         parameters.put("randomValue", this.getRandomZVal());
         parameters.put("currentStockValue", currentStockPrice);
@@ -146,9 +149,9 @@ public class MonteCarloSimulation {
         int taskForOneThread = numberOfTrials / cores;
         int remainingTask = numberOfTrials % cores;
         int startingPoint;
-        MonteCarloSimulation simulation = new MonteCarloSimulation();
-        double mean = this.getMeanReturnAndStandardDeviation(historicalValue).get("meanReturn");
-        double std = this.getMeanReturnAndStandardDeviation(historicalValue).get("meanStandardDeviation");
+
+        double mean = 0.001216;
+        double std = 0.01960;
 
         Thread threads[] = new Thread[cores];
 
@@ -160,7 +163,7 @@ public class MonteCarloSimulation {
             }
 
             threads[i] = new Thread(new ParallelSimulation(taskForOneThread, calculationsPerDay, mean, std, timeSlice,
-                    simulation, currentStockPrice, startingPoint), i + "");
+                    currentStockPrice, startingPoint), i + "");
             threads[i].start();
         }
 
@@ -180,40 +183,39 @@ public class MonteCarloSimulation {
         private int startingPoint;
         private int calculationsPerDay;
         Map<String, Double> parameters;
-        private MonteCarloSimulation simulationReference;
+        private MonteCarloSimulation simulationReference = new MonteCarloSimulation();
         private double currentStockPrice;
 
         public ParallelSimulation(int numberOfTrials, int calculationsPerDay, double mean, double std, double timeSlice,
-                                  MonteCarloSimulation simulationReference, double currentStockPrice, int startingPoint) {
+                                  double currentStockPrice, int startingPoint) {
 
             this.numberOfTrials = numberOfTrials;
             this.calculationsPerDay = calculationsPerDay;
-            this.simulationReference = simulationReference;
             this.startingPoint = startingPoint;
             this.currentStockPrice = currentStockPrice;
+
             parameters = new HashMap<>();
             parameters.put("distributionMean", mean);
             parameters.put("standardDeviation", std);
             parameters.put("timeSlice", timeSlice);
-            parameters.put("randomValue", this.simulationReference.getRandomZVal());
+            parameters.put("randomValue", simulationReference.getRandomZVal());
             parameters.put("currentStockValue", currentStockPrice);
         }
 
         @Override
         public void run() {
+
             double tempStockValue = 0;
             for (int i = startingPoint; i < startingPoint + numberOfTrials; i++) {
                 parameters.put("currentStockValue", currentStockPrice);
                 for (int j = 0; j < calculationsPerDay; j++) {
-                    tempStockValue = this.simulationReference.getBrownianMotionOutput(parameters);
-                    parameters.put("randomValue", this.simulationReference.getRandomZVal());
+                    tempStockValue = simulationReference.getBrownianMotionOutput(parameters);
+                    parameters.put("randomValue", simulationReference.getRandomZVal());
                     parameters.put("currentStockValue", tempStockValue);
                 }
                 MonteCarloSimulation.finalSimulatedValues[i] = tempStockValue;
             }
-
         }
     }
-
 
 }

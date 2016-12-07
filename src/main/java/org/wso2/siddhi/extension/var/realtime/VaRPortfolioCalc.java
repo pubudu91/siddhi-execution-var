@@ -1,10 +1,14 @@
 package org.wso2.siddhi.extension.var.realtime;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,6 +25,12 @@ public abstract class VaRPortfolioCalc {
     public Map<String, Asset> assetList;
     protected double price;
     protected String symbol;
+    String[][] array = new String[100][2];
+    int count_1 = 0, var_2 = 0;
+
+    // delete
+    Logger log = LoggerFactory.getLogger(VaRPortfolioCalc.class);
+
 
     /**
      * @param limit
@@ -114,14 +124,26 @@ public abstract class VaRPortfolioCalc {
 // setup incoming event label
                         portfolio.setIncomingEventLabel((String) data[0]);
                         var = Double.parseDouble(processData(portfolio).toString());
-                        long end = System.currentTimeMillis();
                         result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
-                        result.put("Time elapse", (double) (end - start) / 1000);
+//                        var_2 += Math.abs(var);
+//                        count_1++;
+//                        if (count_1 == 100) {
+//                            try {
+//                                PrintWriter writer = new PrintWriter("/var/www/html/FYP/avg.txt", "UTF-8");
+//                                writer.println((double) var_2 / count);
+//                                writer.close();
+//                                System.exit(0);
+//                            } catch (IOException e) {
+//                                // do something
+//                            }
+//                        }
+
                     }
                 }
             }
         }
-
+        long end = System.currentTimeMillis();
+        result.put("Time elapse", (double) (end - start) / 1000);
         //if no var has been calculated
         if (result.length() == 0)
             return null;

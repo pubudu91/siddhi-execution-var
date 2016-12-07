@@ -7,22 +7,21 @@ import java.util.LinkedList;
  */
 public class Asset {
     private LinkedList<Double> historicalValues;
-    private double currentStockPrice;
+    private double stockPriceBeforeChange;
     private String symbol;
     private int numberOfShares;
-    private double[] simulatedList;
+
+    public double getStockPriceBeforeChange() {
+        return stockPriceBeforeChange;
+    }
+
+    public void setStockPriceBeforeChange(double stockPriceBeforeChange) {
+        this.stockPriceBeforeChange = stockPriceBeforeChange;
+    }
 
     public Asset(String symbol) {
         this.symbol = symbol;
         historicalValues = new LinkedList<>();
-    }
-
-    public double[] getSimulatedList() {
-        return simulatedList;
-    }
-
-    public void setSimulatedList(double[] simulatedList) {
-        this.simulatedList = simulatedList;
     }
 
     public LinkedList<Double> getHistoricalValues() {
