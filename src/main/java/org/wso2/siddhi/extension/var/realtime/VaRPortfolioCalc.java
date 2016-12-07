@@ -18,7 +18,7 @@ public abstract class VaRPortfolioCalc {
     protected double confidenceInterval = 0.95;
     protected int batchSize = 1000000000;
     protected Map<Integer, Portfolio> portfolioList;
-    public Map<String, Asset> assetList;
+    public Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
     protected double price;
     protected String symbol;
 
@@ -52,6 +52,7 @@ public abstract class VaRPortfolioCalc {
         //if portfolio does not have the given symbol, then we drop the event.
         if (assetList.get(symbol) != null) {
             assetList.get(symbol).addHistoricalValue(price);
+            updateAssetList(data);
         }
     }
 
@@ -98,6 +99,11 @@ public abstract class VaRPortfolioCalc {
                 Portfolio portfolio = portfolioList.get(key);
 
                 //if the portfolio has the asset, calculate VaR
+                if(portfolio.getAssets().get(data[0]) != null) {
+                    portfolio.setIncomingEventLabel(data[0].toString());
+                    var = Double.parseDouble(processData(portfolio).toString());
+                    result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
+/*
                 if (portfolio.getAssets().get(data[0]) != null) {
                     //counts the number of stock symbols which have already had the given batch size number of events
                     int count = 0;
@@ -117,6 +123,7 @@ public abstract class VaRPortfolioCalc {
                         result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
                         result.put("Time elapse", (double) (end - start) / 1000);
                     }
+*/
                 }
             }
         }
@@ -183,6 +190,10 @@ public abstract class VaRPortfolioCalc {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void updateAssetList(Object data[]){
+        //do something
     }
 }
 

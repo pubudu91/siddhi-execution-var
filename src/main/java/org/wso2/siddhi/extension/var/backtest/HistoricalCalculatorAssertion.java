@@ -38,7 +38,7 @@ public class HistoricalCalculatorAssertion extends VarModelAssertion {
         Portfolio _portfolio = new Portfolio(1, this.getPortfolio());
         Map<String, ArrayList<Double>> priceLists = this.getData();
         String[] key = this.getPortfolio().keySet().toArray(new String[this.getPortfolio().size()]);
-        calculator = new HistoricalVaRCalculator(this.getBatchSize(), this.getConfidenceInterval(), true);
+        calculator = new HistoricalVaRCalculator(this.getBatchSize(), this.getConfidenceInterval());
         this.setHistoricalValues(calculator);
 
         for (int i = 0; i < tempVar.length; i++) {

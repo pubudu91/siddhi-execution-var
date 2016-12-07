@@ -10,18 +10,15 @@ import java.util.*;
  * Created by dilini92 on 6/26/16.
  */
 public class HistoricalVaRCalculator extends VaRPortfolioCalc {
-    private boolean hasWeight;
     private DescriptiveStatistics stat;
 
     /**
      *
      * @param limit
      * @param ci
-     * @param hasWeight
      */
-    public HistoricalVaRCalculator(int limit, double ci, boolean hasWeight) {
+    public HistoricalVaRCalculator(int limit, double ci) {
         super(limit, ci);
-        this.hasWeight = hasWeight;
     }
 
     /**
@@ -29,56 +26,85 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
      */
     @Override
     public Object processData(Portfolio portfolio) {
-        double priceReturns[][] = new double[batchSize - 1][portfolio.getAssets().size()];
-        double portfolioTotal = 0.0;
-
         stat = new DescriptiveStatistics();
-        stat.setWindowSize(batchSize - 1);
 
         //calculate the latest market value of the portfolio
         Set<String> keys = portfolio.getAssets().keySet();
         String symbols[] = keys.toArray(new String[portfolio.getAssets().size()]);
         Asset asset;
-        int noOfShares;
+        int noOfShares, maxPriceListLength = 0;
         LinkedList<Double> priceList;
+
         for (int i = 0; i < symbols.length; i++) {
-            asset = assetList.get(symbols[i]);
-            noOfShares = portfolio.getAssets().get(symbols[i]);
-            priceList = asset.getHistoricalValues();
+            if(i == 0)
+                maxPriceListLength = assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1;
+            else{
+                if(maxPriceListLength < assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1)
+                    maxPriceListLength = assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1;
+            }
+        }
 
-            portfolioTotal += priceList.getLast() * noOfShares;
-            Double priceArray[] = priceList.toArray(new Double[batchSize]);
-            for (int j = 0; j < priceArray.length - 1; j++) {
-                //calculate the price return value Rj = ln(Sj+1/Sj)
-                priceReturns[j][i] = Math.log(priceArray[j + 1] / priceArray[j]);
+        if(maxPriceListLength > 0) {
+            //variable declaration
+            double portfolioLossValues[] = new double[maxPriceListLength];
 
-                if(hasWeight){
-                    //generate stock prices based on the return value Sj = (1 + Rj) * S_latest
-                    priceReturns[j][i] = (priceReturns[j][i] + 1) * priceArray[batchSize - 1];
+            //initialize
+            for (int i = 0; i < maxPriceListLength; i++) {
+                portfolioLossValues[i] = 0.0;
+            }
 
-                    //calculate market value for each event Mj = Sj * noOfShares
-                    priceReturns[j][i] = priceReturns[j][i] * noOfShares;
+            stat.setWindowSize(maxPriceListLength);
+
+            //at this point we have the updated asset list values containing Ri * S_latest
+            //for each asset
+            for (int i = 0; i < symbols.length; i++) {
+                asset = assetList.get(symbols[i]);
+                priceList = asset.getLatestReturnValues(); //priceList contains Ri * S_latest
+                noOfShares = portfolio.getAssets().get(symbols[i]);
+
+                for (int j = 0; j < maxPriceListLength; j++) {
+                    if(j == priceList.size())
+                        break;
+
+                    //portfolio loss = Sigma (Si_latest * noOfShares_i) - Sigma ((1+Ri) * Si_latest * noOfShares_i)
+                    //portfolio loss = Sigma -(Ri * Si_latest * noOfShares_i)
+                    portfolioLossValues[j] += -priceList.get(j) * noOfShares;
                 }
             }
-        }
 
-        //get the summation of the market value of all assets in the portfolio for each observation
-        for (int i = 0; i < batchSize - 1; i++) {
-            double total = 0;
-            for (int j = 0; j < symbols.length; j++) {
-                total += priceReturns[i][j];
+            //get the summation of the market value of all assets in the portfolio for each observation
+            for (int i = 0; i < maxPriceListLength; i++) {
+                stat.addValue(portfolioLossValues[i]);
             }
 
-            //If user wants to consider the no of shares
-            if(hasWeight) {
-                //add each value to create the histogram
-                stat.addValue(portfolioTotal - total);
+            //returns the corresponding percentile value from the histogram
+            return stat.getPercentile((1 - confidenceInterval) * 100);
+        }
+        return 0.0;
+    }
 
-            }else{
-                stat.addValue(total);
+    public void updateAssetList(Object data[]){
+        double lastPrice = ((Number) data[1]).doubleValue();
+        String symbol = data[0].toString();
+
+        LinkedList<Double> latestReturnValues = assetList.get(symbol).getLatestReturnValues();
+
+        //requires at least 2 historical prices to calculate VaR
+        if(assetList.get(symbol).getNumberOfHistoricalValues() > 1) {
+            double priceBeforeLastPrice = assetList.get(symbol).getHistoricalValues().
+                    get(assetList.get(symbol).getNumberOfHistoricalValues() - 2);
+
+            if (latestReturnValues.size() == batchSize - 1)
+                latestReturnValues.removeFirst();
+
+            //latestReturnValues contains Ri * S_latest
+            latestReturnValues.add(Math.log(lastPrice / priceBeforeLastPrice) * lastPrice);
+
+            double temp;
+            for (int j = 0; j < latestReturnValues.size() - 1; j++) {
+                temp = latestReturnValues.get(j) * lastPrice / priceBeforeLastPrice;
+                latestReturnValues.set(j, temp);
             }
         }
-        //returns the corresponding percentile value from the histogram
-        return stat.getPercentile((1 - confidenceInterval) * 100);
     }
 }

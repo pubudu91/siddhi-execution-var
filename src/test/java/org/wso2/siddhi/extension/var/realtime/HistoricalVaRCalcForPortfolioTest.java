@@ -51,7 +51,7 @@ public class HistoricalVaRCalcForPortfolioTest extends TestCase {
     public void testAddEvent() throws Exception {
         Object inputData[] = {RealtimeVaRTestConstants.APPLE, 754.63};
         init();
-        HistoricalVaRCalculator calculator = new HistoricalVaRCalculator(6, 0.95, true);
+        HistoricalVaRCalculator calculator = new HistoricalVaRCalculator(6, 0.95);
         calculator.setAssetList(assetList);
         calculator.addEvent(inputData);
         int expectedValue = 1;
@@ -67,7 +67,7 @@ public class HistoricalVaRCalcForPortfolioTest extends TestCase {
     public void testRemoveEvent() throws Exception {
         Object inputData[] = {RealtimeVaRTestConstants.APPLE, 754.63};
         init();
-        HistoricalVaRCalculator calculator = new HistoricalVaRCalculator(6, 0.95, true);
+        HistoricalVaRCalculator calculator = new HistoricalVaRCalculator(6, 0.95);
         calculator.setAssetList(assetList);
         calculator.addEvent(inputData);
         calculator.addEvent(inputData);
@@ -116,7 +116,7 @@ public class HistoricalVaRCalcForPortfolioTest extends TestCase {
         facebook.addHistoricalValue(78.839996);
         facebook.addHistoricalValue(78.07);
 
-        HistoricalVaRCalculator calculator = new HistoricalVaRCalculator(6, 0.95, false);
+        HistoricalVaRCalculator calculator = new HistoricalVaRCalculator(6, 0.95);
         calculator.setAssetList(assetList);
         System.out.println(calculator.processData(portfolio));
     }

@@ -1,6 +1,7 @@
 package org.wso2.siddhi.extension.var.models;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /**
