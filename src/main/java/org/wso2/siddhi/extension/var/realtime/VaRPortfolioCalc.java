@@ -55,8 +55,8 @@ public abstract class VaRPortfolioCalc {
         temp.setCurrentStockPrice(price);
 
         //assume that all price values of assets cannot be zero or negative
-        if (temp.getPriceBeforeLastPrice() > 0)
-            temp.addReturnValue(Math.log(temp.getCurrentStockPrice() / temp.getPriceBeforeLastPrice()));
+        if (temp.getStockPriceBeforeChange() > 0)
+            temp.addReturnValue(Math.log(temp.getCurrentStockPrice() / temp.getStockPriceBeforeChange()));
 
     }
 

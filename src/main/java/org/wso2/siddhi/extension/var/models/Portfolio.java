@@ -15,6 +15,15 @@ public class Portfolio {
     private Map<String, Integer> numberOfSharesBeforeChange;
     private Map<String, double[]> recentSimulatedList = new HashMap<>();
     private boolean toggle = true;
+    private double[] returnList;
+
+    public double[] getReturnList() {
+        return returnList;
+    }
+
+    public void setReturnList(double[] returnList) {
+        this.returnList = returnList;
+    }
 
     public boolean isToggle() {
         return toggle;

@@ -124,8 +124,8 @@ public class MonteCarloSimulation {
      */
     public Map<String, Double> getMeanReturnAndStandardDeviation(double[] historicalValues) {
         DescriptiveStatistics stat = new DescriptiveStatistics();
-        for (int i = 0; i < historicalValues.length - 1; i++) {
-            stat.addValue(Math.log(historicalValues[i + 1] / historicalValues[i]));
+        for (int i = 0; i < historicalValues.length; i++) {
+            stat.addValue(historicalValues[i]);
         }
         Map<String, Double> parameters = new HashMap<>();
         parameters.put("meanReturn", stat.getMean());
