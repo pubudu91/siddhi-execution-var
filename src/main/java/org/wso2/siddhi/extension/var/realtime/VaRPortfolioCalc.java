@@ -87,11 +87,10 @@ public abstract class VaRPortfolioCalc {
      * @return
      */
     public Object calculateValueAtRisk(Object data[]) {
-
         addEvent(data);
         //if the number of historical value exceeds the batch size, remove the event
-        if (assetList.get(data[3]) != null && assetList.get(data[3]).getNumberOfHistoricalValues() > batchSize) {
-            removeEvent(data[3].toString());
+        if (assetList.get(data[0]) != null && assetList.get(data[0]).getNumberOfHistoricalValues() > batchSize) {
+            removeEvent(data[0].toString());
         }
 
         JSONObject result = new JSONObject();
@@ -100,7 +99,7 @@ public abstract class VaRPortfolioCalc {
         String resultString = "";
         int key;
         double var;
-
+//        temporaryAsset=
         //if the given symbol is in the assetList
         if (temporaryAsset != null) {
             //for each portfolio
@@ -114,7 +113,7 @@ public abstract class VaRPortfolioCalc {
                     Object temp = processData(portfolio);
                     if(temp != null){
                         var = Double.parseDouble(temp.toString());
-                        result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
+                        result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), 0);
                     }
                 }
             }

@@ -784,19 +784,19 @@ public class MonteCarloVarCalculatorTestCase {
         Asset asset_2 = new Asset("GOOG");
         Asset asset_3 = new Asset("FB");
 
-        for (int i = 0; i < historicValues_1.length; i++) {
-            asset_1.addHistoricalValue(historicValues_1[i]);
-        }
-
-        assets.put("GOOGL", asset_1);
-        for (int i = 0; i < set_2.length; i++) {
-            asset_2.addHistoricalValue(set_2[i]);
-        }
-        assets.put("APPL", asset_2);
-
-        for (int i = 0; i < set_3.length; i++) {
-            asset_3.addHistoricalValue(set_3[i]);
-        }
+//        for (int i = 0; i < historicValues_1.length; i++) {
+//            asset_1.addHistoricalValue(historicValues_1[i]);
+//        }
+//
+//        assets.put("GOOGL", asset_1);
+//        for (int i = 0; i < set_2.length; i++) {
+//            asset_2.addHistoricalValue(set_2[i]);
+//        }
+//        assets.put("APPL", asset_2);
+//
+//        for (int i = 0; i < set_3.length; i++) {
+//            asset_3.addHistoricalValue(set_3[i]);
+//        }
         assets.put("FB", asset_3);
 
         Map<String, Integer> assetSet = new HashMap<>();
@@ -811,7 +811,7 @@ public class MonteCarloVarCalculatorTestCase {
         assetList.put("FB", asset_3);
 
         MonteCarloVarCalculator calc = new MonteCarloVarCalculator(limit, ci, numberOfTrials, calculationsPerDay, timeSlice);
-        calc.assetList = assetList;
+//        calc.assetList = assetList;
         long start = System.currentTimeMillis();
         System.out.println(calc.processData(portfolio));
         portfolio.setIncomingEventLabel("APPL");

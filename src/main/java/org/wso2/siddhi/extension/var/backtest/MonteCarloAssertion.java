@@ -25,7 +25,7 @@ public class MonteCarloAssertion extends VarModelAssertion {
         Map<String, ArrayList<Double>> priceLists = this.getData();
         String[] key = this.getPortfolio().keySet().toArray(new String[this.getPortfolio().size()]);
         MonteCarloVarCalculator calculator = new MonteCarloVarCalculator(this.getBatchSize(), this.getConfidenceInterval(), 2000, 100, 0.01);
-        this.setHistoricalValues(calculator);
+//        this.setHistoricalValues(calculator);
         Object input[] = new Object[2];
         for (int i = 0; i < tempVar.length; i++) {
 //            int j = rand.nextInt(key.length - 1);
@@ -52,7 +52,7 @@ public class MonteCarloAssertion extends VarModelAssertion {
         Map<String, ArrayList<Double>> priceLists = this.getData();
         String[] key = this.getPortfolio().keySet().toArray(new String[this.getPortfolio().size()]);
         MonteCarloVarCalculator calculator = new MonteCarloVarCalculator(this.getBatchSize(), this.getConfidenceInterval(), 2000, 100, 0.01);
-        this.setHistoricalValues(calculator);
+//        this.setHistoricalValues(calculator);
         Object input[] = new Object[2];
         for (int i = 0; i < this.getSampleSize(); i++) {
 //            int j = rand.nextInt(key.length - 1);
