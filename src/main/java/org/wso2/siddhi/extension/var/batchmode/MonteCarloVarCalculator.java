@@ -32,12 +32,107 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
      */
     @Override
     public Object processData(Portfolio portfolio) {
+//        double[] terminalStockValues;
+//        double[] finalPortfolioValues = new double[numberOfTrials];
+//        String[] keys = portfolio.getAssets().keySet().toArray(new String[portfolio.getAssets().size()]);
+//        Asset tempAsset;
+//        LinkedList<Double> returnList;
+//        double todayMarketValue;
+//        int numberOfShares = 0;
+//        MonteCarloNativeSimulation calcNativeReference = new MonteCarloNativeSimulation();
+//        MonteCarloSimulation calcReference = new MonteCarloSimulation(this.numberOfTrials);
+//        double latestMarketValue = 0;
+//
+//        double[] unchangedSimulatedListCollection = new double[this.numberOfTrials];
+//        double[] simulatedListBeforeChange;
+//        double[] finalPortfolioValuesBeforeUpdate;
+//
+//        double mean = 0, std = 0;
+//
+//        for (int i = 0; i < numberOfTrials; i++) {
+//            finalPortfolioValues[i] = 0;
+//        }
+////do simulation for all the assets in the portfolio
+//        //toggling should be local to a portfolio because every portfolio should follow this initial calculation
+//        if (portfolio.isToggle() == true) {
+//            for (int i = 0; i < keys.length; i++) {
+//                tempAsset = assetList.get(keys[i]);
+//                numberOfShares = portfolio.getAssets().get(keys[i]);
+//                //this price setting should be changed after streams has been changed
+//                returnList = tempAsset.getLatestReturnValues();
+//                tempAsset.setPriceBeforeLastPrice(tempAsset.getCurrentStockPrice());
+//                todayMarketValue = (tempAsset.getCurrentStockPrice() * numberOfShares);
+//                latestMarketValue += todayMarketValue;
+//
+////                terminalStockValues = calcReference.simulation(this.numberOfTrials, this.calculationsPerDay,
+////                        historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
+//
+//                mean = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanReturn");
+//                std = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanStandardDeviation");
+//                terminalStockValues = calcNativeReference.simulation(mean, std, this.timeSlice,
+//                        tempAsset.getCurrentStockPrice(), this.numberOfTrials, this.calculationsPerDay);
+//                /*
+//                 * terminal stock values are local to a particular portfolio so we cant store it in assets.
+//                 * simulated list which used later in calculation
+//                 */
+//
+//                portfolio.getRecentSimulatedList().put(keys[i], terminalStockValues);
+//
+//                for (int j = 0; j < terminalStockValues.length; j++) {
+//                    finalPortfolioValues[j] += (todayMarketValue - (terminalStockValues[j] * numberOfShares));
+//                }
+//            }
+//            portfolio.setCurrentTotalPortfolioValue(latestMarketValue);
+//            portfolio.setToggle(false);
+//        } else {
+//            /*
+//            do simulation for the changed asset only
+//             */
+//            tempAsset = assetList.get(portfolio.getIncomingEventLabel());
+//            returnList = tempAsset.getLatestReturnValues();
+//            numberOfShares = portfolio.getAssets().get(portfolio.getIncomingEventLabel());
+////            terminalStockValues = calcReference.simulation(this.numberOfTrials, this.calculationsPerDay,
+////                    historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
+//
+//            mean = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanReturn");
+//            std = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanStandardDeviation");
+//            terminalStockValues = calcNativeReference.simulation(mean, std, this.timeSlice,
+//                    tempAsset.getCurrentStockPrice(), this.numberOfTrials, this.calculationsPerDay);
+//
+//            /**
+//             * newly added part for simulation improvement
+//             */
+//
+//            simulatedListBeforeChange = portfolio.getRecentSimulatedList().get(portfolio.getIncomingEventLabel());
+//            double lastPortfolioValue = portfolio.getCurrentTotalPortfolioValue();
+//            finalPortfolioValuesBeforeUpdate = portfolio.getReturnList();
+//            for (int i = 0; i < this.numberOfTrials; i++) {
+//                unchangedSimulatedListCollection[i] = lastPortfolioValue - (simulatedListBeforeChange[i] * numberOfShares + finalPortfolioValuesBeforeUpdate[i]);
+//            }
+////calculate latest portfolio value and store it in portfolio. set the latest stock price as recentStock price in the changed asset
+//            latestMarketValue = portfolio.getCurrentTotalPortfolioValue() - tempAsset.getPriceBeforeLastPrice() * numberOfShares + tempAsset.getCurrentStockPrice() * numberOfShares;
+//            tempAsset.setPriceBeforeLastPrice(tempAsset.getCurrentStockPrice());
+//            portfolio.setCurrentTotalPortfolioValue(latestMarketValue);
+//
+//            for (int i = 0; i < this.numberOfTrials; i++) {
+//                finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares + unchangedSimulatedListCollection[i]);
+//            }
+//
+////set simulated list
+//            portfolio.getRecentSimulatedList().put(portfolio.getIncomingEventLabel(), terminalStockValues);
+//        }
+//        portfolio.setReturnList(finalPortfolioValues);
+//        return new DescriptiveStatistics(finalPortfolioValues).getPercentile((1 - confidenceInterval) * 100);
+        return processData_updated(portfolio);
+    }
+
+    public Object processData_updated(Portfolio portfolio) {
         double[] terminalStockValues;
         double[] finalPortfolioValues = new double[numberOfTrials];
-        String[] keys = portfolio.getAssets().keySet().toArray(new String[portfolio.getAssets().size()]);
+//        String[] keys = portfolio.getAssets().keySet().toArray(new String[portfolio.getAssets().size()]);
         Asset tempAsset;
         LinkedList<Double> returnList;
-        double todayMarketValue;
+//        double todayMarketValue;
         int numberOfShares = 0;
         MonteCarloNativeSimulation calcNativeReference = new MonteCarloNativeSimulation();
         MonteCarloSimulation calcReference = new MonteCarloSimulation(this.numberOfTrials);
@@ -54,45 +149,14 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
         }
 //do simulation for all the assets in the portfolio
         //toggling should be local to a portfolio because every portfolio should follow this initial calculation
-        if (portfolio.isToggle() == true) {
-            for (int i = 0; i < keys.length; i++) {
-                tempAsset = assetList.get(keys[i]);
-                numberOfShares = portfolio.getAssets().get(keys[i]);
-                //this price setting should be changed after streams has been changed
-                returnList = tempAsset.getLatestReturnValues();
-                tempAsset.setPriceBeforeLastPrice(tempAsset.getCurrentStockPrice());
-                todayMarketValue = (tempAsset.getCurrentStockPrice() * numberOfShares);
-                latestMarketValue += todayMarketValue;
-
-//                terminalStockValues = calcReference.simulation(this.numberOfTrials, this.calculationsPerDay,
-//                        historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
-
-                mean = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanReturn");
-                std = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanStandardDeviation");
-                terminalStockValues = calcNativeReference.simulation(mean, std, this.timeSlice,
-                        tempAsset.getCurrentStockPrice(), this.numberOfTrials, this.calculationsPerDay);
-                /*
-                 * terminal stock values are local to a particular portfolio so we cant store it in assets.
-                 * simulated list which used later in calculation
-                 */
-
-                portfolio.getRecentSimulatedList().put(keys[i], terminalStockValues);
-
-                for (int j = 0; j < terminalStockValues.length; j++) {
-                    finalPortfolioValues[j] += (todayMarketValue - (terminalStockValues[j] * numberOfShares));
-                }
-            }
-            portfolio.setCurrentTotalPortfolioValue(latestMarketValue);
-            portfolio.setToggle(false);
-        } else {
-            /*
+      /*
             do simulation for the changed asset only
              */
-            tempAsset = assetList.get(portfolio.getIncomingEventLabel());
-            returnList = tempAsset.getLatestReturnValues();
+        tempAsset = assetList.get(portfolio.getIncomingEventLabel());
+        returnList = tempAsset.getLatestReturnValues();
+//        return
+        if (returnList != null && returnList.size() > 0) {
             numberOfShares = portfolio.getAssets().get(portfolio.getIncomingEventLabel());
-//            terminalStockValues = calcReference.simulation(this.numberOfTrials, this.calculationsPerDay,
-//                    historicalValues.stream().mapToDouble(d -> d).toArray(), this.timeSlice, historicalValues.getLast());
 
             mean = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanReturn");
             std = calcReference.getMeanReturnAndStandardDeviation(returnList.stream().mapToDouble(d -> d).toArray()).get("meanStandardDeviation");
@@ -104,24 +168,42 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
              */
 
             simulatedListBeforeChange = portfolio.getRecentSimulatedList().get(portfolio.getIncomingEventLabel());
+
             double lastPortfolioValue = portfolio.getCurrentTotalPortfolioValue();
             finalPortfolioValuesBeforeUpdate = portfolio.getReturnList();
-            for (int i = 0; i < this.numberOfTrials; i++) {
-                unchangedSimulatedListCollection[i] = lastPortfolioValue - (simulatedListBeforeChange[i] * numberOfShares + finalPortfolioValuesBeforeUpdate[i]);
+
+            if (lastPortfolioValue > 0) {
+                //calculate latest portfolio value and store it in portfolio. set the latest stock price as recentStock price in the changed asset
+                latestMarketValue = lastPortfolioValue - tempAsset.getPriceBeforeLastPrice() * numberOfShares + tempAsset.getCurrentStockPrice() * numberOfShares;
+//                tempAsset.setPriceBeforeLastPrice(tempAsset.getCurrentStockPrice());
+            } else {
+                lastPortfolioValue = tempAsset.getCurrentStockPrice() * numberOfShares;
             }
-//calculate latest portfolio value and store it in portfolio. set the latest stock price as recentStock price in the changed asset
-            latestMarketValue = portfolio.getCurrentTotalPortfolioValue() - tempAsset.getPriceBeforeLastPrice() * numberOfShares + tempAsset.getCurrentStockPrice() * numberOfShares;
-            tempAsset.setPriceBeforeLastPrice(tempAsset.getCurrentStockPrice());
+
             portfolio.setCurrentTotalPortfolioValue(latestMarketValue);
 
-            for (int i = 0; i < this.numberOfTrials; i++) {
-                finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares + unchangedSimulatedListCollection[i]);
+            if (simulatedListBeforeChange != null) {
+                for (int i = 0; i < this.numberOfTrials; i++) {
+                    unchangedSimulatedListCollection[i] = lastPortfolioValue - (simulatedListBeforeChange[i] * numberOfShares + finalPortfolioValuesBeforeUpdate[i]);
+                }
+                for (int i = 0; i < this.numberOfTrials; i++) {
+                    finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares + unchangedSimulatedListCollection[i]);
+                }
             }
 
 //set simulated list
             portfolio.getRecentSimulatedList().put(portfolio.getIncomingEventLabel(), terminalStockValues);
+
+        } else {
+            if (portfolio.getReturnList() != null) {
+                finalPortfolioValues = portfolio.getReturnList();
+            } else {
+                return 0;
+            }
         }
+
         portfolio.setReturnList(finalPortfolioValues);
         return new DescriptiveStatistics(finalPortfolioValues).getPercentile((1 - confidenceInterval) * 100);
     }
+
 }

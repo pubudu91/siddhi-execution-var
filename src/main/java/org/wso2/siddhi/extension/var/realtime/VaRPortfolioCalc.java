@@ -21,6 +21,7 @@ public abstract class VaRPortfolioCalc {
     public Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
     protected double price;
     protected String symbol;
+    Asset temporaryAsset;
 
     /**
      * @param limit
@@ -48,8 +49,10 @@ public abstract class VaRPortfolioCalc {
     public void addEvent(Object data[]) {
 
         Asset temp = assetList.get(symbol);
-        if (temp == null)
+        if (temp == null) {
             assetList.put(symbol, new Asset(symbol));
+            temp = assetList.get(symbol);
+        }
 
         temp.setPriceBeforeLastPrice(temp.getCurrentStockPrice());
         temp.setCurrentStockPrice(price);
@@ -81,13 +84,16 @@ public abstract class VaRPortfolioCalc {
      * @return
      */
     public Object calculateValueAtRisk(Object data[]) {
-        long start = System.currentTimeMillis();
+
         addEvent(data);
+        temporaryAsset = assetList.get(data[0]);
+        /***********************************************************************************************************************************/
         //if the given portfolio has the symbol and number of historical value exceeds the batch size, remove the event
-        if (assetList.get(data[0]) != null && assetList.get(data[0]).getHistoricalValues().size() > batchSize) {
+        // since we don't keep historical values anymore we have to change this
+        if (temporaryAsset != null && temporaryAsset.getHistoricalValues().size() > batchSize) {
             removeEvent(data[0].toString());
         }
-
+/***********************************************************************************************************************************/
         JSONObject result = new JSONObject();
         Set<Integer> keys = portfolioList.keySet();
         Iterator<Integer> iterator = keys.iterator();
@@ -96,7 +102,7 @@ public abstract class VaRPortfolioCalc {
         double var;
 
         //if the given symbol is in the assetList
-        if (assetList.get(data[0]) != null) {
+        if (temporaryAsset != null) {
             //for each portfolio
             while (iterator.hasNext()) {
                 key = iterator.next();
