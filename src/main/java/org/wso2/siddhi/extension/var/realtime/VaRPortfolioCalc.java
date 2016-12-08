@@ -99,7 +99,7 @@ public abstract class VaRPortfolioCalc {
         String resultString = "";
         int key;
         double var;
-//        temporaryAsset=
+        temporaryAsset=assetList.get(data[0]);
         //if the given symbol is in the assetList
         if (temporaryAsset != null) {
             //for each portfolio
@@ -113,7 +113,7 @@ public abstract class VaRPortfolioCalc {
                     Object temp = processData(portfolio);
                     if(temp != null){
                         var = Double.parseDouble(temp.toString());
-                        result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), 0);
+                        result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
                     }
                 }
             }
