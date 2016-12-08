@@ -57,18 +57,20 @@ public abstract class VaRPortfolioCalc {
         symbol = data[3].toString();
         price = ((Number) data[4]).doubleValue();
 
+        double priceBeforeLastPrice;
+
         Asset temp = assetList.get(symbol);
         if(temp == null) {
             assetList.put(symbol, new Asset(symbol));
             temp = assetList.get(symbol);
         }
 
-        temp.setPriceBeforeLastPrice(temp.getCurrentStockPrice());
+        priceBeforeLastPrice = temp.getCurrentStockPrice();
         temp.setCurrentStockPrice(price);
 
         //assume that all price values of assets cannot be zero or negative
-        if(temp.getPriceBeforeLastPrice() > 0)
-            temp.addReturnValue(Math.log(temp.getCurrentStockPrice()/temp.getPriceBeforeLastPrice()));
+        if(priceBeforeLastPrice > 0)
+            temp.addReturnValue(Math.log(price/priceBeforeLastPrice));
 
         Portfolio portfolio = portfolioList.get(portfolioID);
 
