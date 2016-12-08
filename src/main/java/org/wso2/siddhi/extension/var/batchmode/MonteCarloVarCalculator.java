@@ -171,25 +171,44 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
 
             double lastPortfolioValue = portfolio.getCurrentTotalPortfolioValue();
             finalPortfolioValuesBeforeUpdate = portfolio.getReturnList();
-
-            if (lastPortfolioValue > 0) {
+            /**
+             * following condition decide whether the calculation is done for first time or not.
+             * final portfolio values before update is null indicating that the
+             * calculation has never happened before.
+             */
+            if (lastPortfolioValue > 0 && finalPortfolioValuesBeforeUpdate != null) {
                 //calculate latest portfolio value and store it in portfolio. set the latest stock price as recentStock price in the changed asset
                 latestMarketValue = lastPortfolioValue - tempAsset.getPriceBeforeLastPrice() * numberOfShares + tempAsset.getCurrentStockPrice() * numberOfShares;
 //                tempAsset.setPriceBeforeLastPrice(tempAsset.getCurrentStockPrice());
+            /**
+             * calculation may happen earlier but there can be assets where they have not been simulated before.
+             * if the simulation has not been done before then
+             */
+                if (simulatedListBeforeChange != null) {
+                    for (int i = 0; i < this.numberOfTrials; i++) {
+                        unchangedSimulatedListCollection[i] = lastPortfolioValue - (simulatedListBeforeChange[i] * numberOfShares + finalPortfolioValuesBeforeUpdate[i]);
+                    }
+                    for (int i = 0; i < this.numberOfTrials; i++) {
+                        finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares + unchangedSimulatedListCollection[i]);
+                    }
+                } else {
+                    for (int i = 0; i < this.numberOfTrials; i++) {
+                        unchangedSimulatedListCollection[i] = lastPortfolioValue - (finalPortfolioValuesBeforeUpdate[i]);
+                    }
+                    for (int i = 0; i < this.numberOfTrials; i++) {
+                        finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares + unchangedSimulatedListCollection[i]);
+                    }
+                }
+
             } else {
-                lastPortfolioValue = tempAsset.getCurrentStockPrice() * numberOfShares;
+                latestMarketValue = tempAsset.getCurrentStockPrice() * numberOfShares;
+                for (int i = 0; i < this.numberOfTrials; i++) {
+                    finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares);
+                }
             }
 
             portfolio.setCurrentTotalPortfolioValue(latestMarketValue);
 
-            if (simulatedListBeforeChange != null) {
-                for (int i = 0; i < this.numberOfTrials; i++) {
-                    unchangedSimulatedListCollection[i] = lastPortfolioValue - (simulatedListBeforeChange[i] * numberOfShares + finalPortfolioValuesBeforeUpdate[i]);
-                }
-                for (int i = 0; i < this.numberOfTrials; i++) {
-                    finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares + unchangedSimulatedListCollection[i]);
-                }
-            }
 
 //set simulated list
             portfolio.getRecentSimulatedList().put(portfolio.getIncomingEventLabel(), terminalStockValues);
