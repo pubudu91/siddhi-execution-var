@@ -208,8 +208,6 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
             }
 
             portfolio.setCurrentTotalPortfolioValue(latestMarketValue);
-
-
 //set simulated list
             portfolio.getRecentSimulatedList().put(portfolio.getIncomingEventLabel(), terminalStockValues);
 
