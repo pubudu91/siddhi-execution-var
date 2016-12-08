@@ -80,31 +80,6 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
             //returns the corresponding percentile value from the histogram
             return stat.getPercentile((1 - confidenceInterval) * 100);
         }
-        return 0.0;
-    }
-
-    public void updateAssetList(Object data[]){
-        double lastPrice = ((Number) data[1]).doubleValue();
-        String symbol = data[0].toString();
-
-        LinkedList<Double> latestReturnValues = assetList.get(symbol).getLatestReturnValues();
-
-        //requires at least 2 historical prices to calculate VaR
-        if(assetList.get(symbol).getNumberOfHistoricalValues() > 1) {
-            double priceBeforeLastPrice = assetList.get(symbol).getHistoricalValues().
-                    get(assetList.get(symbol).getNumberOfHistoricalValues() - 2);
-
-            if (latestReturnValues.size() == batchSize - 1)
-                latestReturnValues.removeFirst();
-
-            //latestReturnValues contains Ri * S_latest
-            latestReturnValues.add(Math.log(lastPrice / priceBeforeLastPrice) * lastPrice);
-
-            double temp;
-            for (int j = 0; j < latestReturnValues.size() - 1; j++) {
-                temp = latestReturnValues.get(j) * lastPrice / priceBeforeLastPrice;
-                latestReturnValues.set(j, temp);
-            }
-        }
+        return null;
     }
 }

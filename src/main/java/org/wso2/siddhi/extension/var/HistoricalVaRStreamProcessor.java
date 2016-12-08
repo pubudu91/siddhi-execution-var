@@ -12,6 +12,7 @@ import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
 import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
+import org.wso2.siddhi.extension.var.realtime.RealTimeVaRConstants;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
@@ -39,9 +40,10 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
                 //get the symbol and price attributes from the stream to process
-                Object inputData[] = new Object[2];
-                inputData[0] = attributeExpressionExecutors[2].execute(complexEvent);
-                inputData[1] = attributeExpressionExecutors[3].execute(complexEvent);
+                Object inputData[] = new Object[5];
+                for (int i = 0; i < 2; i++) {
+                    inputData[i] = attributeExpressionExecutors[i + 2].execute(complexEvent);
+                }
 
                 Object outputData[] = new Object[1];
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
@@ -87,7 +89,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         varCalculator.readAssetList(executionPlanContext);
 
         // Add attribute for var
-        ArrayList<Attribute> attributes = new ArrayList<Attribute>(1);
+        ArrayList<Attribute> attributes = new ArrayList<>(1);
         attributes.add(new Attribute("var", Attribute.Type.STRING));
 
         return attributes;
