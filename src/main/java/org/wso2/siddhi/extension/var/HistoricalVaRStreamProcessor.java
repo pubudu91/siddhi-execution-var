@@ -40,7 +40,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
                 //get the symbol and price attributes from the stream to process
-                Object inputData[] = new Object[5];
+                Object inputData[] = new Object[2];
                 for (int i = 0; i < 2; i++) {
                     inputData[i] = attributeExpressionExecutors[i + 2].execute(complexEvent);
                 }

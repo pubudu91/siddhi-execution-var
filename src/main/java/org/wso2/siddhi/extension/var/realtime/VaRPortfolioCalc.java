@@ -55,6 +55,7 @@ public abstract class VaRPortfolioCalc {
         if(temp == null)
             assetList.put(symbol, new Asset(symbol));
 
+        temp = assetList.get(symbol);
         temp.setPriceBeforeLastPrice(temp.getCurrentStockPrice());
         temp.setCurrentStockPrice(price);
 
@@ -86,8 +87,8 @@ public abstract class VaRPortfolioCalc {
     public Object calculateValueAtRisk(Object data[]) {
         addEvent(data);
         //if the number of historical value exceeds the batch size, remove the event
-        if (assetList.get(data[3]) != null && assetList.get(data[3]).getNumberOfHistoricalValues() > batchSize) {
-            removeEvent(data[3].toString());
+        if (assetList.get(data[0]) != null && assetList.get(data[0]).getNumberOfHistoricalValues() > batchSize) {
+            removeEvent(data[0].toString());
         }
 
         JSONObject result = new JSONObject();
