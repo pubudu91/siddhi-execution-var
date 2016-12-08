@@ -1,7 +1,8 @@
 package org.wso2.siddhi.extension.var.models;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -43,5 +44,9 @@ public class Portfolio {
 
     public void setAssets(Map<String, Integer> assets) {
         this.assets = assets;
+    }
+
+    public void addAsset(String symbol, int shares){
+        assets.put(symbol, shares);
     }
 }

@@ -33,14 +33,16 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
         String symbols[] = keys.toArray(new String[portfolio.getAssets().size()]);
         Asset asset;
         int noOfShares, maxPriceListLength = 0;
-        LinkedList<Double> priceList;
+        ArrayList<Double> priceList;
 
         for (int i = 0; i < symbols.length; i++) {
-            if(i == 0)
-                maxPriceListLength = assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1;
-            else{
-                if(maxPriceListLength < assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1)
+            if(assetList.get(symbols[i]) != null) {
+                if (i == 0)
                     maxPriceListLength = assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1;
+                else {
+                    if (maxPriceListLength < assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1)
+                        maxPriceListLength = assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1;
+                }
             }
         }
 
@@ -48,27 +50,28 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
             //variable declaration
             double portfolioLossValues[] = new double[maxPriceListLength];
 
-            //initialize
-            for (int i = 0; i < maxPriceListLength; i++) {
-                portfolioLossValues[i] = 0.0;
-            }
-
             stat.setWindowSize(maxPriceListLength);
 
             //at this point we have the updated asset list values containing Ri * S_latest
             //for each asset
             for (int i = 0; i < symbols.length; i++) {
                 asset = assetList.get(symbols[i]);
-                priceList = asset.getLatestReturnValues(); //priceList contains Ri * S_latest
-                noOfShares = portfolio.getAssets().get(symbols[i]);
+                if(asset != null) {
+                    priceList = asset.getLatestReturnValues(); //priceList contains Ri * S_latest
+                    noOfShares = portfolio.getAssets().get(symbols[i]);
 
-                for (int j = 0; j < maxPriceListLength; j++) {
-                    if(j == priceList.size())
-                        break;
+                    Iterator<Double> iterator = priceList.iterator();
+                    int count = 0;
 
-                    //portfolio loss = Sigma (Si_latest * noOfShares_i) - Sigma ((1+Ri) * Si_latest * noOfShares_i)
-                    //portfolio loss = Sigma -(Ri * Si_latest * noOfShares_i)
-                    portfolioLossValues[j] += -priceList.get(j) * noOfShares;
+                    while (iterator.hasNext() && count < maxPriceListLength) {
+                        if (count == priceList.size())
+                            break;
+
+                        //portfolio loss = Sigma (Si_latest * noOfShares_i) - Sigma ((1+Ri) * Si_latest * noOfShares_i)
+                        //portfolio loss = Sigma -(Ri * Si_latest * noOfShares_i)
+                        portfolioLossValues[count] += -iterator.next() * noOfShares;
+                        count++;
+                    }
                 }
             }
 
@@ -80,31 +83,6 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
             //returns the corresponding percentile value from the histogram
             return stat.getPercentile((1 - confidenceInterval) * 100);
         }
-        return 0.0;
-    }
-
-    public void updateAssetList(Object data[]){
-        double lastPrice = ((Number) data[1]).doubleValue();
-        String symbol = data[0].toString();
-
-        LinkedList<Double> latestReturnValues = assetList.get(symbol).getLatestReturnValues();
-
-        //requires at least 2 historical prices to calculate VaR
-        if(assetList.get(symbol).getNumberOfHistoricalValues() > 1) {
-            double priceBeforeLastPrice = assetList.get(symbol).getHistoricalValues().
-                    get(assetList.get(symbol).getNumberOfHistoricalValues() - 2);
-
-            if (latestReturnValues.size() == batchSize - 1)
-                latestReturnValues.removeFirst();
-
-            //latestReturnValues contains Ri * S_latest
-            latestReturnValues.add(Math.log(lastPrice / priceBeforeLastPrice) * lastPrice);
-
-            double temp;
-            for (int j = 0; j < latestReturnValues.size() - 1; j++) {
-                temp = latestReturnValues.get(j) * lastPrice / priceBeforeLastPrice;
-                latestReturnValues.set(j, temp);
-            }
-        }
+        return null;
     }
 }
