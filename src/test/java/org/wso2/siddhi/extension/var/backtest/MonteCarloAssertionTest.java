@@ -65,24 +65,24 @@ public class MonteCarloAssertionTest {
         portfolio.put("XOM", 450);
         portfolio.put("APPL", 300);
         portfolio.put("MCSFT", 440);
-//        portfolio.put("NOK", 340);
-//        portfolio.put("ABC", 260);
-//        portfolio.put("DEF", 235);
-//        portfolio.put("GHI", 500);
-//        portfolio.put("JKL", 290);
-//        portfolio.put("GES", 305);
-//        portfolio.put("ASS_1", 480);
-//        portfolio.put("ASS_2", 584);
-//        portfolio.put("ASS_3", 300);
+        portfolio.put("NOK", 340);
+        portfolio.put("ABC", 260);
+        portfolio.put("DEF", 235);
+        portfolio.put("GHI", 500);
+        portfolio.put("JKL", 290);
+        portfolio.put("GES", 305);
+        portfolio.put("ASS_1", 480);
+        portfolio.put("ASS_2", 584);
+        portfolio.put("ASS_3", 300);
 
         calc = new MonteCarloAssertion(10, portfolio, 0.95, 251, 2);
         long begin = System.currentTimeMillis();
         var_simulation = calc.calculateVar_simulate_all();
         long end = System.currentTimeMillis();
         for (int j = 0; j < 10; j++) {
-//            System.out.println("Single Simulation " + var_simulation[0][j]);
+            System.out.println("Single Simulation " + var_simulation[0][j]);
 //            System.out.println("Total Simulation " + var_simulation[1][j]);
-            System.out.println((double) (end - begin) / 1000);
+//            System.out.println((double) (end - begin) / 1000);
         }
 
 //        System.out.println(passedCount);

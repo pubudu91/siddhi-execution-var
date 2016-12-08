@@ -43,7 +43,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
         // System.out.println(batchSize + " " + portfolio.size() + " " + symbols.length + " " + portfolio.get("IBM").getHistoricalValues().size());
 
-        // calculating 
+        // calculating
         Asset asset;
         LinkedList<Double> priceList;
         for (int i = 0; i < symbols.length; i++) {

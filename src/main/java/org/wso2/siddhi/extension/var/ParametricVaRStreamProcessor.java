@@ -11,7 +11,7 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.extension.var.realtime.ParametricVaRCalculator;
+//import org.wso2.siddhi.extension.var.realtime.ParametricVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
@@ -69,9 +69,9 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
         }
 
         // set the var calculator
-        varCalculator = new ParametricVaRCalculator(batchSize, ci);
-        varCalculator.getPortfolioValues(executionPlanContext);
-        varCalculator.readAssetList(executionPlanContext);
+//        varCalculator = new ParametricVaRCalculator(batchSize, ci);
+//        varCalculator.getPortfolioValues(executionPlanContext);
+//        varCalculator.readAssetList(executionPlanContext);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<>(1);

@@ -61,16 +61,20 @@ public class MonteCarloAssertion extends VarModelAssertion {
 //            calculator.addEvent(input);
 //            calculator.removeEvent(key[j]);
 
-            for (int j = 0; j < key.length; j++) {
+//            for (int j = 0; j < key.length; j++) {
 //                Object input[] = {key[j], priceLists.get(key[j]).get(i + this.getBatchSize() + (this.getSampleSize() *
 //                        this.getSampleSetNumber()))};
-                input[0] = key[j];
-                input[1] = priceLists.get(key[j]).get(i + this.getBatchSize() + (this.getSampleSize() * this.getSampleSetNumber()));
-                calculator.addEvent(input);
-                calculator.removeEvent(key[j]);
+//                input[0] = key[j];
+//                input[1] = priceLists.get(key[j]).get(i + this.getBatchSize() + (this.getSampleSize() * this.getSampleSetNumber()));
+//                calculator.addEvent(input);
+//                calculator.removeEvent(key[j]);
 
-            }
-
+//            }
+            int j = 0;
+            input[0] = key[j];
+            input[1] = priceLists.get(key[j]).get(i + this.getBatchSize() + (this.getSampleSize() * this.getSampleSetNumber()));
+            calculator.addEvent(input);
+            calculator.removeEvent(key[j]);
             _portfolio.setIncomingEventLabel((String) input[0]);
             tempVar[0][i] = (Double) calculator.processData(_portfolio);
 //            tempVar[1][i] = (Double) calculator.processData_total(_portfolio);
