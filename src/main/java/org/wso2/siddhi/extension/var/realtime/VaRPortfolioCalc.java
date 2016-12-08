@@ -17,8 +17,8 @@ import java.util.*;
 public abstract class VaRPortfolioCalc {
     protected double confidenceInterval = 0.95;
     protected int batchSize = 1000000000;
-    protected Map<Integer, Portfolio> portfolioList;
-    public Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
+    private Map<Integer, Portfolio> portfolioList;
+    protected Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
     protected double price;
     protected String symbol;
     Asset temporaryAsset;
@@ -30,6 +30,8 @@ public abstract class VaRPortfolioCalc {
     public VaRPortfolioCalc(int limit, double ci) {
         confidenceInterval = ci;
         batchSize = limit;
+
+        //ensures that there will be only one instance of each
         portfolioList = new HashMap<>();
         assetList = new HashMap<>();
     }
@@ -47,6 +49,8 @@ public abstract class VaRPortfolioCalc {
      * @param data
      */
     public void addEvent(Object data[]) {
+        symbol = data[0].toString();
+        price = ((Number) data[1]).doubleValue();
 
         Asset temp = assetList.get(symbol);
         if (temp == null) {
@@ -60,7 +64,6 @@ public abstract class VaRPortfolioCalc {
         //assume that all price values of assets cannot be zero or negative
         if (temp.getPriceBeforeLastPrice() > 0)
             temp.addReturnValue(Math.log(temp.getCurrentStockPrice() / temp.getPriceBeforeLastPrice()));
-
     }
 
     /**
@@ -69,7 +72,7 @@ public abstract class VaRPortfolioCalc {
      * @param symbol
      */
     public void removeEvent(String symbol) {
-        LinkedList<Double> priceList = assetList.get(symbol).getHistoricalValues();
+        LinkedList<Double> priceList = assetList.get(symbol).getLatestReturnValues();
         priceList.remove(0);
     }
 
@@ -86,14 +89,11 @@ public abstract class VaRPortfolioCalc {
     public Object calculateValueAtRisk(Object data[]) {
 
         addEvent(data);
-        temporaryAsset = assetList.get(data[0]);
-        /***********************************************************************************************************************************/
-        //if the given portfolio has the symbol and number of historical value exceeds the batch size, remove the event
-        // since we don't keep historical values anymore we have to change this
-        if (temporaryAsset != null && temporaryAsset.getHistoricalValues().size() > batchSize) {
-            removeEvent(data[0].toString());
+        //if the number of historical value exceeds the batch size, remove the event
+        if (assetList.get(data[3]) != null && assetList.get(data[3]).getNumberOfHistoricalValues() > batchSize) {
+            removeEvent(data[3].toString());
         }
-/***********************************************************************************************************************************/
+
         JSONObject result = new JSONObject();
         Set<Integer> keys = portfolioList.keySet();
         Iterator<Integer> iterator = keys.iterator();
@@ -111,8 +111,11 @@ public abstract class VaRPortfolioCalc {
                 //if the portfolio has the asset, calculate VaR
                 if (portfolio.getAssets().get(data[0]) != null) {
                     portfolio.setIncomingEventLabel(data[0].toString());
-                    var = Double.parseDouble(processData(portfolio).toString());
-                    result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
+                    Object temp = processData(portfolio);
+                    if(temp != null){
+                        var = Double.parseDouble(temp.toString());
+                        result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
+                    }
                 }
             }
         }
@@ -180,7 +183,5 @@ public abstract class VaRPortfolioCalc {
             e.printStackTrace();
         }
     }
-
-
 }
 
