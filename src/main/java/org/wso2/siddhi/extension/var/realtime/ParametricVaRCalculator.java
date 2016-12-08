@@ -15,9 +15,9 @@ import java.util.Set;
  */
 public class ParametricVaRCalculator extends VaRPortfolioCalc {
     private DescriptiveStatistics stat;
+    private int length;
 
     /**
-     *
      * @param limit
      * @param ci
      */
@@ -26,7 +26,6 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
     }
 
     /**
-     *
      * @return the var of the portfolio
      */
     @Override
@@ -40,24 +39,23 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         Set<String> keys = portfolio.getAssets().keySet();
         String symbols[] = keys.toArray(new String[portfolio.getAssets().size()]);
         double[][] means = new double[1][portfolio.getAssets().size()];
-
-        // System.out.println(batchSize + " " + portfolio.size() + " " + symbols.length + " " + portfolio.get("IBM").getHistoricalValues().size());
-
-        // calculating 
         Asset asset;
-        LinkedList<Double> priceList;
+        LinkedList<Double> returnList;
+
         for (int i = 0; i < symbols.length; i++) {
             asset = assetList.get(symbols[i]);
-            priceList = asset.getHistoricalValues();
-            weightage[0][i] = priceList.getLast() * portfolio.getAssets().get(symbols[i]);
+            returnList = asset.getLatestReturnValues();
+            int length = returnList.size();
+            weightage[0][i] = asset.getCurrentStockPrice() * portfolio.getAssets().get(symbols[i]);
             portfolioTotal += weightage[0][i];
-
-            Double priceArray[] = priceList.toArray(new Double[batchSize]);
-            for (int j = 0; j < priceArray.length - 1; j++) {
-                priceReturns[j][i] = Math.log(priceArray[j + 1] / priceArray[j]);
+            for (int j = 0; j < length; j++) {
+                priceReturns[j][i] = returnList.get(j);
                 stat.addValue(priceReturns[j][i]);
             }
-            means[0][i] = stat.getMean();
+            if (length == 0)
+                means[0][i] = 0;
+            else
+                means[0][i] = stat.getMean();
         }
 
         /** calculate  weightage **/
@@ -66,18 +64,17 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
             //weightage[0][i] = 1.0/symbols.length; // for equal weight
         }
 
-
         /*
          * calculate excess returns
          */
         double[][] excessReturns = new double[batchSize - 1][portfolio.getAssets().size()];
         for (int i = 0; i < portfolio.getAssets().size(); i++) {
-            for (int j = 0; j < batchSize - 1; j++) {
+            for (int j = 0; j < assetList.get(symbols[i]).getLatestReturnValues().size(); j++) {
                 excessReturns[j][i] = priceReturns[j][i] - means[0][i];
             }
         }
 
-        /* create a matrices from excess returns, means  and weight-age*/
+            /* create a matrices from excess returns, means  and weight-age*/
         RealMatrix returnMatrix = new Array2DRowRealMatrix(excessReturns);
         RealMatrix weightageMatrix = new Array2DRowRealMatrix(weightage);
         RealMatrix meanMatrix = new Array2DRowRealMatrix(means);
@@ -85,17 +82,34 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         RealMatrix VCV = (returnMatrix.transpose().multiply(returnMatrix)).scalarMultiply(1.0 / (batchSize - 2));
         RealMatrix PV = weightageMatrix.multiply(VCV).multiply(weightageMatrix.transpose());
         RealMatrix PM = weightageMatrix.multiply(meanMatrix.transpose());
+
         double pv = PV.getData()[0][0];
         double pm = PM.getData()[0][0];
-        double ps = Math.sqrt(pv);
+
+//      Jama.Matrix returnMatrixJ = new Jama.Matrix(excessReturns);
+//      Jama.Matrix weightageMatrixJ = new Jama.Matrix(weightage);
+//      Jama.Matrix meanMatrixJ = new Jama.Matrix(means);
+//
+//      Jama.Matrix VCVJ = returnMatrixJ.transpose().times(returnMatrixJ).times(1.0 / (batchSize - 2));
+//      Jama.Matrix PVJ = (weightageMatrixJ.times(VCVJ).times(weightageMatrixJ.transpose()));
+//      Jama.Matrix PMJ = weightageMatrixJ.times(meanMatrixJ.transpose());
+//
+//      double pv = PVJ.get(0, 0);
+//      double pm = PMJ.get(0, 0);
+//      double ps = Math.sqrt(pv);
 
         //NormalDistribution n = new NormalDistribution();
         //double var = n.inverseCumulativeProbability(1-confidenceInterval) * ps;
         //System.out.println(var*portfolioTotal);
 
-        NormalDistribution n = new NormalDistribution(pm,ps);
-        double var = n.inverseCumulativeProbability(1-confidenceInterval);
+        if (pv == 0) {
+            System.out.print(portfolio.getID() + " : " + pm + " ");
+            return pm;
+        }
+        double ps = Math.sqrt(pv);
+        NormalDistribution n = new NormalDistribution(pm, ps);
+        double var = n.inverseCumulativeProbability(1 - confidenceInterval);
+        System.out.print(portfolio.getID() + " : " + var * portfolioTotal + " ");
         return var * portfolioTotal;
     }
-
 }
