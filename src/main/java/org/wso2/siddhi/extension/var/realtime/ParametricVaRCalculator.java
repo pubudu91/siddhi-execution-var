@@ -52,7 +52,10 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
                 priceReturns[j][i] = returnList.get(j);
                 stat.addValue(priceReturns[j][i]);
             }
-            means[0][i] = stat.getMean();
+            if (length == 0)
+                means[0][i] = 0;
+            else
+                means[0][i] = stat.getMean();
         }
 
         /** calculate  weightage **/

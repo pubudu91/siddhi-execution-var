@@ -21,7 +21,6 @@ public abstract class VaRPortfolioCalc {
     protected Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
     protected double price;
     protected String symbol;
-    Asset temporaryAsset;
 
     /**
      * @param limit
@@ -52,8 +51,11 @@ public abstract class VaRPortfolioCalc {
         symbol = data[0].toString();
         price = ((Number) data[1]).doubleValue();
 
+
+        double priceBeforeLastPrice;
+
         Asset temp = assetList.get(symbol);
-        if (temp == null) {
+        if(temp == null) {
             assetList.put(symbol, new Asset(symbol));
             temp = assetList.get(symbol);
         }
@@ -61,9 +63,10 @@ public abstract class VaRPortfolioCalc {
         temp.setPriceBeforeLastPrice(temp.getCurrentStockPrice());
         temp.setCurrentStockPrice(price);
 
+        priceBeforeLastPrice = temp.getPriceBeforeLastPrice();
         //assume that all price values of assets cannot be zero or negative
-        if (temp.getPriceBeforeLastPrice() > 0)
-            temp.addReturnValue(Math.log(temp.getCurrentStockPrice() / temp.getPriceBeforeLastPrice()));
+        if(priceBeforeLastPrice > 0)
+            temp.addReturnValue(Math.log(price/priceBeforeLastPrice));
     }
 
     /**
@@ -99,16 +102,16 @@ public abstract class VaRPortfolioCalc {
         String resultString = "";
         int key;
         double var;
-        temporaryAsset=assetList.get(data[0]);
+
         //if the given symbol is in the assetList
-        if (temporaryAsset != null) {
+        if (assetList.get(data[0]) != null) {
             //for each portfolio
             while (iterator.hasNext()) {
                 key = iterator.next();
                 Portfolio portfolio = portfolioList.get(key);
 
                 //if the portfolio has the asset, calculate VaR
-                if (portfolio.getAssets().get(data[0]) != null) {
+                if(portfolio.getAssets().get(data[0]) != null) {
                     portfolio.setIncomingEventLabel(data[0].toString());
                     Object temp = processData(portfolio);
                     if(temp != null){
@@ -183,3 +186,4 @@ public abstract class VaRPortfolioCalc {
         }
     }
 }
+

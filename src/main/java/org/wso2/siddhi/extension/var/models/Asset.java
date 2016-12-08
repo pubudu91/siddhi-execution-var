@@ -12,14 +12,37 @@ public class Asset {
     private double priceBeforeLastPrice;
     private String symbol;
     private LinkedList<Double> latestReturnValues;
+    private double[] simulatedList;
+
+    public double[] getSimulatedList() {
+        return simulatedList;
+    }
+
+    public void setSimulatedList(double[] simulatedList) {
+        this.simulatedList = simulatedList;
+    }
 
     public Asset(String symbol) {
         this.symbol = symbol;
         latestReturnValues = new LinkedList<>();
     }
 
+    public String getSymbol(){ return symbol; }
+
     public void setLatestReturnValues(LinkedList<Double> latestReturnValues){
         this.latestReturnValues = latestReturnValues;
+    }
+
+    public double getPriceBeforeLastPrice() {
+        return priceBeforeLastPrice;
+    }
+
+    public void setPriceBeforeLastPrice(double priceBeforeLastPrice) {
+        this.priceBeforeLastPrice = priceBeforeLastPrice;
+    }
+
+    public void addReturnValue(double value){
+        latestReturnValues.add(value);
     }
 
     public LinkedList<Double> getLatestReturnValues(){
@@ -30,14 +53,6 @@ public class Asset {
         return latestReturnValues.size() + 1;
     }
 
-    public double getPriceBeforeLastPrice(){
-        return priceBeforeLastPrice;
-    }
-
-    public void setPriceBeforeLastPrice(double priceBeforeLastPrice){
-        this.priceBeforeLastPrice = priceBeforeLastPrice;
-    }
-
     public double getCurrentStockPrice(){
         return currentStockPrice;
     }
@@ -45,9 +60,4 @@ public class Asset {
     public void setCurrentStockPrice(double currentStockPrice){
         this.currentStockPrice = currentStockPrice;
     }
-
-    public void addReturnValue(double value){
-        latestReturnValues.add(value);
-    }
-
 }

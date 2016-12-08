@@ -17,6 +17,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
+import static org.wso2.siddhi.extension.var.realtime.RealTimeVaRConstants.DATA_SOURCE_NAME;
+
 
 /**
  * Created by dilip on 06/07/16.
@@ -33,9 +35,10 @@ public class ParametricVaRCalculatorTest {
         ExecutionPlanContext executionPlanContext = new ExecutionPlanContext();
         SiddhiContext siddhiContext = new SiddhiContext();
         MysqlDataSource dataSource = new MysqlDataSource();
-        dataSource.setURL("jdbc:mysql://localhost:3306/AnalyticsDataSource");
+        dataSource.setURL("jdbc:mysql://localhost:3306/"+DATA_SOURCE_NAME);
         dataSource.setUser("root");
-        siddhiContext.addSiddhiDataSource("AnalyticsDataSource",dataSource);
+        dataSource.setPassword("root");
+        siddhiContext.addSiddhiDataSource(DATA_SOURCE_NAME,dataSource);
         executionPlanContext.setSiddhiContext(siddhiContext);
         varCalculator.getPortfolioValues(executionPlanContext);
         varCalculator.readAssetList(executionPlanContext);
