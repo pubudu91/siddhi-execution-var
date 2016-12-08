@@ -9,10 +9,8 @@ import java.util.LinkedList;
  */
 public class Asset {
     private double currentStockPrice;
-    private double priceBeforeLastPrice;
     private String symbol;
     private LinkedList<Double> latestReturnValues;
-    private int numberOfHistoricalValues;
     private double[] simulatedList;
 
     public double[] getSimulatedList() {
@@ -44,14 +42,6 @@ public class Asset {
 
     public int getNumberOfHistoricalValues(){
         return latestReturnValues.size() + 1;
-    }
-
-    public double getPriceBeforeLastPrice(){
-        return priceBeforeLastPrice;
-    }
-
-    public void setPriceBeforeLastPrice(double priceBeforeLastPrice){
-        this.priceBeforeLastPrice = priceBeforeLastPrice;
     }
 
     public double getCurrentStockPrice(){

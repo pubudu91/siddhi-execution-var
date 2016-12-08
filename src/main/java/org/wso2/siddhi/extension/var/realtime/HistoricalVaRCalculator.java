@@ -34,6 +34,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
         Asset asset;
         int noOfShares, maxPriceListLength = 0;
         LinkedList<Double> priceList;
+        double lastPrice;
 
         for (int i = 0; i < symbols.length; i++) {
             if(i == 0)
@@ -56,6 +57,8 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
                 asset = assetList.get(symbols[i]);
                 priceList = asset.getLatestReturnValues(); //priceList contains Ri * S_latest
                 noOfShares = portfolio.getAssets().get(symbols[i]);
+                lastPrice = asset.getCurrentStockPrice();
+
                 Iterator<Double> iterator = priceList.listIterator(0);
                 int count = 0;
 
@@ -65,7 +68,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
 
                     //portfolio loss = Sigma (Si_latest * noOfShares_i) - Sigma ((1+Ri) * Si_latest * noOfShares_i)
                     //portfolio loss = Sigma -(Ri * Si_latest * noOfShares_i)
-                    portfolioLossValues[count] += -iterator.next() * noOfShares;
+                    portfolioLossValues[count] += -iterator.next() * noOfShares * lastPrice;
                     count++;
                 }
             }
