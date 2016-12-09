@@ -16,7 +16,7 @@ import java.util.*;
  */
 public abstract class VaRPortfolioCalc {
     protected double confidenceInterval = 0.95;
-    protected int batchSize = 1000000000;
+    protected int batchSize = 251;
     private Map<Integer, Portfolio> portfolioList;
     protected Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
     protected double price;
@@ -36,26 +36,18 @@ public abstract class VaRPortfolioCalc {
     }
 
     /**
-     * for testing purposes
+     * this method will calculate the return values and store it in asset itself
      *
-     * @param assetList
-     */
-    public void setAssetList(Map<String, Asset> assetList) {
-        this.assetList = assetList;
-    }
-
-    /**
      * @param data
      */
     public void addEvent(Object data[]) {
         symbol = data[0].toString();
         price = ((Number) data[1]).doubleValue();
 
-
         double priceBeforeLastPrice;
 
         Asset temp = assetList.get(symbol);
-        if(temp == null) {
+        if (temp == null) {
             assetList.put(symbol, new Asset(symbol));
             temp = assetList.get(symbol);
         }
@@ -65,8 +57,8 @@ public abstract class VaRPortfolioCalc {
 
         priceBeforeLastPrice = temp.getPriceBeforeLastPrice();
         //assume that all price values of assets cannot be zero or negative
-        if(priceBeforeLastPrice > 0)
-            temp.addReturnValue(Math.log(price/priceBeforeLastPrice));
+        if (priceBeforeLastPrice > 0)
+            temp.addReturnValue(Math.log(price / priceBeforeLastPrice));
     }
 
     /**
@@ -86,6 +78,8 @@ public abstract class VaRPortfolioCalc {
     protected abstract Object processData(Portfolio portfolio);
 
     /**
+     * this method will be invoked when a calculation is requested.
+     *
      * @param data
      * @return
      */
@@ -111,10 +105,10 @@ public abstract class VaRPortfolioCalc {
                 Portfolio portfolio = portfolioList.get(key);
 
                 //if the portfolio has the asset, calculate VaR
-                if(portfolio.getAssets().get(data[0]) != null) {
+                if (portfolio.getAssets().get(data[0]) != null) {
                     portfolio.setIncomingEventLabel(data[0].toString());
                     Object temp = processData(portfolio);
-                    if(temp != null){
+                    if (temp != null) {
                         var = Double.parseDouble(temp.toString());
                         result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
                     }
@@ -129,6 +123,8 @@ public abstract class VaRPortfolioCalc {
     }
 
     /**
+     * retrieve portfolio details from database
+     *
      * @param executionPlanContext
      */
     public void getPortfolioValues(ExecutionPlanContext executionPlanContext) {
@@ -165,6 +161,8 @@ public abstract class VaRPortfolioCalc {
     }
 
     /**
+     * retrieve asset details in database
+     *
      * @param executionPlanContext
      */
     public void readAssetList(ExecutionPlanContext executionPlanContext) {
