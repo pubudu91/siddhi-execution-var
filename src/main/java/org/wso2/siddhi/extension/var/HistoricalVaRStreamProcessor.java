@@ -40,13 +40,13 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
                 //get the symbol and price attributes from the stream to process
-                Object inputData[] = new Object[5];
+                Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
                 for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
                     inputData[i] = attributeExpressionExecutors[i + 2].execute(complexEvent);
                 }
 
                 Object outputData[] = new Object[1];
-                outputData[0] = varCalculator.calculateValueAtRisk(inputData);
+                outputData[0] = varCalculator.newCalculateValueAtRisk(inputData);
 
                 // Skip processing if user has specified calculation interval
                 if (outputData[0] == null) { //if there is no output
@@ -85,8 +85,6 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
 
         // set the var calculator
         varCalculator = new HistoricalVaRCalculator(batchSize, ci);
-//        varCalculator.getPortfolioValues(executionPlanContext);
-//        varCalculator.readAssetList(executionPlanContext);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<>(1);
