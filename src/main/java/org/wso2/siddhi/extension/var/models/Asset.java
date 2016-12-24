@@ -11,10 +11,19 @@ import java.util.Iterator;
 public class Asset {
     private double currentStockPrice;
     private ArrayList<Double> latestReturnValues;   //check with others if this can be replaced with stat object
-    private double[] simulatedList;
+    private double[] simulatedList = null;
     private DescriptiveStatistics returnValueSet;
     private double previousLossReturn;
     private double priceBeforeLastPrice;
+    private double[] previousSimulatedList = null;
+
+    public double[] getPreviousSimulatedList() {
+        return previousSimulatedList;
+    }
+
+    public void setPreviousSimulatedList(double[] previousSimulatedList) {
+        this.previousSimulatedList = previousSimulatedList;
+    }
 
     public double[] getSimulatedList() {
         return simulatedList;
@@ -28,27 +37,27 @@ public class Asset {
         latestReturnValues = new ArrayList<>();
     }
 
-    public void setLatestReturnValues(ArrayList<Double> latestReturnValues){
+    public void setLatestReturnValues(ArrayList<Double> latestReturnValues) {
         this.latestReturnValues = latestReturnValues;
     }
 
-    public void addReturnValue(double value){
+    public void addReturnValue(double value) {
         latestReturnValues.add(value);
     }
 
-    public ArrayList<Double> getLatestReturnValues(){
+    public ArrayList<Double> getLatestReturnValues() {
         return latestReturnValues;
     }
 
-    public int getNumberOfHistoricalValues(){
+    public int getNumberOfHistoricalValues() {
         return latestReturnValues.size() + 1;
     }
 
-    public double getCurrentStockPrice(){
+    public double getCurrentStockPrice() {
         return currentStockPrice;
     }
 
-    public void setCurrentStockPrice(double currentStockPrice){
+    public void setCurrentStockPrice(double currentStockPrice) {
         this.currentStockPrice = currentStockPrice;
     }
 

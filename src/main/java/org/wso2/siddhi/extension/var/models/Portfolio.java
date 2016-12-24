@@ -9,16 +9,25 @@ import java.util.Map;
 public class Portfolio {
     private int ID;
     private Map<String, Integer> assets;
-    private String incomingEventLabel = null;   //this is not required. we have "symbol" in VarPortfolioCalc. remove this.
     private int previousShares;
     private double historicalVarValue;
+    private double MONTECARLO_SIMULATION_currentPortfolioValue;
+    private double [] MONTECARLO_SIMULATION_finalPortfolioValueList=null;
 
-    public String getIncomingEventLabel() {
-        return incomingEventLabel;
+    public double[] getMONTECARLO_SIMULATION_finalPortfolioValues() {
+        return MONTECARLO_SIMULATION_finalPortfolioValueList;
     }
 
-    public void setIncomingEventLabel(String incomingEventLabel) {
-        this.incomingEventLabel = incomingEventLabel;
+    public void setMONTECARLO_SIMULATION_finalPortfolioValues(double[] MONTECARLO_SIMULATION_finalPortfolioValues) {
+        this.MONTECARLO_SIMULATION_finalPortfolioValueList = MONTECARLO_SIMULATION_finalPortfolioValues;
+    }
+
+    public double getMONTECARLO_SIMULATION_currentPortfolioValue() {
+        return MONTECARLO_SIMULATION_currentPortfolioValue;
+    }
+
+    public void setMONTECARLO_SIMULATION_currentPortfolioValue(double MONTECARLO_SIMULATION_currentPortfolioValue) {
+        this.MONTECARLO_SIMULATION_currentPortfolioValue = MONTECARLO_SIMULATION_currentPortfolioValue;
     }
 
     public Portfolio() {
@@ -46,7 +55,7 @@ public class Portfolio {
         this.assets = assets;
     }
 
-    public void addAsset(String symbol, int shares){
+    public void addAsset(String symbol, int shares) {
         assets.put(symbol, shares);
     }
 

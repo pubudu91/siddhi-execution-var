@@ -11,7 +11,7 @@ public class MonteCarloNativeSimulation {
 
     static {
         try {
-            System.load("/var/www/html/FYP/siddhi/modules/siddhi-extensions/var/src/libs/nativeSimulation.so");
+            System.load("/var/www/html/FYP/wso2das-3.1.0-SNAPSHOT/lib/nativeSimulation.so");
         } catch (Exception e) {
             e.printStackTrace();
         }
