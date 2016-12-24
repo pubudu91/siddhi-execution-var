@@ -128,12 +128,15 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
         MonteCarloSimulation calcReference = new MonteCarloSimulation();
         MonteCarloNativeSimulation calcNativeReference = new MonteCarloNativeSimulation();
 
-        Double mean = calcReference.getMeanReturnAndStandardDeviation(returnList).get("meanReturn");
-        Double std = calcReference.getMeanReturnAndStandardDeviation(returnList).get("meanStandardDeviation");
-        tempAsset.setPreviousSimulatedList(tempAsset.getSimulatedList());
-        terminalStockValues = calcNativeReference.simulation(mean, std, this.timeSlice,
-                tempAsset.getCurrentStockPrice(), this.numberOfTrials, this.calculationsPerDay);
-        tempAsset.setSimulatedList(terminalStockValues);
+        if (returnList != null && returnList.length > 0) {
+            Double mean = calcReference.getMeanReturnAndStandardDeviation(returnList).get("meanReturn");
+            Double std = calcReference.getMeanReturnAndStandardDeviation(returnList).get("meanStandardDeviation");
+            tempAsset.setPreviousSimulatedList(tempAsset.getSimulatedList());
+            terminalStockValues = calcNativeReference.simulation(mean, std, this.timeSlice,
+                    tempAsset.getCurrentStockPrice(), this.numberOfTrials, this.calculationsPerDay);
+            tempAsset.setSimulatedList(terminalStockValues);
+        }
+
         return 0;
     }
 
