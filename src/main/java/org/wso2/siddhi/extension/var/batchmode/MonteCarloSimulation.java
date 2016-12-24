@@ -178,9 +178,6 @@ public class MonteCarloSimulation {
         return MonteCarloSimulation.finalSimulatedValues;
     }
 
-    /**
-     * inner class where load balancing is done
-     */
     class ParallelSimulation implements Runnable {
         private int numberOfTrials;
         private int startingPoint;
@@ -205,9 +202,6 @@ public class MonteCarloSimulation {
             parameters.put("currentStockValue", currentStockPrice);
         }
 
-        /**
-         * allocate the task according to the thread ID
-         */
         @Override
         public void run() {
 
