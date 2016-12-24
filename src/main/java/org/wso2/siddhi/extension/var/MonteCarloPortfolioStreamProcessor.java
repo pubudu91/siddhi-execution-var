@@ -41,7 +41,7 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
                 Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
 
                 for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
-                    inputData[i] = attributeExpressionExecutors[i + 2].execute(complexEvent);
+                    inputData[i] = attributeExpressionExecutors[i + 5].execute(complexEvent);
                 }
 
                 Object outputData[] = new Object[1];
@@ -64,9 +64,9 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
             paramPosition = (attributeExpressionLength + 4) / 2;
             try {
                 this.batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
-                this.timeSlice = ((double) attributeExpressionExecutors[4].execute(null));
-                this.numberOfTrials = ((Integer) attributeExpressionExecutors[5].execute(null));
-                this.calculationsPerDay = ((Integer) attributeExpressionExecutors[6].execute(null));
+                this.timeSlice = ((double) attributeExpressionExecutors[2].execute(null));
+                this.numberOfTrials = ((Integer) attributeExpressionExecutors[3].execute(null));
+                this.calculationsPerDay = ((Integer) attributeExpressionExecutors[4].execute(null));
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Calculation interval, batch size and range should be of type int");
             }
