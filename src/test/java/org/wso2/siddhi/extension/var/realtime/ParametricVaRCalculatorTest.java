@@ -41,7 +41,7 @@ public class ParametricVaRCalculatorTest {
         siddhiContext.addSiddhiDataSource(DATA_SOURCE_NAME,dataSource);
         executionPlanContext.setSiddhiContext(siddhiContext);
         varCalculator.getPortfolioValues(executionPlanContext);
-        varCalculator.readAssetList(executionPlanContext);
+        //varCalculator.readAssetList(executionPlanContext);
 
         Object[] inputData = new Object[2];
         String[] split;
