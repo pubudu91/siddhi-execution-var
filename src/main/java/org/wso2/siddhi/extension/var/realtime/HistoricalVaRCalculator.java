@@ -10,7 +10,6 @@ import java.util.*;
  * Created by dilini92 on 6/26/16.
  */
 public class HistoricalVaRCalculator extends VaRPortfolioCalc {
-    private DescriptiveStatistics stat;
 
     /**
      *
@@ -20,67 +19,35 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
     public HistoricalVaRCalculator(int limit, double ci) {
         super(limit, ci);
     }
-
+        private DescriptiveStatistics stat;
     /**
      * @return the var of the portfolio
      */
     @Override
     public Object processData(Portfolio portfolio) {
-        stat = new DescriptiveStatistics();
+        Asset asset = assetList.get(symbol);
+        if(asset.getNumberOfHistoricalValues() > 1) {
+            double var = portfolio.getHistoricalVarValue();
+            double previousReturnValue = asset.getPreviousLossReturn();
+            double currentReturnValue = asset.getReturnValueSet().getPercentile((1 - confidenceInterval) * 100);
+            int previousShares = portfolio.getPreviousShares();
+            int currentShares = portfolio.getAssets().get(symbol);
+            double previousPrice = asset.getPriceBeforeLastPrice();
+            double currentPrice = asset.getCurrentStockPrice();
 
-        //calculate the latest market value of the portfolio
-        Set<String> keys = portfolio.getAssets().keySet();
-        String symbols[] = keys.toArray(new String[portfolio.getAssets().size()]);
-        Asset asset;
-        int noOfShares, maxPriceListLength = 0;
-        LinkedList<Double> priceList;
-        double lastPrice;
+            var -= previousReturnValue * previousPrice * previousShares;
+            var += currentReturnValue * currentPrice * currentShares;
 
-        for (int i = 0; i < symbols.length; i++) {
-            if(i == 0)
-                maxPriceListLength = assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1;
-            else{
-                if(maxPriceListLength < assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1)
-                    maxPriceListLength = assetList.get(symbols[i]).getNumberOfHistoricalValues() - 1;
-            }
-        }
+            asset.setPreviousLossReturn(currentReturnValue);
+            portfolio.setHistoricalVarValue(var);
 
-        if(maxPriceListLength > 0) {
-            //variable declaration
-            double portfolioLossValues[] = new double[maxPriceListLength];
-
-            stat.setWindowSize(maxPriceListLength);
-
-            //at this point we have the updated asset list values containing Ri * S_latest
-            //for each asset
-            for (int i = 0; i < symbols.length; i++) {
-                asset = assetList.get(symbols[i]);
-                priceList = asset.getLatestReturnValues(); //priceList contains Ri * S_latest
-                noOfShares = portfolio.getAssets().get(symbols[i]);
-                lastPrice = asset.getCurrentStockPrice();
-
-                Iterator<Double> iterator = priceList.listIterator(0);
-                int count = 0;
-
-                while(iterator.hasNext() && count < maxPriceListLength){
-                    if(count == priceList.size())
-                        break;
-
-                    //portfolio loss = Sigma (Si_latest * noOfShares_i) - Sigma ((1+Ri) * Si_latest * noOfShares_i)
-                    //portfolio loss = Sigma -(Ri * Si_latest * noOfShares_i)
-                    portfolioLossValues[count] += -iterator.next() * noOfShares * lastPrice;
-                    count++;
-                }
-            }
-
-            //get the summation of the market value of all assets in the portfolio for each observation
-            for (int i = 0; i < maxPriceListLength; i++) {
-                stat.addValue(portfolioLossValues[i]);
-            }
-
-            //returns the corresponding percentile value from the histogram
-            return stat.getPercentile((1 - confidenceInterval) * 100);
+            return var;
         }
         return null;
+    }
+
+    @Override
+    public double replaceAssetSimulation() {
+        return 0;
     }
 }
