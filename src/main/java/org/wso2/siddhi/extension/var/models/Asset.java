@@ -60,4 +60,8 @@ public class Asset {
     public void setCurrentStockPrice(double currentStockPrice){
         this.currentStockPrice = currentStockPrice;
     }
+
+    public int getNumberOfReturnValues() {
+        return latestReturnValues.size();
+    }
 }
