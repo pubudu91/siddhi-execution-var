@@ -17,12 +17,13 @@ import java.util.*;
 public abstract class VaRPortfolioCalc {
     protected double confidenceInterval = 0.95;
     protected int batchSize;
+
     private Map<Integer, Portfolio> portfolioList;
     protected Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
     protected double price;
     protected String symbol;
-    private int portfolioID;
-    private int shares;
+    protected int portfolioID;
+    protected int shares;
 
     /**
      * @param limit
@@ -66,7 +67,7 @@ public abstract class VaRPortfolioCalc {
         }
     }
 
-    private void updateAssetPool(){
+    protected void updateAssetPool(){
         double priceBeforeLastPrice;
 
         Asset temp = assetList.get(symbol);
@@ -88,7 +89,7 @@ public abstract class VaRPortfolioCalc {
         }
     }
 
-    private void updatePortfolioPool(){
+    protected void updatePortfolioPool(){
         Portfolio portfolio = portfolioList.get(portfolioID);
 
         if(portfolio == null){//first time for the portfolio
@@ -111,7 +112,7 @@ public abstract class VaRPortfolioCalc {
      * @param symbol
      */
     public void removeEvent(String symbol) {
-        ArrayList<Double> priceList = assetList.get(symbol).getLatestReturnValues();
+        LinkedList<Double> priceList = assetList.get(symbol).getLatestReturnValues();
         priceList.remove(0);
 
         portfolioList.get(portfolioID).getAssets().remove(symbol);

@@ -1,18 +1,9 @@
 package org.wso2.siddhi.extension.var.realtime;
 
-import junit.framework.Assert;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
-import org.wso2.siddhi.extension.var.models.Asset;
-import org.wso2.siddhi.extension.var.models.Portfolio;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.*;
-
 
 /**
  * Created by dilip on 06/07/16.
@@ -20,54 +11,36 @@ import java.util.*;
 public class ParametricVaRCalculatorTest {
 
     @Test
-    public void testAddEvent() throws Exception {
-
-    }
-
-    @Test
-    public void testRemoveEvent() throws Exception {
-
-    }
-
-    @Test
     public void testProcessData() throws Exception {
-        int limit=1510;
-        double ci=0.95;
-
-        ParametricVaRCalculator calc = new ParametricVaRCalculator(limit,ci);
-        calc.assetList = getData();
-        Map<String,Integer> asset = new HashMap<>();
-        Set<String> keys = calc.assetList.keySet();
-        String symbols[] = keys.toArray(new String[calc.assetList.size()]);
-        for (int i = 0; i < symbols.length ; i++) {
-            asset.put(symbols[i],200);
-        }
-        Portfolio p = new Portfolio(1,asset);
-
-        Assert.assertEquals(-2426.2715334801333,calc.processData(p));
-    }
-
-    protected Map<String, Asset> getData() throws IOException {
-
+        int batchSize = 251;
+        double ci = 0.95;
+        ParametricVaRCalculator varCalculator = new ParametricVaRCalculator(batchSize, ci);
+        Object[] inputData = new Object[4];
+        String[] split;
         ClassLoader classLoader = getClass().getClassLoader();
-        File inputFile = new File(classLoader.getResource("data.xlsx").getFile());
-        FileInputStream inputStream = new FileInputStream(inputFile);
-        HashMap<String, Asset> data = new HashMap<>();
-        Workbook workbook = new XSSFWorkbook(inputStream);
-        Sheet sheet = workbook.getSheetAt(0);
-        int rowCount = sheet.getPhysicalNumberOfRows();
-        int columnCount = sheet.getRow(0).getPhysicalNumberOfCells();
-        for (int i = 1; i < columnCount; i++) {
-            Asset temp = new Asset(sheet.getRow(0).getCell(i).getStringCellValue());
-            for (int j = 1; j < rowCount; j++) {
-                temp.addHistoricalValue(sheet.getRow(j).getCell(i).getNumericCellValue());
+        File stockFile = new File(classLoader.getResource("A50E13000.csv").getFile());
+        Scanner stockScan = new Scanner(stockFile);
+        File portfolioFile = new File(classLoader.getResource("A50Portfolio.csv").getFile());
+        Scanner portfolioScan = new Scanner(portfolioFile);
+        int stockCount = 1;
+        while (stockScan.hasNext()) {
+            if (stockCount % 15 == 0) {
+                split = portfolioScan.nextLine().split(",");
+                System.out.println("Data " + (stockCount++) + " " + split[0] + " " + split[1] + " " + split[2] + " " + split[3]);
+                inputData[0] = Integer.valueOf(split[0]);
+                inputData[1] = Integer.valueOf(split[2]);
+                inputData[2] = split[1];
+                inputData[3] = Double.valueOf(split[3]);
+            } else {
+                split = stockScan.nextLine().split(",");
+                System.out.println("Data " + (stockCount++) + " " + split[0] + " " + split[1]);
+                inputData[2] = split[0];
+                inputData[3] = Double.valueOf(split[1]);
+                inputData[0] = null;
+                inputData[1] = null;
             }
-            data.put(sheet.getRow(0).getCell(i).getStringCellValue(), temp);
+            varCalculator.newCalculateValueAtRisk(inputData);
+            System.out.println("");
         }
-
-        workbook.close();
-        inputStream.close();
-
-        return data;
     }
 }

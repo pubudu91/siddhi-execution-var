@@ -37,7 +37,7 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
                 inputData[0] = attributeExpressionExecutors[2].execute(complexEvent);
                 inputData[1] = attributeExpressionExecutors[3].execute(complexEvent);
                 Object outputData[] = new Object[1];
-                outputData[0] = varCalculator.calculateValueAtRisk(inputData);
+                outputData[0] = varCalculator.newCalculateValueAtRisk(inputData);
 
                 // Skip processing if user has specified calculation interval
                 if (outputData[0] == null) { //if there is no output
@@ -70,8 +70,8 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
 
         // set the var calculator
         varCalculator = new ParametricVaRCalculator(batchSize, ci);
-        varCalculator.getPortfolioValues(executionPlanContext);
-        varCalculator.readAssetList(executionPlanContext);
+        //varCalculator.getPortfolioValues(executionPlanContext);
+        //varCalculator.readAssetList(executionPlanContext);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<>(1);

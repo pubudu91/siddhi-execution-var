@@ -4,13 +4,14 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * Created by flash on 6/30/16.
  */
 public class Asset {
     private double currentStockPrice;
-    private ArrayList<Double> latestReturnValues;   //check with others if this can be replaced with stat object
+    private LinkedList<Double> latestReturnValues;   //check with others if this can be replaced with stat object
     private double[] simulatedList;
     private DescriptiveStatistics returnValueSet;
     private double previousLossReturn;
@@ -25,10 +26,10 @@ public class Asset {
     }
 
     public Asset() {
-        latestReturnValues = new ArrayList<>();
+        latestReturnValues = new LinkedList<>();
     }
 
-    public void setLatestReturnValues(ArrayList<Double> latestReturnValues){
+    public void setLatestReturnValues(LinkedList<Double> latestReturnValues){
         this.latestReturnValues = latestReturnValues;
     }
 
@@ -36,7 +37,7 @@ public class Asset {
         latestReturnValues.add(value);
     }
 
-    public ArrayList<Double> getLatestReturnValues(){
+    public LinkedList<Double> getLatestReturnValues(){
         return latestReturnValues;
     }
 
@@ -75,5 +76,9 @@ public class Asset {
 
     public void setPriceBeforeLastPrice(double priceBeforeLastPrice) {
         this.priceBeforeLastPrice = priceBeforeLastPrice;
+    }
+
+    public int getNumberOfReturnValues() {
+        return latestReturnValues.size();
     }
 }
