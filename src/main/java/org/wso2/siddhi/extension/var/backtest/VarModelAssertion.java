@@ -144,22 +144,22 @@ public abstract class VarModelAssertion {
         }
     }
 
-    public void setHistoricalValues(VaRPortfolioCalc portfolioHead) throws IOException {
-        String[] key = this.portfolio.keySet().toArray(new String[this.portfolio.size()]);
-        Map<String, Asset> assetList = new HashMap<>();
-        Asset tempAsset;
-        HashMap<String, ArrayList<Double>> assetListPool = this.getData();
-        ArrayList<Double> priceList;
-        for (int i = 0; i < key.length; i++) {
-            priceList = assetListPool.get(key[i]);
-            tempAsset = new Asset(key[i]);
-
-            for (int j = 0; j < this.getBatchSize(); j++) {
-                tempAsset.addHistoricalValue(priceList.get(j));
-            }
-            assetList.put(key[i], tempAsset);
-        }
-        portfolioHead.assetList = assetList;
-    }
+//    public void setHistoricalValues(VaRPortfolioCalc portfolioHead) throws IOException {
+//        String[] key = this.portfolio.keySet().toArray(new String[this.portfolio.size()]);
+//        Map<String, Asset> assetList = new HashMap<>();
+//        Asset tempAsset;
+//        HashMap<String, ArrayList<Double>> assetListPool = this.getData();
+//        ArrayList<Double> priceList;
+//        for (int i = 0; i < key.length; i++) {
+//            priceList = assetListPool.get(key[i]);
+//            tempAsset = new Asset(key[i]);
+//
+//            for (int j = 0; j < this.getBatchSize(); j++) {
+//                tempAsset.addHistoricalValue(priceList.get(j));
+//            }
+//            assetList.put(key[i], tempAsset);
+//        }
+//        portfolioHead.assetList = assetList;
+//    }
 
 }

@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -776,26 +777,26 @@ public class MonteCarloVarCalculatorTestCase {
         };
 
         double ci = 0.95, timeSlice = 0.01;
-        int limit = 250, calculationsPerDay = 100, numberOfTrials = 20;
+        int limit = 250, calculationsPerDay = 100, numberOfTrials = 500000;
 
         Map<String, Asset> assets = new HashMap<>();
         Asset asset_1 = new Asset("APPL");
         Asset asset_2 = new Asset("GOOG");
         Asset asset_3 = new Asset("FB");
 
-        for (int i = 0; i < historicValues_1.length; i++) {
-            asset_1.addHistoricalValue(historicValues_1[i]);
-        }
-
-        assets.put("GOOGL", asset_1);
-        for (int i = 0; i < set_2.length; i++) {
-            asset_2.addHistoricalValue(set_2[i]);
-        }
-        assets.put("APPL", asset_2);
-
-        for (int i = 0; i < set_3.length; i++) {
-            asset_3.addHistoricalValue(set_3[i]);
-        }
+//        for (int i = 0; i < historicValues_1.length; i++) {
+//            asset_1.addHistoricalValue(historicValues_1[i]);
+//        }
+//
+//        assets.put("GOOGL", asset_1);
+//        for (int i = 0; i < set_2.length; i++) {
+//            asset_2.addHistoricalValue(set_2[i]);
+//        }
+//        assets.put("APPL", asset_2);
+//
+//        for (int i = 0; i < set_3.length; i++) {
+//            asset_3.addHistoricalValue(set_3[i]);
+//        }
         assets.put("FB", asset_3);
 
         Map<String, Integer> assetSet = new HashMap<>();
@@ -810,7 +811,16 @@ public class MonteCarloVarCalculatorTestCase {
         assetList.put("FB", asset_3);
 
         MonteCarloVarCalculator calc = new MonteCarloVarCalculator(limit, ci, numberOfTrials, calculationsPerDay, timeSlice);
-        calc.assetList = assetList;
+//        calc.assetList = assetList;
+        long start = System.currentTimeMillis();
         System.out.println(calc.processData(portfolio));
+        portfolio.setIncomingEventLabel("APPL");
+        System.out.println(calc.processData(portfolio));
+        portfolio.setIncomingEventLabel("APPL");
+        System.out.println(calc.processData(portfolio));
+        portfolio.setIncomingEventLabel("GOOG");
+        System.out.println(calc.processData(portfolio));
+        long end = System.currentTimeMillis();
+        System.out.println((end - start) / 1000);
     }
 }
