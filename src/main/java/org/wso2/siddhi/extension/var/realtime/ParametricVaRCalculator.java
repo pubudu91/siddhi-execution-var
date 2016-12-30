@@ -209,14 +209,14 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
         /** NormalDistribution throws an exception when ps = 0, this condition return pm when ps = 0 **/
         if (pv == 0) {
-            System.out.print(portfolio.getID() + " : " + pm + " ");
+            //System.out.print(portfolio.getID() + " : " + pm + " ");
             return pm;
         }
 
         double ps = Math.sqrt(pv);
         NormalDistribution n = new NormalDistribution(pm, ps);
         double var = n.inverseCumulativeProbability(1 - confidenceInterval);
-        System.out.print(portfolio.getID() + " : " + var * portfolioTotal + " ");
+        //System.out.print(portfolio.getID() + " : " + var * portfolioTotal + " ");
         return var * portfolioTotal;
     }
 

@@ -12,6 +12,7 @@ import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
 import org.wso2.siddhi.extension.var.realtime.ParametricVaRCalculator;
+import org.wso2.siddhi.extension.var.realtime.RealTimeVaRConstants;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
@@ -33,22 +34,24 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
-                Object inputData[] = new Object[2];
-                inputData[0] = attributeExpressionExecutors[2].execute(complexEvent);
-                inputData[1] = attributeExpressionExecutors[3].execute(complexEvent);
+                //get the symbol and price attributes from the stream to process
+                Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
+                for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
+                    inputData[i] = attributeExpressionExecutors[i + 2].execute(complexEvent);
+                }
+
                 Object outputData[] = new Object[1];
                 outputData[0] = varCalculator.newCalculateValueAtRisk(inputData);
 
                 // Skip processing if user has specified calculation interval
                 if (outputData[0] == null) { //if there is no output
                     streamEventChunk.remove();
-                } else {
+                } else {    //if there is an output, publish it to the output stream
                     complexEventPopulater.populateComplexEvent(complexEvent, outputData);
-
                 }
             }
         }
-        nextProcessor.process(streamEventChunk);
+        nextProcessor.process(streamEventChunk); //process the next stream event
     }
 
     @Override
