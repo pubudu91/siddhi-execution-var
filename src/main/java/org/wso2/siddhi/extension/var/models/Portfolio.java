@@ -9,7 +9,7 @@ import java.util.Map;
 public class Portfolio {
     private int ID;
     private Map<String, Integer> assets;
-    private int previousShares;
+    private Map<String, Integer> previousShares;
     private double historicalVarValue;
     private double MONTECARLO_SIMULATION_currentPortfolioValue;
     private double [] MONTECARLO_SIMULATION_finalPortfolioValueList=null;
@@ -37,6 +37,7 @@ public class Portfolio {
     public Portfolio(int ID, Map<String, Integer> assets) {
         this.ID = ID;
         this.assets = assets;
+        previousShares = new HashMap<>();
     }
 
     public int getID() {
@@ -59,19 +60,29 @@ public class Portfolio {
         assets.put(symbol, shares);
     }
 
-    public int getPreviousShares() {
-        return previousShares;
-    }
-
-    public void setPreviousShares(int previousShares) {
-        this.previousShares = previousShares;
-    }
-
     public double getHistoricalVarValue() {
         return historicalVarValue;
     }
 
     public void setHistoricalVarValue(double historicalVarValue) {
         this.historicalVarValue = historicalVarValue;
+    }
+
+    public void setPreviousShare(String symbol, int shares){
+        previousShares.put(symbol, shares);
+    }
+
+    public int getPreviousShare(String symbol){
+        if(previousShares.get(symbol) != null)
+            return previousShares.get(symbol);
+        return 0;
+    }
+
+    public int getCurrentShare(String symbol){
+        return assets.get(symbol);
+    }
+
+    public void setCurrentShare(String symbol, int shares){
+        assets.put(symbol, shares);
     }
 }

@@ -1,14 +1,9 @@
 package org.wso2.siddhi.extension.var.realtime;
 
 import org.json.JSONObject;
-import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 
 /**
@@ -67,7 +62,7 @@ public abstract class VaRPortfolioCalc {
         }
     }
 
-    protected void updateAssetPool(){
+    protected void updateAssetPool(){       //double check protected access
         double priceBeforeLastPrice;
 
         Asset temp = assetList.get(symbol);
@@ -89,7 +84,7 @@ public abstract class VaRPortfolioCalc {
         }
     }
 
-    protected void updatePortfolioPool(){
+    protected void updatePortfolioPool(){       //double check protected access
         Portfolio portfolio = portfolioList.get(portfolioID);
 
         if(portfolio == null){//first time for the portfolio
@@ -98,11 +93,11 @@ public abstract class VaRPortfolioCalc {
             portfolio = new Portfolio(portfolioID, assets);
             portfolioList.put(portfolioID, portfolio);
         }else if(portfolio.getAssets().get(symbol) == null){//first time for the asset within portfolio
-            portfolio.getAssets().put(symbol, shares);
+            portfolio.setCurrentShare(symbol, shares);
         }else{//portfolio exists, asset within portfolio exists
             int currentShares = portfolio.getAssets().get(symbol);
-            portfolio.setPreviousShares(currentShares);
-            portfolio.getAssets().put(symbol, shares + currentShares);
+            portfolio.setPreviousShare(symbol, currentShares);
+            portfolio.setCurrentShare(symbol, shares + currentShares);
         }
     }
 
@@ -124,57 +119,7 @@ public abstract class VaRPortfolioCalc {
      */
     protected abstract Object processData(Portfolio portfolio);
 
-//    public Object calculateValueAtRisk(Object data[]){
-//        addEvent(data);
-//        //if the number of historical value exceeds the batch size, remove the event
-//        if (assetList.get(data[3]) != null && assetList.get(data[3]).getNumberOfHistoricalValues() > batchSize) {
-//            removeEvent(data[3].toString());
-//        }
-//
-//        //declare variables
-//        JSONObject result = new JSONObject();
-//        Set<Integer> keys = portfolioList.keySet();
-//        Iterator<Integer> iterator = keys.iterator();
-//        String resultString = "";
-//        int key;
-//        double var;
-//        Portfolio portfolio;
-//
-//        //get the portfolio sent from the stream
-//        portfolio = portfolioList.get(portfolioID);
-//
-//        //if this portfolio does not contain the symbol from the input stream, var should be calculated.
-//        if(portfolio.getAssets().get(symbol) == null){
-//            portfolio.setIncomingEventLabel(data[0].toString());
-//            Object temp = processData(portfolio);
-//            if(temp != null){
-//                var = Double.parseDouble(temp.toString());
-//                result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
-//            }
-//        }
-//
-//        while(iterator.hasNext()){
-//            key = iterator.next();
-//            portfolio = portfolioList.get(key);
-//
-//            //if the portfolio has the asset, calculate VaR
-//            if(portfolio.getAssets().get(data[0]) != null) {
-//                portfolio.setIncomingEventLabel(data[0].toString());
-//                Object temp = processData(portfolio);
-//                if(temp != null){
-//                    var = Double.parseDouble(temp.toString());
-//                    result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
-//                }
-//            }
-//        }
-//
-//        //if no var has been calculated
-//        if (result.length() == 0)
-//            return null;
-//        return result.toString().concat(resultString);
-//    }
-
-    public Object newCalculateValueAtRisk(Object data[]){
+    public Object calculateValueAtRisk(Object data[]){
         double var;
         JSONObject result = new JSONObject();
         
@@ -194,7 +139,6 @@ public abstract class VaRPortfolioCalc {
                 if(temp != null){
                     var = Double.parseDouble(temp.toString());
                     if(Double.compare(var, 0.0) != 0) {
-                        portfolio.setHistoricalVarValue(var);
                         result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
                     }
                 }

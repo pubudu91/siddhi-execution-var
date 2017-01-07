@@ -39,7 +39,7 @@ public class ParametricVaRCalculatorTest {
                 inputData[0] = null;
                 inputData[1] = null;
             }
-            varCalculator.newCalculateValueAtRisk(inputData);
+            varCalculator.calculateValueAtRisk(inputData);
             System.out.println("");
         }
     }

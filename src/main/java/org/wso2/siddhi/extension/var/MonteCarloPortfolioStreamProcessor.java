@@ -45,7 +45,7 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
                 }
 
                 Object outputData[] = new Object[1];
-                outputData[0] = varCalculator.newCalculateValueAtRisk(inputData);
+                outputData[0] = varCalculator.calculateValueAtRisk(inputData);
                 // Skip processing if user has specified calculation interval
                 if (outputData[0] == null) { //if there is no output
                     streamEventChunk.remove();
