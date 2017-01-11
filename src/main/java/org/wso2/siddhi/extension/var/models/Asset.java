@@ -10,27 +10,9 @@ import java.util.LinkedList;
 public class Asset {
     private double currentStockPrice;
     private LinkedList<Double> latestReturnValues;   //check with others if this can be replaced with stat object
-    private double[] simulatedList = null;
+
     private DescriptiveStatistics returnValueSet;
-    private double previousLossReturn;
     private double priceBeforeLastPrice;
-    private double[] previousSimulatedList = null;
-
-    public double[] getSimulatedList() {
-        return simulatedList;
-    }
-
-    public double[] getPreviousSimulatedList() {
-        return previousSimulatedList;
-    }
-
-    public void setSimulatedList(double[] simulatedList) {
-        this.simulatedList = simulatedList;
-    }
-
-    public void setPreviousSimulatedList(double[] previousSimulatedList) {
-        this.previousSimulatedList = previousSimulatedList;
-    }
 
     public Asset() {
         latestReturnValues = new LinkedList<>();
@@ -67,14 +49,6 @@ public class Asset {
     public void setReturnValueSet(int batchSize) {
         returnValueSet = new DescriptiveStatistics();
         returnValueSet.setWindowSize(batchSize);
-    }
-
-    public double getPreviousLossReturn() {
-        return previousLossReturn;
-    }
-
-    public void setPreviousLossReturn(double previousLossReturn) {
-        this.previousLossReturn = previousLossReturn;
     }
 
     public double getPriceBeforeLastPrice() {
