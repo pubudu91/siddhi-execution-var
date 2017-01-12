@@ -30,6 +30,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         excessReturnList = new HashMap<>();
         meanList = new HashMap<>();
         covarianceTable = HashBasedTable.create();
+        setType(RealTimeVaRConstants.PARAMETRIC);
     }
 
     @Override
@@ -45,6 +46,8 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         if (event[0] != null || event[1] != null) {
             portfolioID = ((Number) event[0]).intValue();
             shares = ((Number) event[1]).intValue();
+            symbol = event[2].toString();
+            price = ((Number) event[3]).doubleValue();
             updatePortfolioPool();
         }
 
@@ -95,15 +98,15 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
     }
 
     public Object batchModeParametricVaR(Portfolio portfolio) {
-        double priceReturns[][] = new double[batchSize - 1][portfolio.getAssets().size()];
+        double priceReturns[][] = new double[batchSize - 1][portfolio.getAssetsSize()];
         double portfolioTotal = 0.0;
-        double weightage[][] = new double[1][portfolio.getAssets().size()];
+        double weightage[][] = new double[1][portfolio.getAssetsSize()];
         DescriptiveStatistics stat = new DescriptiveStatistics();
         stat.setWindowSize(batchSize - 1);
 
-        Set<String> keys = portfolio.getAssets().keySet();
-        String symbols[] = keys.toArray(new String[portfolio.getAssets().size()]);
-        double[][] means = new double[1][portfolio.getAssets().size()];
+        Set<String> keys = portfolio.getAssetListKeySet();
+        String symbols[] = keys.toArray(new String[portfolio.getAssetsSize()]);
+        double[][] means = new double[1][portfolio.getAssetsSize()];
 
         Asset asset;
         LinkedList<Double> returnList;
@@ -114,7 +117,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
             asset = assetList.get(symbols[i]);
             returnList = asset.getLatestReturnValues();
             length = returnList.size();
-            weightage[0][i] = asset.getCurrentStockPrice() * portfolio.getAssets().get(symbols[i]);
+            weightage[0][i] = asset.getCurrentStockPrice() * portfolio.getCurrentShare(symbols[i]);
             portfolioTotal += weightage[0][i];
             for (int j = 0; j < length; j++) {
                 priceReturns[j][i] = returnList.get(j);
@@ -133,8 +136,8 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         }
 
         /** calculate excess returns **/
-        double[][] excessReturns = new double[batchSize - 1][portfolio.getAssets().size()];
-        for (int i = 0; i < portfolio.getAssets().size(); i++) {
+        double[][] excessReturns = new double[batchSize - 1][portfolio.getAssetsSize()];
+        for (int i = 0; i < portfolio.getAssetsSize(); i++) {
             for (int j = 0; j < assetList.get(symbols[i]).getLatestReturnValues().size(); j++) {
                 excessReturns[j][i] = priceReturns[j][i] - means[0][i];
             }
@@ -222,7 +225,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
     //optimized
     public double[][] getVCV(Portfolio portfolio) {
-        Set<String> keys = portfolio.getAssets().keySet();
+        Set<String> keys = portfolio.getAssetListKeySet();
         int numberOfAssets = keys.size();
         String symbols[] = keys.toArray(new String[numberOfAssets]);
         double[][] portfolioCovariance = new double[numberOfAssets][numberOfAssets];
@@ -243,7 +246,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
     //optimized
     private double[][] getWeightage(Portfolio portfolio) {
 
-        Set<String> keys = portfolio.getAssets().keySet();
+        Set<String> keys = portfolio.getAssetListKeySet();
         int numberOfAssets = keys.size();
         double[][] portfolioWeighage = new double[1][numberOfAssets];
         double portfolioTotal = 0.0;
@@ -255,7 +258,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
             symbol = itr.next();
             temp = assetList.get(symbol);
             if (temp != null) {
-                portfolioWeighage[0][i] = temp.getCurrentStockPrice() * portfolio.getAssets().get(symbol);
+                portfolioWeighage[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentShare((String)symbol);
                 portfolioTotal = portfolioTotal + portfolioWeighage[0][i];
             }
             i++;
@@ -270,7 +273,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
     // optimized
     private double[][] getMeans(Portfolio portfolio) {
-        Set<String> keys = portfolio.getAssets().keySet();
+        Set<String> keys = portfolio.getAssetListKeySet();
         //String symbols[] = keys.toArray(new String[portfolio.getAssets().size()]);
         double[][] portfolioMeans = new double[1][keys.size()];
         Double mean;
