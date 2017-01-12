@@ -38,7 +38,7 @@ public class MonteCarloAssertion extends VarModelAssertion {
                 calculator.removeEvent(key[j]);
             }
 
-            _portfolio.setIncomingEventLabel((String) input[0]);
+//            _portfolio.setIncomingEventLabel((String) input[0]);
             tempVar[i] = (Double) calculator.processData(_portfolio);
         }
         return tempVar;
@@ -75,7 +75,7 @@ public class MonteCarloAssertion extends VarModelAssertion {
             input[1] = priceLists.get(key[j]).get(i + this.getBatchSize() + (this.getSampleSize() * this.getSampleSetNumber()));
             calculator.addEvent(input);
             calculator.removeEvent(key[j]);
-            _portfolio.setIncomingEventLabel((String) input[0]);
+//            _portfolio.setIncomingEventLabel((String) input[0]);
             tempVar[0][i] = (Double) calculator.processData(_portfolio);
 //            tempVar[1][i] = (Double) calculator.processData_total(_portfolio);
         }
