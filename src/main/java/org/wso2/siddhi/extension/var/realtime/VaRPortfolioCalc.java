@@ -42,20 +42,18 @@ public abstract class VaRPortfolioCalc {
      * @param data
      */
     public void addEvent(Object data[]) {
-        if(data[0] != null)
-            portfolioID = ((Number) data[0]).intValue();
-        if(data[1] != null)
-            shares = ((Number) data[1]).intValue();
-        
+        portfolioID = 0;
         symbol = data[2].toString();
         price = ((Number) data[3]).doubleValue();
 
-        //update asset pool
-        updateAssetPool();
-
-        if(portfolioID > 0){
+        if(data[0] != null && data[1] != null) {
+            portfolioID = ((Number) data[0]).intValue();
+            shares = ((Number) data[1]).intValue();
             updatePortfolioPool();
         }
+
+        //update asset pool
+        updateAssetPool();
     }
 
     protected void updateAssetPool(){       //double check protected access
@@ -120,7 +118,7 @@ public abstract class VaRPortfolioCalc {
     public Object calculateValueAtRisk(Object data[]){
         double var;
         JSONObject result = new JSONObject();
-        
+
         addEvent(data);
         replaceAssetSimulation();
 
@@ -143,7 +141,7 @@ public abstract class VaRPortfolioCalc {
             }
 
         }
-        
+
         //if no var has been calculated
         if (result.length() == 0)
             return null;

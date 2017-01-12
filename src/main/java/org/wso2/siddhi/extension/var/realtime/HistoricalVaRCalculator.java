@@ -1,6 +1,5 @@
 package org.wso2.siddhi.extension.var.realtime;
 
-import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.HistoricalAsset;
 import org.wso2.siddhi.extension.var.models.HistoricalPortfolio;
 import org.wso2.siddhi.extension.var.models.Portfolio;
@@ -27,6 +26,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
      */
     @Override
     public Object processData(Portfolio portfolio) {
+
         HistoricalPortfolio historicalPortfolio = (HistoricalPortfolio) portfolio;
         HistoricalAsset asset = (HistoricalAsset)getAssetList().get(getSymbol());
         if(asset.getNumberOfHistoricalValues() > 1) {
