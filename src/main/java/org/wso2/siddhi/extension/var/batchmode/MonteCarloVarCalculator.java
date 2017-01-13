@@ -4,6 +4,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.MonteCarloAsset;
 import org.wso2.siddhi.extension.var.models.MonteCarloPortfolio;
 import org.wso2.siddhi.extension.var.models.Portfolio;
+import org.wso2.siddhi.extension.var.realtime.RealTimeVaRConstants;
 import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
 
 /**
@@ -22,6 +23,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
         this.numberOfTrials = numberOfTrials;
         this.calculationsPerDay = calculationsPerDay;
         this.timeSlice = timeSlice;
+        setType(RealTimeVaRConstants.MONTE_CARLO);
     }
 
     /**

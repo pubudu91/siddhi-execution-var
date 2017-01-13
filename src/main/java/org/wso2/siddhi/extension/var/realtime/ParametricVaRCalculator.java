@@ -44,41 +44,41 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         // System.out.println();
 
         if (event[0] != null || event[1] != null) {
-            portfolioID = ((Number) event[0]).intValue();
-            shares = ((Number) event[1]).intValue();
-            symbol = event[2].toString();
-            price = ((Number) event[3]).doubleValue();
+            setPortfolioID(((Number) event[0]).intValue());
+            setShares(((Number) event[1]).intValue());
+            setSymbol(event[2].toString());
+            setPrice(((Number) event[3]).doubleValue());
             updatePortfolioPool();
         }
 
-        symbol = event[2].toString();
-        price = ((Number) event[3]).doubleValue();
+        setSymbol(event[2].toString());
+        setPrice(((Number) event[3]).doubleValue());
 
         Asset temp;
-        if (!assetList.containsKey(symbol)) {
+        if (!assetList.containsKey(getSymbol())) {
             temp = new Asset();
-            temp.setCurrentStockPrice(price);
-            assetList.put(symbol, temp);
-            excessReturnList.put(symbol, new LinkedList<>());
-            meanList.put(symbol, 0.0);
+            temp.setCurrentStockPrice(getPrice());
+            assetList.put(getSymbol(), temp);
+            excessReturnList.put(getSymbol(), new LinkedList<>());
+            meanList.put(getSymbol(), 0.0);
         } else {
-            temp = assetList.get(symbol);
+            temp = assetList.get(getSymbol());
             temp.setPriceBeforeLastPrice(temp.getCurrentStockPrice());
-            temp.setCurrentStockPrice(price);
+            temp.setCurrentStockPrice(getPrice());
             double newReturn = Math.log(temp.getCurrentStockPrice() / temp.getPriceBeforeLastPrice());
             temp.addReturnValue(newReturn);
             double latestMean;
 
-            if (temp.getNumberOfReturnValues() == (batchSize - 1)) {
+            if (temp.getNumberOfReturnValues() == (getBatchSize())) {
                 double oldReturn = temp.getLatestReturnValues().removeFirst();
-                latestMean = meanList.get(symbol) + ((newReturn - oldReturn) / (batchSize - 1));
+                latestMean = meanList.get(getSymbol()) + ((newReturn - oldReturn) / (getBatchSize()- 1));
             } else {
                 int numberOfReturnValues = temp.getNumberOfReturnValues();
-                latestMean = (meanList.get(symbol) * (numberOfReturnValues - 1) + newReturn) / numberOfReturnValues;
+                latestMean = (meanList.get(getSymbol()) * (numberOfReturnValues - 1) + newReturn) / numberOfReturnValues;
             }
-            meanList.put(symbol, latestMean);
-            updateExcessReturnList(symbol);
-            updateCovarianceTable(symbol);
+            meanList.put(getSymbol(), latestMean);
+            updateExcessReturnList(getSymbol());
+            updateCovarianceTable(getSymbol());
         }
     }
 
@@ -98,11 +98,11 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
     }
 
     public Object batchModeParametricVaR(Portfolio portfolio) {
-        double priceReturns[][] = new double[batchSize - 1][portfolio.getAssetsSize()];
+        double priceReturns[][] = new double[getBatchSize() - 1][portfolio.getAssetsSize()];
         double portfolioTotal = 0.0;
         double weightage[][] = new double[1][portfolio.getAssetsSize()];
         DescriptiveStatistics stat = new DescriptiveStatistics();
-        stat.setWindowSize(batchSize - 1);
+        stat.setWindowSize(getBatchSize() - 1);
 
         Set<String> keys = portfolio.getAssetListKeySet();
         String symbols[] = keys.toArray(new String[portfolio.getAssetsSize()]);
@@ -136,7 +136,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         }
 
         /** calculate excess returns **/
-        double[][] excessReturns = new double[batchSize - 1][portfolio.getAssetsSize()];
+        double[][] excessReturns = new double[getBatchSize()- 1][portfolio.getAssetsSize()];
         for (int i = 0; i < portfolio.getAssetsSize(); i++) {
             for (int j = 0; j < assetList.get(symbols[i]).getLatestReturnValues().size(); j++) {
                 excessReturns[j][i] = priceReturns[j][i] - means[0][i];
@@ -149,7 +149,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         RealMatrix meanMatrix = new Array2DRowRealMatrix(means);
 
         /** matrix multiplications using apache math library **/
-        RealMatrix VCV = (returnMatrix.transpose().multiply(returnMatrix)).scalarMultiply(1.0 / (batchSize - 2));
+        RealMatrix VCV = (returnMatrix.transpose().multiply(returnMatrix)).scalarMultiply(1.0 / (getBatchSize() - 2));
         RealMatrix PV = weightageMatrix.multiply(VCV).multiply(weightageMatrix.transpose());
         RealMatrix PM = weightageMatrix.multiply(meanMatrix.transpose());
 
@@ -177,7 +177,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
         double ps = Math.sqrt(pv);
         NormalDistribution n = new NormalDistribution(pm, ps);
-        double var = n.inverseCumulativeProbability(1 - confidenceInterval);
+        double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
         System.out.print(portfolio.getID() + " : " + var * portfolioTotal + " ");
         return var * portfolioTotal;
     }
@@ -218,7 +218,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
         double ps = Math.sqrt(pv);
         NormalDistribution n = new NormalDistribution(pm, ps);
-        double var = n.inverseCumulativeProbability(1 - confidenceInterval);
+        double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
         //System.out.print(portfolio.getID() + " : " + var * portfolioTotal + " ");
         return var * portfolioTotal;
     }
@@ -320,7 +320,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
                 cov += latestReturnList.get(j) * tempReturnList.get(j);
             }
 
-            cov = cov / (batchSize - 2);
+            cov = cov / (getBatchSize() - 1);
 
             covarianceTable.put(latestSymbol, symbols[i], cov);
             covarianceTable.put(symbols[i], latestSymbol, cov);

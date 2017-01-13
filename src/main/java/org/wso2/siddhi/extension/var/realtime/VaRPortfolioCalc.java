@@ -15,8 +15,8 @@ public abstract class VaRPortfolioCalc {
     private double confidenceInterval = 0.95;
     private int batchSize;
 
-    private Map<Integer, Portfolio> portfolioList;
-    private Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
+    protected Map<Integer, Portfolio> portfolioList;
+    protected Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
 
     private String type;
 
@@ -43,6 +43,7 @@ public abstract class VaRPortfolioCalc {
      */
     public void addEvent(Object data[]) {
         portfolioID = 0;
+        shares = 0;
         symbol = data[2].toString();
         price = ((Number) data[3]).doubleValue();
 
@@ -59,9 +60,6 @@ public abstract class VaRPortfolioCalc {
     protected void updateAssetPool(){       //double check protected access
         double priceBeforeLastPrice;
 
-        if(this instanceof HistoricalVaRCalculator){
-
-        }
         Asset temp = assetList.get(symbol);
         if(temp == null) {
             assetList.put(symbol, AssetFactory.getAsset(type));
@@ -189,6 +187,22 @@ public abstract class VaRPortfolioCalc {
 
     public double getPrice(){
         return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
+    public void setPortfolioID(int portfolioID) {
+        this.portfolioID = portfolioID;
+    }
+
+    public void setShares(int shares) {
+        this.shares = shares;
     }
 }
 
