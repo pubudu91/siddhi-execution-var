@@ -43,6 +43,7 @@ public abstract class VaRPortfolioCalc {
      */
     public void addEvent(Object data[]) {
         portfolioID = 0;
+        shares = 0;
         symbol = data[2].toString();
         price = ((Number) data[3]).doubleValue();
 
@@ -59,9 +60,6 @@ public abstract class VaRPortfolioCalc {
     protected void updateAssetPool(){       //double check protected access
         double priceBeforeLastPrice;
 
-        if(this instanceof HistoricalVaRCalculator){
-
-        }
         Asset temp = assetList.get(symbol);
         if(temp == null) {
             assetList.put(symbol, AssetFactory.getAsset(type));

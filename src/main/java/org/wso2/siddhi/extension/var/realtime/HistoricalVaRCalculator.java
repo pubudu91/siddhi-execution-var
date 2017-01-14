@@ -35,7 +35,12 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
             double previousReturnValue = asset.getPreviousLossReturn();
             double currentReturnValue = asset.getCurrentLossReturn();
 
-            int previousShares = historicalPortfolio.getPreviousShare(getSymbol());
+            int previousShares;
+            if(getPortfolioID() > 0)
+                previousShares = historicalPortfolio.getPreviousShare(getSymbol());
+            else
+                previousShares = historicalPortfolio.getCurrentShare(getSymbol());
+
             int currentShares = historicalPortfolio.getCurrentShare(getSymbol());
 
             double previousPrice = asset.getPriceBeforeLastPrice();
@@ -44,7 +49,6 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
             var -= previousReturnValue * previousPrice * previousShares;
             var += currentReturnValue * currentPrice * currentShares;
 
-            asset.setPreviousLossReturn(currentReturnValue);
             historicalPortfolio.setHistoricalVarValue(var);
 
             return var;
