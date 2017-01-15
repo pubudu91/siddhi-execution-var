@@ -46,27 +46,9 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
             double previousPrice = asset.getPriceBeforeLastPrice();
             double currentPrice = asset.getCurrentStockPrice();
 
-            //System.out.println(getPortfolioID() + ", " + getShares() + ", " + getSymbol() + ", " + getPrice());
-            //System.out.println();
-
-            //System.out.println("Prev Return: " + previousReturnValue);
-            //System.out.println("Prev Share: " + previousShares);
-            //System.out.println("Prev Price: " + previousPrice);
-
-            //System.out.println();
-
-            //System.out.println("Curr Return: " + currentReturnValue);
-            //System.out.println("Curr Share: " + currentShares);
-            //System.out.println("Curr Price: " + currentPrice);
-
-            //System.out.println();
-            //System.out.println("Prev Var: " + var);
-
             var -= previousReturnValue * previousPrice * previousShares;
             var += currentReturnValue * currentPrice * currentShares;
 
-            //System.out.println("Curr Var: " + var);
-            //System.out.println("=======================================\n");
             historicalPortfolio.setHistoricalVarValue(var);
 
             return var;
