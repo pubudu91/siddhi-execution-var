@@ -18,11 +18,11 @@ import java.util.*;
 public class Backtest {
 
     private static final int BATCH_SIZE = 251;
-    private static final double VAR_CI = 0.95;
+    private static final double VAR_CI = 0.99;
     private static final double BACKTEST_CI = 0.05;
     private static final int NUMBER_OF_ASSETS = 25;
-    private static final int SAMPLE_SIZE = 50;
-    private static final int VAR_PER_SAMPLE = 200;
+    private static final int SAMPLE_SIZE = 20;
+    private static final int VAR_PER_SAMPLE = 500;
     private static final String PORTFOLIO_KEY = "Portfolio 1";
     private ArrayList<Double> calculatedVarList ;
     private ArrayList<Double> actualVarList ;
@@ -40,8 +40,8 @@ public class Backtest {
 
     private void runBackTest() throws FileNotFoundException {
 
-        //VaRPortfolioCalc varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-        VaRPortfolioCalc varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRPortfolioCalc varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        //VaRPortfolioCalc varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
         //VaRPortfolioCalc varCalculator = new MonteCarloSimulation().parallelSimulation(BATCH_SIZE, VAR_CI, 2500,100,0.01);
 
         ArrayList<Object[]> list = readBacktestData();

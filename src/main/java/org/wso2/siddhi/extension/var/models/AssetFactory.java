@@ -10,8 +10,8 @@ public class AssetFactory {
         switch (type){
             case RealTimeVaRConstants.HISTORICAL:
                 return new HistoricalAsset();
-//            case RealTimeVaRConstants.PARAMETRIC;
-
+            case RealTimeVaRConstants.PARAMETRIC:
+                return new ParametricAsset();
             case RealTimeVaRConstants.MONTE_CARLO:
                 return new MonteCarloAsset();
         }
