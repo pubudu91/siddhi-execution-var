@@ -1,17 +1,21 @@
 package org.wso2.siddhi.extension.var.models;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by dilini92 on 1/9/17.
  */
 public class MonteCarloPortfolio extends Portfolio {
-    public MonteCarloPortfolio(int ID, Map<String, Integer> assets){
-        super(ID, assets);
-    }
+    private Map<String, Integer> assetSharesBeforeChange = null;
 
     private double monteCarlo_Simulation_currentPortfolioValue;
-    private double [] monteCarlo_Simulation_finalPortfolioValueList =null;
+    private double[] monteCarlo_Simulation_finalPortfolioValueList = null;
+
+    public MonteCarloPortfolio(int ID, Map<String, Integer> assets) {
+        super(ID, assets);
+        this.assetSharesBeforeChange = new HashMap<>();
+    }
 
     public double[] getMonteCarlo_Simulation_finalPortfolioValueList() {
         return monteCarlo_Simulation_finalPortfolioValueList;
@@ -29,4 +33,11 @@ public class MonteCarloPortfolio extends Portfolio {
         this.monteCarlo_Simulation_currentPortfolioValue = monteCarlo_Simulation_currentPortfolioValue;
     }
 
+    public Map<String, Integer> getAssetSharesBeforeChange() {
+        return this.assetSharesBeforeChange;
+    }
+
+    public void setAssetSharesBeforeChange(Map<String, Integer> assetSharesBeforeChange) {
+        this.assetSharesBeforeChange = assetSharesBeforeChange;
+    }
 }
