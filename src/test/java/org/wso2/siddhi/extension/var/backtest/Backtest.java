@@ -1,7 +1,9 @@
 package org.wso2.siddhi.extension.var.backtest;
 
-import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.BinomialDistribution;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.json.JSONObject;
+import org.wso2.siddhi.extension.var.batchmode.MonteCarloVarCalculator;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
@@ -18,19 +20,21 @@ import java.util.*;
 public class Backtest {
 
     private static final int BATCH_SIZE = 251;
-    private static final double VAR_CI = 0.99;
+    private static final double VAR_CI = 0.95;
     private static final double BACKTEST_CI = 0.05;
     private static final int NUMBER_OF_ASSETS = 25;
-    private static final int SAMPLE_SIZE = 20;
+    private static final int SAMPLE_SIZE = 1;
     private static final int VAR_PER_SAMPLE = 500;
     private static final String PORTFOLIO_KEY = "Portfolio 1";
-    private ArrayList<Double> calculatedVarList ;
-    private ArrayList<Double> actualVarList ;
-    private Double previousPortfolioValue ;
+    private ArrayList<Double> calculatedVarList;
+    private ArrayList<Double> actualVarList;
+    private ArrayList<Double> meanViolations;
+    private Double previousPortfolioValue;
 
     public Backtest() {
         calculatedVarList = new ArrayList();
         actualVarList = new ArrayList();
+        meanViolations = new ArrayList();
         previousPortfolioValue = null;
     }
 
@@ -42,11 +46,11 @@ public class Backtest {
 
         VaRPortfolioCalc varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
         //VaRPortfolioCalc varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
-        //VaRPortfolioCalc varCalculator = new MonteCarloSimulation().parallelSimulation(BATCH_SIZE, VAR_CI, 2500,100,0.01);
+        //VaRPortfolioCalc varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500,100,0.01);
 
         ArrayList<Object[]> list = readBacktestData();
         int i = 0;
-        int totalEvents = (BATCH_SIZE + 1) * NUMBER_OF_ASSETS + VAR_PER_SAMPLE * NUMBER_OF_ASSETS * SAMPLE_SIZE + 1;
+        int totalEvents = ((BATCH_SIZE + 1) * NUMBER_OF_ASSETS) + (VAR_PER_SAMPLE * NUMBER_OF_ASSETS * SAMPLE_SIZE) + 1;
         System.out.println("Read Total Events : " + totalEvents);
 
         while (i < totalEvents) {
@@ -76,33 +80,24 @@ public class Backtest {
 
     private void runStandardCoverageTest() {
 
-        NormalDistribution dist = new NormalDistribution();
-        double leftEnd = dist.inverseCumulativeProbability(BACKTEST_CI  / 2);
-        leftEnd = leftEnd * Math.sqrt(VAR_PER_SAMPLE * VAR_CI * (1 - VAR_CI)) + (VAR_PER_SAMPLE * (1 - VAR_CI));
-        leftEnd = Math.floor(leftEnd);
+        int numberOfExceptions = 0;
 
-        double rightEnd = dist.inverseCumulativeProbability(1 - (BACKTEST_CI  / 2));
-        rightEnd = rightEnd * Math.sqrt(VAR_PER_SAMPLE * VAR_CI * (1 - VAR_CI)) + (VAR_PER_SAMPLE * (1 - VAR_CI));
-        rightEnd = Math.ceil(rightEnd);
-
-        System.out.println("Left End :" + leftEnd);
-        System.out.println("Right End :" + rightEnd);
-
-        int numberOfExceptions;
-        int successCount = 0;
-        for (int j = 0; j < SAMPLE_SIZE; j++) {
-            numberOfExceptions = 0;
-            for (int i = j*VAR_PER_SAMPLE; i < (j+1)*VAR_PER_SAMPLE; i++) {
-                //System.out.println(actualVarList.get(i) + " " + calculatedVarList.get(i));
-                if (actualVarList.get(i) <= calculatedVarList.get(i))
-                    numberOfExceptions++;
-            }
-            System.out.println("Sample Set : " + (j+1) + " Exceptions : " + numberOfExceptions);
-            if (rightEnd >= numberOfExceptions && leftEnd <= numberOfExceptions) {
-                successCount++;
+        for (int i = 0; i < VAR_PER_SAMPLE; i++) {
+            if (actualVarList.get(i) <= calculatedVarList.get(i)) {
+                numberOfExceptions++;
+                meanViolations.add(actualVarList.get(i)-calculatedVarList.get(i));
             }
         }
-        System.out.println("Success Percentage : " + (((double)successCount)/SAMPLE_SIZE)*100);
+
+        DescriptiveStatistics dsLoss = new DescriptiveStatistics(actualVarList.stream().mapToDouble(Double::doubleValue).toArray());
+        DescriptiveStatistics dsVaR = new DescriptiveStatistics(calculatedVarList.stream().mapToDouble(Double::doubleValue).toArray());
+        DescriptiveStatistics dsMV = new DescriptiveStatistics(meanViolations.stream().mapToDouble(Double::doubleValue).toArray());
+
+        System.out.println("Loss mean : " + dsLoss.getMean());
+        System.out.println("VaR mean  : " + dsVaR.getMean());
+        System.out.println("No. of violations : " + numberOfExceptions);
+        System.out.println("Violation mean  : " + dsMV.getMean());
+        System.out.println("Violation Rate : " + (((double) numberOfExceptions) / (VAR_PER_SAMPLE)) * 100 + "%");
     }
 
     private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetList) {
@@ -125,7 +120,7 @@ public class Backtest {
 
     public ArrayList<Object[]> readBacktestData() throws FileNotFoundException {
         ClassLoader classLoader = getClass().getClassLoader();
-        Scanner scan = new Scanner(new File(classLoader.getResource("BackTestDataReal.csv").getFile()));
+        Scanner scan = new Scanner(new File(classLoader.getResource("BackTestDataNew.csv").getFile()));
         ArrayList<Object[]> list = new ArrayList();
         Object[] data;
         String[] split;
