@@ -47,7 +47,7 @@ public abstract class VaRPortfolioCalc {
         symbol = data[2].toString();
         price = ((Number) data[3]).doubleValue();
 
-        if(data[0] != null && data[1] != null) {
+        if (data[0] != null && data[1] != null) {
             portfolioID = ((Number) data[0]).intValue();
             shares = ((Number) data[1]).intValue();
             updatePortfolioPool();
@@ -57,11 +57,11 @@ public abstract class VaRPortfolioCalc {
         updateAssetPool();
     }
 
-    protected void updateAssetPool(){       //double check protected access
+    protected void updateAssetPool() {       //double check protected access
         double priceBeforeLastPrice;
 
         Asset temp = assetList.get(symbol);
-        if(temp == null) {
+        if (temp == null) {
             assetList.put(symbol, AssetFactory.getAsset(type));
             temp = assetList.get(symbol);
             temp.setReturnValueSet(batchSize - 1);
@@ -72,7 +72,7 @@ public abstract class VaRPortfolioCalc {
         temp.setCurrentStockPrice(price);
 
         //assume that all price values of assets cannot be zero or negative
-        if(priceBeforeLastPrice > 0) {
+        if (priceBeforeLastPrice > 0) {
             double value = Math.log(price / priceBeforeLastPrice);
             temp.addReturnValue(value);                             /**if descriptive stat can be used, this is not required*/
             temp.getReturnValueSet().addValue(value);
@@ -143,7 +143,6 @@ public abstract class VaRPortfolioCalc {
         //if no var has been calculated
         if (result.length() == 0)
             return null;
-
         return result.toString();
     }
 
@@ -185,7 +184,7 @@ public abstract class VaRPortfolioCalc {
         return shares;
     }
 
-    public double getPrice(){
+    public double getPrice() {
         return price;
     }
 

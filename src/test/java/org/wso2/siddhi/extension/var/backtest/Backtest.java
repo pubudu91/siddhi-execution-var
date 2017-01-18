@@ -1,7 +1,10 @@
 package org.wso2.siddhi.extension.var.backtest;
 
+import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.json.JSONObject;
+import org.wso2.siddhi.extension.var.batchmode.MonteCarloSimulation;
+import org.wso2.siddhi.extension.var.batchmode.MonteCarloVarCalculator;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
@@ -21,8 +24,8 @@ public class Backtest {
     private static final double VAR_CI = 0.95;
     private static final double BACKTEST_CI = 0.05;
     private static final int NUMBER_OF_ASSETS = 25;
-    private static final int SAMPLE_SIZE = 50;
-    private static final int VAR_PER_SAMPLE = 200;
+    private static final int SAMPLE_SIZE = 20;
+    private static final int VAR_PER_SAMPLE = 500;
     private static final String PORTFOLIO_KEY = "Portfolio 1";
     private ArrayList<Double> calculatedVarList ;
     private ArrayList<Double> actualVarList ;
@@ -41,8 +44,8 @@ public class Backtest {
     private void runBackTest() throws FileNotFoundException {
 
         //VaRPortfolioCalc varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-        VaRPortfolioCalc varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
-        //VaRPortfolioCalc varCalculator = new MonteCarloSimulation().parallelSimulation(BATCH_SIZE, VAR_CI, 2500,100,0.01);
+//        VaRPortfolioCalc varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRPortfolioCalc varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500,100,0.01);
 
         ArrayList<Object[]> list = readBacktestData();
         int i = 0;
@@ -76,14 +79,16 @@ public class Backtest {
 
     private void runStandardCoverageTest() {
 
-        NormalDistribution dist = new NormalDistribution();
-        double leftEnd = dist.inverseCumulativeProbability(BACKTEST_CI  / 2);
-        leftEnd = leftEnd * Math.sqrt(VAR_PER_SAMPLE * VAR_CI * (1 - VAR_CI)) + (VAR_PER_SAMPLE * (1 - VAR_CI));
-        leftEnd = Math.floor(leftEnd);
+        BinomialDistribution dist = new BinomialDistribution(VAR_PER_SAMPLE,1-VAR_CI);
+        double leftEnd = dist.inverseCumulativeProbability(BACKTEST_CI / 2);
+        double rightEnd = dist.inverseCumulativeProbability(1-(BACKTEST_CI/2));
+//        double leftEnd = dist.inverseCumulativeProbability(BACKTEST_CI  / 2);
+//        leftEnd = leftEnd * Math.sqrt(VAR_PER_SAMPLE * VAR_CI * (1 - VAR_CI)) + (VAR_PER_SAMPLE * (1 - VAR_CI));
+//        leftEnd = Math.floor(leftEnd);
 
-        double rightEnd = dist.inverseCumulativeProbability(1 - (BACKTEST_CI  / 2));
-        rightEnd = rightEnd * Math.sqrt(VAR_PER_SAMPLE * VAR_CI * (1 - VAR_CI)) + (VAR_PER_SAMPLE * (1 - VAR_CI));
-        rightEnd = Math.ceil(rightEnd);
+//        double rightEnd = dist.inverseCumulativeProbability(1 - (BACKTEST_CI  / 2));
+//        rightEnd = rightEnd * Math.sqrt(VAR_PER_SAMPLE * VAR_CI * (1 - VAR_CI)) + (VAR_PER_SAMPLE * (1 - VAR_CI));
+//        rightEnd = Math.ceil(rightEnd);
 
         System.out.println("Left End :" + leftEnd);
         System.out.println("Right End :" + rightEnd);
