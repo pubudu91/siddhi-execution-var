@@ -40,9 +40,6 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
     @Override
     public void addEvent(Object[] event) {
 
-        // if(symbol.equals("FLDM") && price == 71.875)
-        // System.out.println();
-
         if (event[0] != null || event[1] != null) {
             setPortfolioID(((Number) event[0]).intValue());
             setShares(((Number) event[1]).intValue());
@@ -55,14 +52,14 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         setPrice(((Number) event[3]).doubleValue());
 
         Asset temp;
-        if (!assetList.containsKey(getSymbol())) {
+        if (!getAssetList().containsKey(getSymbol())) {
             temp = new Asset();
             temp.setCurrentStockPrice(getPrice());
-            assetList.put(getSymbol(), temp);
+            getAssetList().put(getSymbol(), temp);
             excessReturnList.put(getSymbol(), new LinkedList<>());
             meanList.put(getSymbol(), 0.0);
         } else {
-            temp = assetList.get(getSymbol());
+            temp = getAssetList().get(getSymbol());
             temp.setPriceBeforeLastPrice(temp.getCurrentStockPrice());
             temp.setCurrentStockPrice(getPrice());
             double newReturn = Math.log(temp.getCurrentStockPrice() / temp.getPriceBeforeLastPrice());
@@ -114,7 +111,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
         /** fill priceReturns and calculate means **/
         for (int i = 0; i < symbols.length; i++) {
-            asset = assetList.get(symbols[i]);
+            asset = getAssetList().get(symbols[i]);
             returnList = asset.getLatestReturnValues();
             length = returnList.size();
             weightage[0][i] = asset.getCurrentStockPrice() * portfolio.getCurrentShare(symbols[i]);
@@ -138,7 +135,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         /** calculate excess returns **/
         double[][] excessReturns = new double[getBatchSize()- 1][portfolio.getAssetsSize()];
         for (int i = 0; i < portfolio.getAssetsSize(); i++) {
-            for (int j = 0; j < assetList.get(symbols[i]).getLatestReturnValues().size(); j++) {
+            for (int j = 0; j < getAssetList().get(symbols[i]).getLatestReturnValues().size(); j++) {
                 excessReturns[j][i] = priceReturns[j][i] - means[0][i];
             }
         }
@@ -171,14 +168,14 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
         /** NormalDistribution throws an exception when ps = 0, this condition return pm when ps = 0 **/
         if (pv == 0) {
-            System.out.print(portfolio.getID() + " : " + pm + " ");
+            //System.out.print(portfolio.getID() + " : " + pm + " ");
             return pm;
         }
 
         double ps = Math.sqrt(pv);
         NormalDistribution n = new NormalDistribution(pm, ps);
         double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
-        System.out.print(portfolio.getID() + " : " + var * portfolioTotal + " ");
+        //System.out.print(portfolio.getID() + " : " + var * portfolioTotal + " ");
         return var * portfolioTotal;
     }
 
@@ -256,7 +253,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         Iterator itr = keys.iterator();
         while (itr.hasNext()) {
             symbol = itr.next();
-            temp = assetList.get(symbol);
+            temp = getAssetList().get(symbol);
             if (temp != null) {
                 portfolioWeighage[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentShare((String)symbol);
                 portfolioTotal = portfolioTotal + portfolioWeighage[0][i];
@@ -290,7 +287,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
     // optimized
     private void updateExcessReturnList(String symbol) {
-        LinkedList<Double> returnList = assetList.get(symbol).getLatestReturnValues();
+        LinkedList<Double> returnList = getAssetList().get(symbol).getLatestReturnValues();
         double mean = meanList.get(symbol);
         LinkedList<Double> excessReturns = new LinkedList<>();
         //excessReturnList.get(symbol).clear();
@@ -303,8 +300,8 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
     // can be parallel
     private void updateCovarianceTable(String latestSymbol) {
-        Set<String> keys = assetList.keySet();
-        String symbols[] = keys.toArray(new String[assetList.size()]);
+        Set<String> keys = getAssetList().keySet();
+        String symbols[] = keys.toArray(new String[getAssetList().size()]);
         LinkedList<Double> latestReturnList = excessReturnList.get(latestSymbol);
         LinkedList<Double> tempReturnList;
         int min;
@@ -320,7 +317,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
                 cov += latestReturnList.get(j) * tempReturnList.get(j);
             }
 
-            cov = cov / (getBatchSize() - 1);
+            cov = cov / (getBatchSize() - 2);
 
             covarianceTable.put(latestSymbol, symbols[i], cov);
             covarianceTable.put(symbols[i], latestSymbol, cov);

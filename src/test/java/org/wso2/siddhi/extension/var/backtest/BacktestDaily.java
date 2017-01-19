@@ -1,9 +1,9 @@
+
+
 package org.wso2.siddhi.extension.var.backtest;
 
 import org.apache.commons.math3.distribution.BinomialDistribution;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.json.JSONObject;
-import org.wso2.siddhi.extension.var.batchmode.MonteCarloVarCalculator;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
@@ -17,40 +17,38 @@ import java.util.*;
 /**
  * Created by dilip on 09/01/17.
  */
-public class Backtest {
+public class BacktestDaily {
 
     private static final int BATCH_SIZE = 251;
     private static final double VAR_CI = 0.95;
     private static final double BACKTEST_CI = 0.05;
     private static final int NUMBER_OF_ASSETS = 25;
-    private static final int SAMPLE_SIZE = 1;
+    private static final int SAMPLE_SIZE = 20;
     private static final int VAR_PER_SAMPLE = 500;
     private static final String PORTFOLIO_KEY = "Portfolio 1";
     private ArrayList<Double> calculatedVarList;
     private ArrayList<Double> actualVarList;
-    private ArrayList<Double> meanViolations;
     private Double previousPortfolioValue;
 
-    public Backtest() {
+    public BacktestDaily() {
         calculatedVarList = new ArrayList();
         actualVarList = new ArrayList();
-        meanViolations = new ArrayList();
         previousPortfolioValue = null;
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-        new Backtest().runBackTest();
+        new BacktestDaily().runBackTest();
     }
 
     private void runBackTest() throws FileNotFoundException {
 
-//        VaRPortfolioCalc varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRPortfolioCalc varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
         //VaRPortfolioCalc varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
-        VaRPortfolioCalc varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500,100,0.01);
+        //VaRPortfolioCalc varCalculator = new MonteCarloSimulation().parallelSimulation(BATCH_SIZE, VAR_CI, 2500,100,0.01);
 
         ArrayList<Object[]> list = readBacktestData();
         int i = 0;
-        int totalEvents = ((BATCH_SIZE + 1) * NUMBER_OF_ASSETS) + (VAR_PER_SAMPLE * NUMBER_OF_ASSETS * SAMPLE_SIZE) + 1;
+        int totalEvents = (BATCH_SIZE + 1) * NUMBER_OF_ASSETS + VAR_PER_SAMPLE * NUMBER_OF_ASSETS * SAMPLE_SIZE + 1;
         System.out.println("Read Total Events : " + totalEvents);
 
         while (i < totalEvents) {
@@ -80,24 +78,29 @@ public class Backtest {
 
     private void runStandardCoverageTest() {
 
-        int numberOfExceptions = 0;
 
-        for (int i = 0; i < VAR_PER_SAMPLE; i++) {
-            if (actualVarList.get(i) <= calculatedVarList.get(i)) {
-                numberOfExceptions++;
-                meanViolations.add(actualVarList.get(i)-calculatedVarList.get(i));
+        BinomialDistribution dist = new BinomialDistribution(VAR_PER_SAMPLE, 1 - VAR_CI);
+        double leftEnd = dist.inverseCumulativeProbability(BACKTEST_CI / 2);
+        double rightEnd = dist.inverseCumulativeProbability(1 - (BACKTEST_CI / 2));
+
+        System.out.println("Left End :" + leftEnd);
+        System.out.println("Right End :" + rightEnd);
+
+        int numberOfExceptions;
+        int successCount = 0;
+        for (int j = 0; j < SAMPLE_SIZE; j++) {
+            numberOfExceptions = 0;
+            for (int i = j * VAR_PER_SAMPLE; i < (j + 1) * VAR_PER_SAMPLE; i++) {
+                //System.out.println(actualVarList.get(i) + " " + calculatedVarList.get(i));
+                if (actualVarList.get(i) <= calculatedVarList.get(i))
+                    numberOfExceptions++;
+            }
+            System.out.println("Sample Set : " + (j + 1) + " Exceptions : " + numberOfExceptions);
+            if (rightEnd >= numberOfExceptions && leftEnd <= numberOfExceptions) {
+                successCount++;
             }
         }
-
-        DescriptiveStatistics dsLoss = new DescriptiveStatistics(actualVarList.stream().mapToDouble(Double::doubleValue).toArray());
-        DescriptiveStatistics dsVaR = new DescriptiveStatistics(calculatedVarList.stream().mapToDouble(Double::doubleValue).toArray());
-        DescriptiveStatistics dsMV = new DescriptiveStatistics(meanViolations.stream().mapToDouble(Double::doubleValue).toArray());
-
-        System.out.println("Loss mean : " + dsLoss.getMean());
-        System.out.println("VaR mean  : " + dsVaR.getMean());
-        System.out.println("No. of violations : " + numberOfExceptions);
-        System.out.println("Violation mean  : " + dsMV.getMean());
-        System.out.println("Violation Rate : " + (((double) numberOfExceptions) / (VAR_PER_SAMPLE)) * 100 + "%");
+        System.out.println("Success Percentage : " + (((double) successCount) / SAMPLE_SIZE) * 100);
     }
 
     private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetList) {
@@ -120,7 +123,7 @@ public class Backtest {
 
     public ArrayList<Object[]> readBacktestData() throws FileNotFoundException {
         ClassLoader classLoader = getClass().getClassLoader();
-        Scanner scan = new Scanner(new File(classLoader.getResource("BackTestDataNew.csv").getFile()));
+        Scanner scan = new Scanner(new File(classLoader.getResource("BackTestDataReal.csv").getFile()));
         ArrayList<Object[]> list = new ArrayList();
         Object[] data;
         String[] split;

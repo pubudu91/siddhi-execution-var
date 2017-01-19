@@ -15,8 +15,8 @@ public abstract class VaRPortfolioCalc {
     private double confidenceInterval = 0.95;
     private int batchSize;
 
-    protected Map<Integer, Portfolio> portfolioList;
-    protected Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
+    private Map<Integer, Portfolio> portfolioList;
+    private Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
 
     private String type;
 
@@ -79,17 +79,17 @@ public abstract class VaRPortfolioCalc {
         }
     }
 
-    protected void updatePortfolioPool(){       //double check protected access
+    protected void updatePortfolioPool() {       //double check protected access
         Portfolio portfolio = portfolioList.get(portfolioID);
 
-        if(portfolio == null){//first time for the portfolio
+        if (portfolio == null) {//first time for the portfolio
             Map<String, Integer> assets = new HashMap<>();
             assets.put(symbol, shares);
             portfolio = PortfolioFactory.getPortfolio(type, portfolioID, assets);
             portfolioList.put(portfolioID, portfolio);
-        }else if(portfolio.getCurrentShare(symbol) == null){//first time for the asset within portfolio
+        } else if (portfolio.getCurrentShare(symbol) == null) {//first time for the asset within portfolio
             portfolio.setCurrentShare(symbol, shares);
-        }else{//portfolio exists, asset within portfolio exists
+        } else {//portfolio exists, asset within portfolio exists
             int currentShares = portfolio.getCurrentShare(symbol);
             portfolio.setCurrentShare(symbol, shares + currentShares);
         }
@@ -113,7 +113,7 @@ public abstract class VaRPortfolioCalc {
      */
     protected abstract Object processData(Portfolio portfolio);
 
-    public Object calculateValueAtRisk(Object data[]){
+    public Object calculateValueAtRisk(Object data[]) {
         double var;
         JSONObject result = new JSONObject();
 
@@ -125,14 +125,14 @@ public abstract class VaRPortfolioCalc {
         Set<Integer> keys = portfolioList.keySet();
         Iterator<Integer> iterator = keys.iterator();
 
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             Portfolio portfolio = portfolioList.get(iterator.next());
             Integer shares = portfolio.getCurrentShare(symbol);
-            if(shares != null && assetList.get(symbol).getNumberOfHistoricalValues() > 1){
+            if (shares != null && assetList.get(symbol).getNumberOfHistoricalValues() > 1) {
                 Object temp = processData(portfolio);
-                if(temp != null){
+                if (temp != null) {
                     var = Double.parseDouble(temp.toString());
-                    if(Double.compare(var, 0.0) != 0) {
+                    if (Double.compare(var, 0.0) != 0) {
                         result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
                     }
                 }
@@ -143,6 +143,7 @@ public abstract class VaRPortfolioCalc {
         //if no var has been calculated
         if (result.length() == 0)
             return null;
+
         return result.toString();
     }
 
@@ -184,9 +185,7 @@ public abstract class VaRPortfolioCalc {
         return shares;
     }
 
-    public double getPrice() {
-        return price;
-    }
+    public double getPrice() {return price;}
 
     public void setPrice(double price) {
         this.price = price;
@@ -204,4 +203,3 @@ public abstract class VaRPortfolioCalc {
         this.shares = shares;
     }
 }
-
