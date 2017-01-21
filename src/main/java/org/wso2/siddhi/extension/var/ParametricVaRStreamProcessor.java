@@ -27,7 +27,6 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
     private int batchSize = 251;                                        // Maximum # of events, used for regression calculation
     private double ci = 0.95;                                           // Confidence Interval
     private VaRPortfolioCalc varCalculator = null;
-    private int paramPosition = 0;
 
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor, StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
@@ -58,7 +57,6 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
     protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
         // Capture constant inputs
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
-            paramPosition = (attributeExpressionLength + 4) / 2;
             try {
                 batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
             } catch (ClassCastException c) {

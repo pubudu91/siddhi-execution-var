@@ -26,7 +26,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     private int batchSize = 251;                                        // Maximum # of events, used for regression calculation
     private double ci = 0.95;                                           // Confidence Interval
     private VaRPortfolioCalc varCalculator = null;
-    private int paramPosition = 0;
+
     /**
      *
      * @param streamEventChunk      the event chunk that need to be processed
@@ -70,7 +70,6 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
         // Capture constant inputs
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
-            paramPosition = (attributeExpressionLength + 4)/2;
             try {
                 batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
             } catch (ClassCastException c) {

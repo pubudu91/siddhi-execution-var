@@ -27,7 +27,6 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
     private int batchSize = 251;                                        // Maximum # of events, used for regression calculation
     private double ci = 0.95;                                           // Confidence Interval
     private VaRPortfolioCalc varCalculator = null;
-    private int paramPosition = 0;
     private int numberOfTrials = 2000;
     private int calculationsPerDay = 100;
     private double timeSlice = 0.01;
@@ -61,7 +60,6 @@ public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
     protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
         // Capture constant inputs
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
-            paramPosition = (attributeExpressionLength + 4) / 2;
             try {
                 this.batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
                 this.timeSlice = ((double) attributeExpressionExecutors[2].execute(null));

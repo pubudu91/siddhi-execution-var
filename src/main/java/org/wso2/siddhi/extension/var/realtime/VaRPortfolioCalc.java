@@ -64,7 +64,7 @@ public abstract class VaRPortfolioCalc {
         if (temp == null) {
             assetList.put(symbol, AssetFactory.getAsset(type));
             temp = assetList.get(symbol);
-            temp.setReturnValueSet(batchSize - 1);
+            temp.setReturnValueSet(batchSize);
         }
 
         priceBeforeLastPrice = temp.getCurrentStockPrice();
@@ -75,6 +75,7 @@ public abstract class VaRPortfolioCalc {
         if (priceBeforeLastPrice > 0) {
             double value = Math.log(price / priceBeforeLastPrice);
             temp.addReturnValue(value);                             /**if descriptive stat can be used, this is not required*/
+            //TODO addValue should be within asset class
             temp.getReturnValueSet().addValue(value);
         }
     }
@@ -95,17 +96,6 @@ public abstract class VaRPortfolioCalc {
         }
     }
 
-    /**
-     * removes the oldest element from a given portfolio
-     *
-     * @param symbol
-     */
-    public void removeEvent(String symbol) {
-        LinkedList<Double> priceList = assetList.get(symbol).getLatestReturnValues();
-        priceList.removeFirst();
-
-        portfolioList.get(portfolioID).removeAsset(symbol);
-    }
 
     /**
      * @param portfolio

@@ -2,43 +2,24 @@ package org.wso2.siddhi.extension.var.models;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
-import java.util.LinkedList;
-
 /**
  * Created by flash on 6/30/16.
  */
 public class Asset {
     private double currentStockPrice;
-    private LinkedList<Double> latestReturnValues;   //check with others if this can be replaced with stat object
-
     private DescriptiveStatistics returnValueSet;
     private double priceBeforeLastPrice;
 
-    public Asset() {
-        latestReturnValues = new LinkedList<>();
+    //TODO - use get number of returns instead of this
+    public int getNumberOfHistoricalValues() {
+        return returnValueSet.getValues().length + 1;
     }
 
-    public void setLatestReturnValues(LinkedList<Double> latestReturnValues){
-        this.latestReturnValues = latestReturnValues;
-    }
-
-    public void addReturnValue(double value){
-        latestReturnValues.add(value);
-    }
-
-    public LinkedList<Double> getLatestReturnValues(){
-        return latestReturnValues;
-    }
-
-    public int getNumberOfHistoricalValues(){
-        return latestReturnValues.size() + 1;
-    }
-
-    public double getCurrentStockPrice(){
+    public double getCurrentStockPrice() {
         return currentStockPrice;
     }
 
-    public void setCurrentStockPrice(double currentStockPrice){
+    public void setCurrentStockPrice(double currentStockPrice) {
         this.currentStockPrice = currentStockPrice;
     }
 
@@ -46,9 +27,18 @@ public class Asset {
         return returnValueSet;
     }
 
+    public Double addReturnValue(double value){
+        Double toBeRemove = null;
+        if(getNumberOfReturnValues()==returnValueSet.getWindowSize())
+            toBeRemove = returnValueSet.getElement(0);
+        returnValueSet.addValue(value);
+        return toBeRemove;
+    }
+
+    //TODO - move this to constructor
     public void setReturnValueSet(int batchSize) {
         returnValueSet = new DescriptiveStatistics();
-        returnValueSet.setWindowSize(batchSize);
+        returnValueSet.setWindowSize(batchSize-1);
     }
 
     public double getPriceBeforeLastPrice() {
@@ -60,6 +50,6 @@ public class Asset {
     }
 
     public int getNumberOfReturnValues() {
-        return latestReturnValues.size();
+        return returnValueSet.getValues().length;
     }
 }
