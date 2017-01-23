@@ -12,8 +12,8 @@ import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
 import org.wso2.siddhi.extension.var.realtime.ParametricVaRCalculator;
-import org.wso2.siddhi.extension.var.realtime.RealTimeVaRConstants;
-import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
+import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
+import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
@@ -26,10 +26,17 @@ import java.util.List;
 public class ParametricVaRStreamProcessor extends StreamProcessor {
     private int batchSize = 251;                                        // Maximum # of events, used for regression calculation
     private double ci = 0.95;                                           // Confidence Interval
-    private VaRPortfolioCalc varCalculator = null;
+    private VaRCalculator varCalculator = null;
 
+    /**
+     * @param streamEventChunk      the event chunk that need to be processed
+     * @param nextProcessor         the next processor to which the success events need to be passed
+     * @param streamEventCloner     helps to clone the incoming event for local storage or modification
+     * @param complexEventPopulater helps to populate the events with the resultant attributes
+     */
     @Override
-    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor, StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
+    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
+                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();

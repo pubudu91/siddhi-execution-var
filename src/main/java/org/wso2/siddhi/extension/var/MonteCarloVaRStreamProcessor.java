@@ -11,9 +11,9 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.extension.var.batchmode.MonteCarloVarCalculator;
-import org.wso2.siddhi.extension.var.realtime.RealTimeVaRConstants;
-import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
+import org.wso2.siddhi.extension.var.realtime.montecarlo.MonteCarloVarCalculator;
+import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
+import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
@@ -23,10 +23,10 @@ import java.util.List;
 /**
  * Created by flash on 7/7/16.
  */
-public class MonteCarloPortfolioStreamProcessor extends StreamProcessor {
+public class MonteCarloVaRStreamProcessor extends StreamProcessor {
     private int batchSize = 251;                                        // Maximum # of events, used for regression calculation
     private double ci = 0.95;                                           // Confidence Interval
-    private VaRPortfolioCalc varCalculator = null;
+    private VaRCalculator varCalculator = null;
     private int numberOfTrials = 2000;
     private int calculationsPerDay = 100;
     private double timeSlice = 0.01;

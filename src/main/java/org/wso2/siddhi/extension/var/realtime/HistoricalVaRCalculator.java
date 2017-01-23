@@ -3,11 +3,12 @@ package org.wso2.siddhi.extension.var.realtime;
 import org.wso2.siddhi.extension.var.models.HistoricalAsset;
 import org.wso2.siddhi.extension.var.models.HistoricalPortfolio;
 import org.wso2.siddhi.extension.var.models.Portfolio;
+import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
 /**
  * Created by dilini92 on 6/26/16.
  */
-public class HistoricalVaRCalculator extends VaRPortfolioCalc {
+public class HistoricalVaRCalculator extends VaRCalculator {
 
     /**
      *
@@ -57,7 +58,7 @@ public class HistoricalVaRCalculator extends VaRPortfolioCalc {
     }
 
     @Override
-    public double replaceAssetSimulation() {
+    public double replaceAssetSimulation(Double removedEvent) {
         HistoricalAsset asset = (HistoricalAsset)getAssetList().get(getSymbol());
 
         if(asset.getNumberOfHistoricalValues() > 1) {

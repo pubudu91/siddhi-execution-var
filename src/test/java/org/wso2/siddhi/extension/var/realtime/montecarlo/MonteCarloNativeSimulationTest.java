@@ -1,10 +1,6 @@
-package org.wso2.siddhi.extension.var.batchmode;
+package org.wso2.siddhi.extension.var.realtime.montecarlo;
 
 import org.junit.Test;
-
-import java.util.Arrays;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by yellowflash on 11/26/16.

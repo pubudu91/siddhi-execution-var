@@ -1,14 +1,12 @@
 package org.wso2.siddhi.extension.var.backtest;
 
-import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.json.JSONObject;
-import org.wso2.siddhi.extension.var.batchmode.MonteCarloVarCalculator;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.ParametricVaRCalculator;
-import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
+import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,9 +42,9 @@ public class Backtest {
 
     private void runBackTest() throws FileNotFoundException {
 
-        //VaRPortfolioCalc varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-        VaRPortfolioCalc varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
-        //VaRPortfolioCalc varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500,100,0.01);
+        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        //VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        //VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500,100,0.01);
 
         ArrayList<Object[]> list = readBacktestData();
         int i = 0;

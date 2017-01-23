@@ -5,18 +5,19 @@ import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.AssetFactory;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.models.PortfolioFactory;
+import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
 import java.util.*;
 
 /**
  * Created by dilini92 on 6/26/16.
  */
-public abstract class VaRPortfolioCalc {
-    private double confidenceInterval = 0.95;
+public abstract class VaRCalculator {
+    private double confidenceInterval;
     private int batchSize;
 
     private Map<Integer, Portfolio> portfolioList;
-    private Map<String, Asset> assetList; // this is public because it is used in VarModelAssertion for backtesting
+    private Map<String, Asset> assetList;
 
     private String type;
 
@@ -26,12 +27,12 @@ public abstract class VaRPortfolioCalc {
     private int shares;
 
     /**
-     * @param limit
-     * @param ci
+     * @param batchSize
+     * @param confidenceInterval
      */
-    public VaRPortfolioCalc(int limit, double ci) {
-        confidenceInterval = ci;
-        batchSize = limit;
+    public VaRCalculator(int batchSize, double confidenceInterval) {
+        this.confidenceInterval = confidenceInterval;
+        this.batchSize = batchSize;
 
         //ensures that there will be only one instance of each
         portfolioList = new HashMap<>();
@@ -41,30 +42,29 @@ public abstract class VaRPortfolioCalc {
     /**
      * @param data
      */
-    public void addEvent(Object data[]) {
+    public Double addEvent(Object data[]) {
         portfolioID = 0;
         shares = 0;
         symbol = data[2].toString();
-        price = ((Number) data[3]).doubleValue();
+        price = ((Double) data[3]);
 
-        if (data[0] != null && data[1] != null) {
+        if (data[0] != null  && data[1] != null) {
             portfolioID = ((Number) data[0]).intValue();
             shares = ((Number) data[1]).intValue();
             updatePortfolioPool();
         }
 
         //update asset pool
-        updateAssetPool();
+        return updateAssetPool();
     }
 
-    protected void updateAssetPool() {       //double check protected access
+    protected Double updateAssetPool() {       //double check protected access
         double priceBeforeLastPrice;
 
         Asset temp = assetList.get(symbol);
         if (temp == null) {
-            assetList.put(symbol, AssetFactory.getAsset(type));
+            assetList.put(symbol, AssetFactory.getAsset(type,batchSize));
             temp = assetList.get(symbol);
-            temp.setReturnValueSet(batchSize);
         }
 
         priceBeforeLastPrice = temp.getCurrentStockPrice();
@@ -74,10 +74,10 @@ public abstract class VaRPortfolioCalc {
         //assume that all price values of assets cannot be zero or negative
         if (priceBeforeLastPrice > 0) {
             double value = Math.log(price / priceBeforeLastPrice);
-            temp.addReturnValue(value);                             /**if descriptive stat can be used, this is not required*/
-            //TODO addValue should be within asset class
-            temp.getReturnValueSet().addValue(value);
+            return temp.addReturnValue(value);                             /**if descriptive stat can be used, this is not required*/
         }
+
+        return null;
     }
 
     protected void updatePortfolioPool() {       //double check protected access
@@ -104,31 +104,24 @@ public abstract class VaRPortfolioCalc {
     protected abstract Object processData(Portfolio portfolio);
 
     public Object calculateValueAtRisk(Object data[]) {
-        double var;
+
         JSONObject result = new JSONObject();
 
-        addEvent(data);
-        replaceAssetSimulation();
+        Double removedEvent = addEvent(data);
+        replaceAssetSimulation(removedEvent);
 
-        //no need to call the remove event method
-
-        Set<Integer> keys = portfolioList.keySet();
-        Iterator<Integer> iterator = keys.iterator();
-
-        while (iterator.hasNext()) {
-            Portfolio portfolio = portfolioList.get(iterator.next());
+        portfolioList.forEach((id, portfolio) -> {
             Integer shares = portfolio.getCurrentShare(symbol);
             if (shares != null && assetList.get(symbol).getNumberOfHistoricalValues() > 1) {
                 Object temp = processData(portfolio);
                 if (temp != null) {
-                    var = Double.parseDouble(temp.toString());
+                    double var = Double.parseDouble(temp.toString());
                     if (Double.compare(var, 0.0) != 0) {
                         result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
                     }
                 }
             }
-
-        }
+        });
 
         //if no var has been calculated
         if (result.length() == 0)
@@ -137,7 +130,7 @@ public abstract class VaRPortfolioCalc {
         return result.toString();
     }
 
-    public abstract double replaceAssetSimulation();
+    public abstract double replaceAssetSimulation(Double removedEvent);
 
     public String getType() {
         return type;
@@ -175,7 +168,9 @@ public abstract class VaRPortfolioCalc {
         return shares;
     }
 
-    public double getPrice() {return price;}
+    public double getPrice() {
+        return price;
+    }
 
     public void setPrice(double price) {
         this.price = price;

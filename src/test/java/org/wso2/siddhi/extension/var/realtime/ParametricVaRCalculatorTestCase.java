@@ -8,7 +8,12 @@ import java.util.*;
 /**
  * Created by dilip on 06/07/16.
  */
-public class ParametricVaRCalculatorTest {
+public class ParametricVaRCalculatorTestCase {
+
+
+
+
+
 
     @Test
     public void testProcessData() throws Exception {

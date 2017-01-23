@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.batchmode;
+package org.wso2.siddhi.extension.var.realtime.montecarlo;
 
 import java.io.IOException;
 import java.util.Arrays;

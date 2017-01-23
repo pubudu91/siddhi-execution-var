@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.batchmode;
+package org.wso2.siddhi.extension.var.realtime.montecarlo;
 
 /**
  * Created by flash on 6/27/16.
@@ -7,7 +7,6 @@ package org.wso2.siddhi.extension.var.batchmode;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;

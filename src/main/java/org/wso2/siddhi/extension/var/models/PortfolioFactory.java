@@ -1,6 +1,6 @@
 package org.wso2.siddhi.extension.var.models;
 
-import org.wso2.siddhi.extension.var.realtime.RealTimeVaRConstants;
+import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
 import java.util.Map;
 

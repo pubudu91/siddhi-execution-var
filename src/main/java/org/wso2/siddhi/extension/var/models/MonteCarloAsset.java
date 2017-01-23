@@ -4,6 +4,10 @@ package org.wso2.siddhi.extension.var.models;
  * Created by dilini92 on 1/9/17.
  */
 public class MonteCarloAsset extends Asset {
+    public MonteCarloAsset(int windowSize) {
+        super(windowSize);
+    }
+
     private double[] simulatedList = null;
     private double[] previousSimulatedList = null;
 

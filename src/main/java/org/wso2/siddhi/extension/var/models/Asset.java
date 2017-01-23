@@ -10,6 +10,11 @@ public class Asset {
     private DescriptiveStatistics returnValueSet;
     private double priceBeforeLastPrice;
 
+    public Asset(int windowSize) {
+        returnValueSet = new DescriptiveStatistics();
+        returnValueSet.setWindowSize(windowSize-1);
+    }
+
     //TODO - use get number of returns instead of this
     public int getNumberOfHistoricalValues() {
         return returnValueSet.getValues().length + 1;
@@ -27,18 +32,12 @@ public class Asset {
         return returnValueSet;
     }
 
-    public Double addReturnValue(double value){
+    public Double addReturnValue(double value) {
         Double toBeRemove = null;
-        if(getNumberOfReturnValues()==returnValueSet.getWindowSize())
+        if (getNumberOfReturnValues() == returnValueSet.getWindowSize())
             toBeRemove = returnValueSet.getElement(0);
         returnValueSet.addValue(value);
         return toBeRemove;
-    }
-
-    //TODO - move this to constructor
-    public void setReturnValueSet(int batchSize) {
-        returnValueSet = new DescriptiveStatistics();
-        returnValueSet.setWindowSize(batchSize-1);
     }
 
     public double getPriceBeforeLastPrice() {

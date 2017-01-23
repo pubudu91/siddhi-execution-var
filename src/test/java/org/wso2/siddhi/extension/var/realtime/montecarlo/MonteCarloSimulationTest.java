@@ -1,10 +1,7 @@
-package org.wso2.siddhi.extension.var.batchmode;
+package org.wso2.siddhi.extension.var.realtime.montecarlo;
 
 import junit.framework.Assert;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by flash on 9/1/16.

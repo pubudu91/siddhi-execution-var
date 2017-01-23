@@ -7,8 +7,8 @@ public class ParametricAsset extends Asset {
     private double[] excessReturns;
     private double mean;
 
-    public ParametricAsset() {
-        super();
+    public ParametricAsset(int windowSize) {
+        super(windowSize);
         mean = 0;
     }
 

@@ -11,11 +11,12 @@ import java.util.*;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.HashBasedTable;
+import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
 /**
  * Created by dilip on 30/06/16.
  */
-public class ParametricVaRCalculator extends VaRPortfolioCalc {
+public class ParametricVaRCalculator extends VaRCalculator {
     private final Table<String, String, Double> covarianceTable;
     private double portfolioValue;
 
@@ -30,7 +31,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
     }
 
     @Override
-    public void addEvent(Object[] event) {
+    public Double addEvent(Object[] event) {
 
         if (event[0] != null || event[1] != null) {
             setPortfolioID(((Number) event[0]).intValue());
@@ -45,9 +46,8 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
         ParametricAsset temp;
         if (!getAssetList().containsKey(getSymbol())) {
-            temp = new ParametricAsset();
+            temp = new ParametricAsset(getBatchSize());
             temp.setCurrentStockPrice(getPrice());
-            temp.setReturnValueSet(getBatchSize());
             getAssetList().put(getSymbol(), temp);
         } else {
             temp = (ParametricAsset) getAssetList().get(getSymbol());
@@ -67,6 +67,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
             updateExcessReturnList(getSymbol());
             updateCovarianceTable(getSymbol());
         }
+        return null;
     }
 
     /**
@@ -135,7 +136,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
         Set<String> keys = portfolio.getAssetListKeySet();
         int numberOfAssets = keys.size();
         double[][] portfolioWeighage = new double[1][numberOfAssets];
-        double portfolioTotal = 0.0;
+        double portfolioValue = 0.0;
         int i = 0;
         Asset temp;
         Object symbol;
@@ -145,13 +146,13 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
             temp = getAssetList().get(symbol);
             if (temp != null) {
                 portfolioWeighage[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentShare((String) symbol);
-                portfolioTotal = portfolioTotal + portfolioWeighage[0][i];
+                portfolioValue = portfolioValue + portfolioWeighage[0][i];
             }
             i++;
         }
-        this.portfolioValue = portfolioTotal;
+        this.portfolioValue = portfolioValue;
         for (int j = 0; j < numberOfAssets; j++) {
-            portfolioWeighage[0][j] = portfolioWeighage[0][j] / portfolioTotal;
+            portfolioWeighage[0][j] = portfolioWeighage[0][j] / portfolioValue;
         }
         return portfolioWeighage;
     }
@@ -176,7 +177,6 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
 
     // optimized
     private void updateExcessReturnList(String symbol) {
-
         ParametricAsset asset = (ParametricAsset) getAssetList().get(symbol);
         double[] returnValues = asset.getReturnValueSet().getValues();
         double mean = ((ParametricAsset) getAssetList().get(symbol)).getMean();
@@ -215,7 +215,7 @@ public class ParametricVaRCalculator extends VaRPortfolioCalc {
     }
 
     @Override
-    public double replaceAssetSimulation() {
+    public double replaceAssetSimulation(Double removedEvent) {
         return 0;
     }
 

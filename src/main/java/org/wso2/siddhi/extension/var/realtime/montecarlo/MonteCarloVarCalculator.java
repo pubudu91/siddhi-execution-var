@@ -1,16 +1,16 @@
-package org.wso2.siddhi.extension.var.batchmode;
+package org.wso2.siddhi.extension.var.realtime.montecarlo;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.MonteCarloAsset;
 import org.wso2.siddhi.extension.var.models.MonteCarloPortfolio;
 import org.wso2.siddhi.extension.var.models.Portfolio;
-import org.wso2.siddhi.extension.var.realtime.RealTimeVaRConstants;
-import org.wso2.siddhi.extension.var.realtime.VaRPortfolioCalc;
+import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
+import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 
 /**
  * Created by flash on 6/29/16.
  */
-public class MonteCarloVarCalculator extends VaRPortfolioCalc {
+public class MonteCarloVarCalculator extends VaRCalculator {
 
     private int numberOfTrials;
     private int calculationsPerDay;
@@ -146,7 +146,7 @@ public class MonteCarloVarCalculator extends VaRPortfolioCalc {
     }
 
     @Override
-    public double replaceAssetSimulation() {
+    public double replaceAssetSimulation(Double removedEvent) {
         MonteCarloAsset tempAsset;
         double[] returnList;
         double[] terminalStockValues;
