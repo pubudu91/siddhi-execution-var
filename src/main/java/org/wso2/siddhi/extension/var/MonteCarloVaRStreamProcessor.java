@@ -24,23 +24,25 @@ import java.util.List;
  * Created by flash on 7/7/16.
  */
 public class MonteCarloVaRStreamProcessor extends StreamProcessor {
-    private int batchSize = 251;                                        // Maximum # of events, used for regression calculation
-    private double ci = 0.95;                                           // Confidence Interval
+    private int batchSize = 251;                                        // Maximum # of events, used for regression
+    // calculation
+    private double confidenceInterval = 0.95;                                           // Confidence Interval
     private VaRCalculator varCalculator = null;
-    private int numberOfTrials = 2000;
-    private int calculationsPerDay = 100;
+    private int numberOfSimulationHorizontal = 2000;
+    private int numberOfSimulationVertical = 100;
     private double timeSlice = 0.01;
 
 
     @Override
-    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor, StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
+    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
+                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
                 Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
-
+                //get the symbol and price attributes from the stream to process
                 for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
-                    inputData[i] = attributeExpressionExecutors[i + 5].execute(complexEvent);
+                    inputData[i] = attributeExpressionExecutors[i].execute(complexEvent);
                 }
 
                 Object outputData[] = new Object[1];
@@ -57,27 +59,33 @@ public class MonteCarloVaRStreamProcessor extends StreamProcessor {
     }
 
     @Override
-    protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
-        // Capture constant inputs
+    protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[]
+            attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
         if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
             try {
-                this.batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
-                this.timeSlice = ((double) attributeExpressionExecutors[2].execute(null));
-                this.numberOfTrials = ((Integer) attributeExpressionExecutors[3].execute(null));
-                this.calculationsPerDay = ((Integer) attributeExpressionExecutors[4].execute(null));
+                this.batchSize = ((Integer) attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX]
+                        .execute(null));
+                this.timeSlice = ((double) attributeExpressionExecutors[RealTimeVaRConstants
+                        .MONTE_CARLO_TIME_SLICE_INDEX].execute(null));
+                this.numberOfSimulationHorizontal = ((Integer) attributeExpressionExecutors[RealTimeVaRConstants
+                        .MONTE_CARLO_HORIZONTAL_SIMULATION_COUNT_INDEX].execute(null));
+                this.numberOfSimulationVertical = ((Integer) attributeExpressionExecutors[RealTimeVaRConstants
+                        .MONTE_CARLO_VERTICAL_SIMULATION_COUNT_INDEX].execute(null));
             } catch (ClassCastException c) {
-                throw new ExecutionPlanCreationException("Calculation interval, batch size and range should be of type int");
+                throw new ExecutionPlanCreationException("Calculation interval, batch size and range should be of " +
+                        "type int");
             }
             try {
-                ci = ((Double) attributeExpressionExecutors[1].execute(null));
+                confidenceInterval = ((Double) attributeExpressionExecutors[1].execute(null));
             } catch (ClassCastException c) {
-                throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value between 0 and 1");
+                throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value " +
+                        "between 0 and 1");
             }
         }
 
         // set the var calculator
-        varCalculator = new MonteCarloVarCalculator(batchSize, ci,
-                numberOfTrials, calculationsPerDay, timeSlice);
+        varCalculator = new MonteCarloVarCalculator(batchSize, confidenceInterval,
+                numberOfSimulationHorizontal, numberOfSimulationVertical, timeSlice);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<>(1);

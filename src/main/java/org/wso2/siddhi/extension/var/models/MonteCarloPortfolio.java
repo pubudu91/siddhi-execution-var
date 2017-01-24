@@ -7,37 +7,37 @@ import java.util.Map;
  * Created by dilini92 on 1/9/17.
  */
 public class MonteCarloPortfolio extends Portfolio {
-    private Map<String, Integer> assetSharesBeforeChange = null;
+    private Map<String, Integer> shareCountMapBeforePortfolioUpdate = null;
 
-    private double monteCarlo_Simulation_currentPortfolioValue;
-    private double[] monteCarlo_Simulation_finalPortfolioValueList = null;
+    private double monteCarloSimulationCurrentPortfolioValue;
+    private double[] monteCarloSimulationFinalPortfolioValueList = null;
 
     public MonteCarloPortfolio(String ID, Map<String, Integer> assets) {
         super(ID, assets);
-        this.assetSharesBeforeChange = new HashMap<>();
+        this.shareCountMapBeforePortfolioUpdate = new HashMap<>();
     }
 
-    public double[] getMonteCarlo_Simulation_finalPortfolioValueList() {
-        return monteCarlo_Simulation_finalPortfolioValueList;
+    public double[] getMonteCarloSimulationFinalPortfolioValueList() {
+        return monteCarloSimulationFinalPortfolioValueList;
     }
 
-    public void setMonteCarlo_Simulation_finalPortfolioValueList(double[] monteCarlo_Simulation_finalPortfolioValueList) {
-        this.monteCarlo_Simulation_finalPortfolioValueList = monteCarlo_Simulation_finalPortfolioValueList;
+    public void setMonteCarloSimulationFinalPortfolioValueList(double[] monteCarloSimulationFinalPortfolioValueList) {
+        this.monteCarloSimulationFinalPortfolioValueList = monteCarloSimulationFinalPortfolioValueList;
     }
 
-    public double getMonteCarlo_Simulation_currentPortfolioValue() {
-        return monteCarlo_Simulation_currentPortfolioValue;
+    public double getMonteCarloSimulationCurrentPortfolioValue() {
+        return monteCarloSimulationCurrentPortfolioValue;
     }
 
-    public void setMonteCarlo_Simulation_currentPortfolioValue(double monteCarlo_Simulation_currentPortfolioValue) {
-        this.monteCarlo_Simulation_currentPortfolioValue = monteCarlo_Simulation_currentPortfolioValue;
+    public void setMonteCarloSimulationCurrentPortfolioValue(double monteCarloSimulationCurrentPortfolioValue) {
+        this.monteCarloSimulationCurrentPortfolioValue = monteCarloSimulationCurrentPortfolioValue;
     }
 
-    public Map<String, Integer> getAssetSharesBeforeChange() {
-        return this.assetSharesBeforeChange;
+    public Map<String, Integer> getShareCountMapBeforePortfolioUpdate() {
+        return this.shareCountMapBeforePortfolioUpdate;
     }
 
-    public void setAssetSharesBeforeChange(Map<String, Integer> assetSharesBeforeChange) {
-        this.assetSharesBeforeChange = assetSharesBeforeChange;
+    public void setShareCountMapBeforePortfolioUpdate(Map<String, Integer> shareCountMapBeforePortfolioUpdate) {
+        this.shareCountMapBeforePortfolioUpdate = shareCountMapBeforePortfolioUpdate;
     }
 }

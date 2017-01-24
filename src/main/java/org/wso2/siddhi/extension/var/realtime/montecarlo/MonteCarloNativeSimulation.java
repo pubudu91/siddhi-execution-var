@@ -8,12 +8,13 @@ public class MonteCarloNativeSimulation {
 
     static {
         try {
-            System.load("/var/www/html/FYP/wso2das-3.1.0-SNAPSHOT/lib/nativeSimulation.so");
+            System.load("/var/www/html/FYP/wso2das-3.1.0-SNAPSHOT/Native_Simulation.so");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-// number of trials should be divisible by 4
+
+    // number of trials should be divisible by 4
     public native double[] simulation(double mean, double std, double timeSlice, double currentPrice,
                                       int numberOfTrials, int calculationsPerDay);
 

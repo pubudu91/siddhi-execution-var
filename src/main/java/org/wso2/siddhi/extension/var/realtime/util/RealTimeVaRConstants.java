@@ -13,11 +13,16 @@ public class RealTimeVaRConstants {
 
     public static final String OUTPUT_NAME = "var";
 
-    //==================Array Indices=====================
+    /**
+     * Array Indices
+     */
     public static final int PORTFOLIO_ID_INDEX = 0;
     public static final int SHARES_INDEX = 1;
     public static final int SYMBOL_INDEX = 2;
     public static final int PRICE_INDEX = 3;
     public static final int BATCH_SIZE_INDEX = 4;
     public static final int CI_INDEX = 5;
+    public static final int MONTE_CARLO_VERTICAL_SIMULATION_COUNT_INDEX = 6;
+    public static final int MONTE_CARLO_HORIZONTAL_SIMULATION_COUNT_INDEX = 7;
+    public static final int MONTE_CARLO_TIME_SLICE_INDEX = 8;
 }
