@@ -12,7 +12,7 @@ public class MonteCarloPortfolio extends Portfolio {
     private double monteCarlo_Simulation_currentPortfolioValue;
     private double[] monteCarlo_Simulation_finalPortfolioValueList = null;
 
-    public MonteCarloPortfolio(int ID, Map<String, Integer> assets) {
+    public MonteCarloPortfolio(String ID, Map<String, Integer> assets) {
         super(ID, assets);
         this.assetSharesBeforeChange = new HashMap<>();
     }

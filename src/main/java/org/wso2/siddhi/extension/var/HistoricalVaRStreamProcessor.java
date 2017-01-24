@@ -11,7 +11,7 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
+import org.wso2.siddhi.extension.var.realtime.historical.HistoricalVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
@@ -42,7 +42,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
                 //get the symbol and price attributes from the stream to process
                 Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
                 for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
-                    inputData[i] = attributeExpressionExecutors[i + 2].execute(complexEvent);
+                    inputData[i] = attributeExpressionExecutors[i].execute(complexEvent);
                 }
 
                 Object outputData[] = new Object[1];
@@ -65,16 +65,20 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
      * @return
      */
     @Override
-    protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
+    protected List<Attribute> init(AbstractDefinition inputDefinition,
+                                   ExpressionExecutor[] attributeExpressionExecutors,
+                                   ExecutionPlanContext executionPlanContext) {
         // Capture constant inputs
-        if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
+        if (attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX] instanceof ConstantExpressionExecutor) {
             try {
-                batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
+                batchSize =
+                        ((Integer) attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX].execute(null));
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Batch size should be an integer");
             }
             try {
-                confidenceInterval = ((Double) attributeExpressionExecutors[1].execute(null));
+                confidenceInterval =
+                        ((Double) attributeExpressionExecutors[RealTimeVaRConstants.CI_INDEX].execute(null));
             } catch (ClassCastException c) {
                 throw new ExecutionPlanCreationException("Confidence interval should be a double value between 0 and 1");
             }
@@ -85,7 +89,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<>(1);
-        attributes.add(new Attribute("var", Attribute.Type.STRING));
+        attributes.add(new Attribute(RealTimeVaRConstants.OUTPUT_NAME, Attribute.Type.STRING));
 
         return attributes;
     }
