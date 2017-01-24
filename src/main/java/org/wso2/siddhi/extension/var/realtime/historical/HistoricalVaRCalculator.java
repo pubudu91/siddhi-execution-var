@@ -13,7 +13,6 @@ import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 public class HistoricalVaRCalculator extends VaRCalculator {
 
     /**
-     *
      * @param batchSize
      * @param ci
      */
@@ -32,15 +31,15 @@ public class HistoricalVaRCalculator extends VaRCalculator {
 
         HistoricalPortfolio historicalPortfolio = (HistoricalPortfolio) portfolio;
         String symbol = event.getSymbol();
-        HistoricalAsset asset = (HistoricalAsset)getAssetList().get(symbol);
-        if(asset.getNumberOfReturnValues() > 0) {
+        HistoricalAsset asset = (HistoricalAsset) getAssetList().get(symbol);
+        if (asset.getNumberOfReturnValues() > 0) {
             double var = historicalPortfolio.getHistoricalVarValue();
 
             double previousReturnValue = asset.getPreviousLossReturn();
             double currentReturnValue = asset.getCurrentLossReturn();
 
             int previousShares;
-            if(portfolio.getID().equals(event.getPortfolioID()))
+            if (portfolio.getID().equals(event.getPortfolioID()))
                 previousShares = historicalPortfolio.getPreviousSharesCount(symbol);
             else
                 previousShares = historicalPortfolio.getCurrentSharesCount(symbol);
@@ -62,8 +61,8 @@ public class HistoricalVaRCalculator extends VaRCalculator {
 
     @Override
     public double replaceAssetSimulation(Double removedEvent, String symbol) {
-        HistoricalAsset asset = (HistoricalAsset)getAssetList().get(symbol);
-        if(asset.getNumberOfReturnValues() > 0) {
+        HistoricalAsset asset = (HistoricalAsset) getAssetList().get(symbol);
+        if (asset.getNumberOfReturnValues() > 0) {
             asset.setPreviousLossReturn(asset.getCurrentLossReturn());
             double currentReturnValue = asset.getReturnValueSet().getPercentile((1 - getConfidenceInterval()) * 100);
             asset.setCurrentLossReturn(currentReturnValue);

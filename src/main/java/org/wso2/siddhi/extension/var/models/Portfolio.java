@@ -30,39 +30,35 @@ public abstract class Portfolio {
         this.ID = ID;
     }
 
-    public void setCurrentShares(Map<String, Integer> currentShares) {
-        this.currentShares = currentShares;
-    }
-
-    public Integer getCurrentSharesCount(String symbol){
-        if(currentShares.get(symbol) != null)
+    public Integer getCurrentSharesCount(String symbol) {
+        if (currentShares.get(symbol) != null)
             return currentShares.get(symbol);
         else
             return 0;
     }
 
-    public void setCurrentSharesCount(String symbol, int shares){
+    public void setCurrentSharesCount(String symbol, int shares) {
         currentShares.put(symbol, shares);
     }
 
-    public void removeAsset(String symbol){
+    public void removeAsset(String symbol) {
         currentShares.remove(symbol);
     }
 
-    public int getAssetsSize(){
+    public int getAssetsSize() {
         return currentShares.size();
     }
 
-    public Set<String> getAssetListKeySet(){
+    public Set<String> getAssetListKeySet() {
         return currentShares.keySet();
     }
 
-    public void setPreviousSharesCount(String symbol, int shares){
+    public void setPreviousSharesCount(String symbol, int shares) {
         previousShares.put(symbol, shares);
     }
 
-    public int getPreviousSharesCount(String symbol){
-        if(previousShares.get(symbol) != null)
+    public int getPreviousSharesCount(String symbol) {
+        if (previousShares.get(symbol) != null)
             return previousShares.get(symbol);
         return 0;
     }
