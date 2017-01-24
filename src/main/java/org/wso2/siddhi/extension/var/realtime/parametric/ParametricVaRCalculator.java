@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.realtime;
+package org.wso2.siddhi.extension.var.realtime.parametric;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -11,6 +11,7 @@ import java.util.*;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.HashBasedTable;
+import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
 /**

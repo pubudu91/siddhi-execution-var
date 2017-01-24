@@ -1,10 +1,7 @@
 package org.wso2.siddhi.extension.var.realtime;
 
 import org.json.JSONObject;
-import org.wso2.siddhi.extension.var.models.Asset;
-import org.wso2.siddhi.extension.var.models.AssetFactory;
-import org.wso2.siddhi.extension.var.models.Portfolio;
-import org.wso2.siddhi.extension.var.models.PortfolioFactory;
+import org.wso2.siddhi.extension.var.models.*;
 import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
 import java.util.*;
@@ -16,15 +13,10 @@ public abstract class VaRCalculator {
     private double confidenceInterval;
     private int batchSize;
 
-    private Map<Integer, Portfolio> portfolioList;
+    private Map<String, Portfolio> portfolioList;
     private Map<String, Asset> assetList;
 
     private String type;
-
-    private double price;
-    private String symbol;
-    private int portfolioID;
-    private int shares;
 
     /**
      * @param batchSize
@@ -40,30 +32,31 @@ public abstract class VaRCalculator {
     }
 
     /**
-     * @param data
+     *
+     * @param event
+     * @return
      */
-    public Double addEvent(Object data[]) {
-        portfolioID = 0;
-        shares = 0;
-        symbol = data[2].toString();
-        price = ((Double) data[3]);
+    public Double addEvent(Event event) {
 
-        if (data[0] != null  && data[1] != null) {
-            portfolioID = ((Number) data[0]).intValue();
-            shares = ((Number) data[1]).intValue();
-            updatePortfolioPool();
-        }
+        if(event.getPortfolioID() != null)
+            updatePortfolioPool(event.getPortfolioID(), event.getShares(), event.getSymbol());
 
         //update asset pool
-        return updateAssetPool();
+        return updateAssetPool(event.getSymbol(), event.getPrice());
     }
 
-    protected Double updateAssetPool() {       //double check protected access
+    /**
+     *
+     * @param symbol
+     * @param price
+     * @return
+     */
+    protected Double updateAssetPool(String symbol, double price) {       //double check protected access
         double priceBeforeLastPrice;
 
         Asset temp = assetList.get(symbol);
         if (temp == null) {
-            assetList.put(symbol, AssetFactory.getAsset(type,batchSize));
+            assetList.put(symbol, AssetFactory.getAsset(type, batchSize));
             temp = assetList.get(symbol);
         }
 
@@ -80,7 +73,13 @@ public abstract class VaRCalculator {
         return null;
     }
 
-    protected void updatePortfolioPool() {       //double check protected access
+    /**
+     *
+     * @param portfolioID
+     * @param shares
+     * @param symbol
+     */
+    protected void updatePortfolioPool(String portfolioID, int shares, String symbol) {       //double check protected access
         Portfolio portfolio = portfolioList.get(portfolioID);
 
         if (portfolio == null) {//first time for the portfolio
@@ -88,11 +87,12 @@ public abstract class VaRCalculator {
             assets.put(symbol, shares);
             portfolio = PortfolioFactory.getPortfolio(type, portfolioID, assets);
             portfolioList.put(portfolioID, portfolio);
-        } else if (portfolio.getCurrentShare(symbol) == null) {//first time for the asset within portfolio
-            portfolio.setCurrentShare(symbol, shares);
+        } else if (portfolio.getCurrentSharesCount(symbol) == null) {//first time for the asset within portfolio
+            portfolio.setCurrentSharesCount(symbol, shares);
         } else {//portfolio exists, asset within portfolio exists
-            int currentShares = portfolio.getCurrentShare(symbol);
-            portfolio.setCurrentShare(symbol, shares + currentShares);
+            int currentShares = portfolio.getCurrentSharesCount(symbol);
+            portfolio.setPreviousSharesCount(symbol, currentShares);
+            portfolio.setCurrentSharesCount(symbol, shares + currentShares);
         }
     }
 
@@ -101,24 +101,39 @@ public abstract class VaRCalculator {
      * @param portfolio
      * @return
      */
-    protected abstract Object processData(Portfolio portfolio);
+    //TODO - remove event object if not required
+    protected abstract Double processData(Portfolio portfolio, Event event);
 
+    /**
+     *
+     * @param data
+     * @return
+     */
     public Object calculateValueAtRisk(Object data[]) {
 
         JSONObject result = new JSONObject();
 
-        Double removedEvent = addEvent(data);
-        replaceAssetSimulation(removedEvent);
+        //initialize variables from the streams
+        String portfolioID = null;
+        int shares = 0;
+        String symbol = data[RealTimeVaRConstants.SYMBOL_INDEX].toString();
+        double price = ((Double) data[RealTimeVaRConstants.PRICE_INDEX]);
+
+        if (data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX] != null  && data[RealTimeVaRConstants.SHARES_INDEX] != null) {
+            portfolioID = data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].toString();
+            shares = (Integer) data[RealTimeVaRConstants.SHARES_INDEX];
+        }
+
+        Event event = new Event(portfolioID, shares, symbol, price);
+        Double removedEvent = addEvent(event);
+        replaceAssetSimulation(removedEvent, symbol);
 
         portfolioList.forEach((id, portfolio) -> {
-            Integer shares = portfolio.getCurrentShare(symbol);
-            if (shares != null && assetList.get(symbol).getNumberOfHistoricalValues() > 1) {
-                Object temp = processData(portfolio);
-                if (temp != null) {
-                    double var = Double.parseDouble(temp.toString());
-                    if (Double.compare(var, 0.0) != 0) {
-                        result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var);
-                    }
+            Integer sharesCount = portfolio.getCurrentSharesCount(symbol);
+            if (sharesCount != null) {
+                Double var = processData(portfolio, event);
+                if (var != null) {
+                    result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var.doubleValue());
                 }
             }
         });
@@ -130,7 +145,7 @@ public abstract class VaRCalculator {
         return result.toString();
     }
 
-    public abstract double replaceAssetSimulation(Double removedEvent);
+    public abstract double replaceAssetSimulation(Double removedEvent, String symbol);
 
     public String getType() {
         return type;
@@ -148,43 +163,11 @@ public abstract class VaRCalculator {
         return batchSize;
     }
 
-    public Map<Integer, Portfolio> getPortfolioList() {
+    public Map<String, Portfolio> getPortfolioList() {
         return portfolioList;
     }
 
     public Map<String, Asset> getAssetList() {
         return assetList;
-    }
-
-    public String getSymbol() {
-        return symbol;
-    }
-
-    public int getPortfolioID() {
-        return portfolioID;
-    }
-
-    public int getShares() {
-        return shares;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
-    }
-
-    public void setPortfolioID(int portfolioID) {
-        this.portfolioID = portfolioID;
-    }
-
-    public void setShares(int shares) {
-        this.shares = shares;
     }
 }

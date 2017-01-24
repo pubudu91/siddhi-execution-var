@@ -1,8 +1,10 @@
-package org.wso2.siddhi.extension.var.realtime;
+package org.wso2.siddhi.extension.var.realtime.historical;
 
+import org.wso2.siddhi.extension.var.models.Event;
 import org.wso2.siddhi.extension.var.models.HistoricalAsset;
 import org.wso2.siddhi.extension.var.models.HistoricalPortfolio;
 import org.wso2.siddhi.extension.var.models.Portfolio;
+import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
 /**
@@ -12,11 +14,11 @@ public class HistoricalVaRCalculator extends VaRCalculator {
 
     /**
      *
-     * @param limit
+     * @param batchSize
      * @param ci
      */
-    public HistoricalVaRCalculator(int limit, double ci) {
-        super(limit, ci);
+    public HistoricalVaRCalculator(int batchSize, double ci) {
+        super(batchSize, ci);
         setType(RealTimeVaRConstants.HISTORICAL);
     }
 
@@ -26,23 +28,24 @@ public class HistoricalVaRCalculator extends VaRCalculator {
      * using Historical data
      */
     @Override
-    public Object processData(Portfolio portfolio) {
+    public Double processData(Portfolio portfolio, Event event) {
 
         HistoricalPortfolio historicalPortfolio = (HistoricalPortfolio) portfolio;
-        HistoricalAsset asset = (HistoricalAsset)getAssetList().get(getSymbol());
-        if(asset.getNumberOfHistoricalValues() > 1) {
+        String symbol = event.getSymbol();
+        HistoricalAsset asset = (HistoricalAsset)getAssetList().get(symbol);
+        if(asset.getNumberOfReturnValues() > 0) {
             double var = historicalPortfolio.getHistoricalVarValue();
 
             double previousReturnValue = asset.getPreviousLossReturn();
             double currentReturnValue = asset.getCurrentLossReturn();
 
             int previousShares;
-            if(getPortfolioID() > 0)
-                previousShares = historicalPortfolio.getPreviousShare(getSymbol());
+            if(portfolio.getID().equals(event.getPortfolioID()))
+                previousShares = historicalPortfolio.getPreviousSharesCount(symbol);
             else
-                previousShares = historicalPortfolio.getCurrentShare(getSymbol());
+                previousShares = historicalPortfolio.getCurrentSharesCount(symbol);
 
-            int currentShares = historicalPortfolio.getCurrentShare(getSymbol());
+            int currentShares = historicalPortfolio.getCurrentSharesCount(symbol);
 
             double previousPrice = asset.getPriceBeforeLastPrice();
             double currentPrice = asset.getCurrentStockPrice();
@@ -58,19 +61,12 @@ public class HistoricalVaRCalculator extends VaRCalculator {
     }
 
     @Override
-    public double replaceAssetSimulation(Double removedEvent) {
-        HistoricalAsset asset = (HistoricalAsset)getAssetList().get(getSymbol());
-
-        if(asset.getNumberOfHistoricalValues() > 1) {
+    public double replaceAssetSimulation(Double removedEvent, String symbol) {
+        HistoricalAsset asset = (HistoricalAsset)getAssetList().get(symbol);
+        if(asset.getNumberOfReturnValues() > 0) {
             asset.setPreviousLossReturn(asset.getCurrentLossReturn());
             double currentReturnValue = asset.getReturnValueSet().getPercentile((1 - getConfidenceInterval()) * 100);
             asset.setCurrentLossReturn(currentReturnValue);
-        }
-
-        if(getPortfolioID() > 0) {
-            HistoricalPortfolio portfolio = (HistoricalPortfolio) getPortfolioList().get(getPortfolioID());
-            int previousShares = portfolio.getCurrentShare(getSymbol()) - getShares();
-            portfolio.setPreviousShare(getSymbol(), previousShares);
         }
         return 0;
     }

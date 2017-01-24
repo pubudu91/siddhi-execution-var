@@ -15,11 +15,6 @@ public class Asset {
         returnValueSet.setWindowSize(windowSize-1);
     }
 
-    //TODO - use get number of returns instead of this
-    public int getNumberOfHistoricalValues() {
-        return returnValueSet.getValues().length + 1;
-    }
-
     public double getCurrentStockPrice() {
         return currentStockPrice;
     }
