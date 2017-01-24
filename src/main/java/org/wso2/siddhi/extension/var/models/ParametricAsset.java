@@ -5,19 +5,9 @@ package org.wso2.siddhi.extension.var.models;
  */
 public class ParametricAsset extends Asset {
     private double[] excessReturns;
-    private double mean;
 
     public ParametricAsset(int windowSize) {
         super(windowSize);
-        mean = 0;
-    }
-
-    public double getMean() {
-        return mean;
-    }
-
-    public void setMean(double mean) {
-        this.mean = mean;
     }
 
     public double[] getExcessReturns() {

@@ -6,13 +6,14 @@ import java.util.Map;
 /**
  * Created by dilini92 on 1/9/17.
  */
-public class HistoricalPortfolio extends Portfolio{
+public class HistoricalPortfolio extends Portfolio {
     private double historicalVarValue;
 
 
-    public HistoricalPortfolio(String ID, Map<String, Integer> assets){
+    public HistoricalPortfolio(String ID, Map<String, Integer> assets) {
         super(ID, assets);
     }
+
     public double getHistoricalVarValue() {
         return historicalVarValue;
     }

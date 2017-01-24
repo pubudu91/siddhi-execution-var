@@ -11,7 +11,7 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.extension.var.realtime.ParametricVaRCalculator;
+import org.wso2.siddhi.extension.var.realtime.parametric.ParametricVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
@@ -24,8 +24,8 @@ import java.util.List;
  * Created by dilip on 30/06/16.
  */
 public class ParametricVaRStreamProcessor extends StreamProcessor {
-    private int batchSize = 251;                                        // Maximum # of events, used for regression calculation
-    private double ci = 0.95;                                           // Confidence Interval
+    private int batchSize = 251;                             // Maximum # of events, used for regression calculation
+    private double confidenceInterval = 0.95;                // Confidence Interval
     private VaRCalculator varCalculator = null;
 
     /**
@@ -60,30 +60,39 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
         nextProcessor.process(streamEventChunk); //process the next stream event
     }
 
+    /**
+     * @param inputDefinition
+     * @param attributeExpressionExecutors
+     * @param executionPlanContext
+     * @return
+     */
     @Override
-    protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
+    protected List<Attribute> init(AbstractDefinition inputDefinition,
+                                   ExpressionExecutor[] attributeExpressionExecutors,
+                                   ExecutionPlanContext executionPlanContext) {
         // Capture constant inputs
-        if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
+        if (attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX] instanceof ConstantExpressionExecutor) {
             try {
-                batchSize = ((Integer) attributeExpressionExecutors[0].execute(null));
+                batchSize = ((Integer) attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX].execute
+                        (null));
             } catch (ClassCastException c) {
-                throw new ExecutionPlanCreationException("Calculation interval, batch size and range should be of type int");
+                throw new ExecutionPlanCreationException("Batch size should be an integer");
             }
             try {
-                ci = ((Double) attributeExpressionExecutors[1].execute(null));
+                confidenceInterval = ((Double) attributeExpressionExecutors[RealTimeVaRConstants.CI_INDEX].execute
+                        (null));
             } catch (ClassCastException c) {
-                throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value between 0 and 1");
+                throw new ExecutionPlanCreationException("Confidence interval should be a double value between 0 and " +
+                        "1");
             }
         }
 
         // set the var calculator
-        varCalculator = new ParametricVaRCalculator(batchSize, ci);
-        //varCalculator.getPortfolioValues(executionPlanContext);
-        //varCalculator.readAssetList(executionPlanContext);
+        varCalculator = new ParametricVaRCalculator(batchSize, confidenceInterval);
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<>(1);
-        attributes.add(new Attribute("var", Attribute.Type.STRING));
+        attributes.add(new Attribute(RealTimeVaRConstants.OUTPUT_NAME, Attribute.Type.STRING));
 
         return attributes;
     }

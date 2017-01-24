@@ -61,13 +61,12 @@ public class HistoricalVaRCalculator extends VaRCalculator {
     }
 
     @Override
-    public double replaceAssetSimulation(Double removedEvent, String symbol) {
+    public void replaceAssetSimulation(String symbol) {
         HistoricalAsset asset = (HistoricalAsset)getAssetList().get(symbol);
         if(asset.getNumberOfReturnValues() > 0) {
             asset.setPreviousLossReturn(asset.getCurrentLossReturn());
             double currentReturnValue = asset.getReturnValueSet().getPercentile((1 - getConfidenceInterval()) * 100);
             asset.setCurrentLossReturn(currentReturnValue);
         }
-        return 0;
     }
 }

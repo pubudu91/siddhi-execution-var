@@ -1,6 +1,7 @@
 package org.wso2.siddhi.extension.var.realtime;
 
 import org.junit.Test;
+import org.wso2.siddhi.extension.var.realtime.parametric.ParametricVaRCalculator;
 
 import java.io.File;
 import java.util.*;

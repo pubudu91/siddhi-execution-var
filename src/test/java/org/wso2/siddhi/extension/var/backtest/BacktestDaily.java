@@ -6,7 +6,7 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.json.JSONObject;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
-import org.wso2.siddhi.extension.var.realtime.HistoricalVaRCalculator;
+import org.wso2.siddhi.extension.var.realtime.historical.HistoricalVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 
 import java.io.File;
@@ -63,7 +63,7 @@ public class BacktestDaily {
                     Double calculatedVar = (Double) jsonObject.get(PORTFOLIO_KEY);  // hardcoded for portfolio ID 1
                     System.out.print("CV : " + calculatedVar);
                     calculatedVarList.add(calculatedVar);                           // should filter
-                    calculateActualLoss(varCalculator.getPortfolioList().get(1), varCalculator.getAssetList());
+                    calculateActualLoss(varCalculator.getPortfolioList().get("1"), varCalculator.getAssetList());
                     System.out.println();
                 } else {
                     varCalculator.calculateValueAtRisk(list.get(i));
@@ -111,7 +111,7 @@ public class BacktestDaily {
         while (itr.hasNext()) {
             symbol = itr.next();
             temp = assetList.get(symbol);
-            currentPortfolioValue += temp.getCurrentStockPrice() * portfolio.getCurrentShare((String) symbol);
+            currentPortfolioValue += temp.getCurrentStockPrice() * portfolio.getCurrentSharesCount((String) symbol);
         }
         if (previousPortfolioValue != null) {
             actualVarList.add(currentPortfolioValue - previousPortfolioValue);

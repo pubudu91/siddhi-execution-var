@@ -1,18 +1,19 @@
 package org.wso2.siddhi.extension.var.models;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.wso2.siddhi.extension.var.realtime.util.CustomDescriptiveStatistics;
 
 /**
  * Created by flash on 6/30/16.
  */
 public class Asset {
     private double currentStockPrice;
-    private DescriptiveStatistics returnValueSet;
+    private CustomDescriptiveStatistics returnValueSet;
     private double priceBeforeLastPrice;
 
     public Asset(int windowSize) {
-        returnValueSet = new DescriptiveStatistics();
-        returnValueSet.setWindowSize(windowSize-1);
+        returnValueSet = new CustomDescriptiveStatistics();
+        returnValueSet.setWindowSize(windowSize - 1);
     }
 
     public double getCurrentStockPrice() {
@@ -27,12 +28,8 @@ public class Asset {
         return returnValueSet;
     }
 
-    public Double addReturnValue(double value) {
-        Double toBeRemove = null;
-        if (getNumberOfReturnValues() == returnValueSet.getWindowSize())
-            toBeRemove = returnValueSet.getElement(0);
+    public void addReturnValue(double value) {
         returnValueSet.addValue(value);
-        return toBeRemove;
     }
 
     public double getPriceBeforeLastPrice() {
@@ -45,5 +42,9 @@ public class Asset {
 
     public int getNumberOfReturnValues() {
         return returnValueSet.getValues().length;
+    }
+
+    public double getMean() {
+        return returnValueSet.getMean();
     }
 }

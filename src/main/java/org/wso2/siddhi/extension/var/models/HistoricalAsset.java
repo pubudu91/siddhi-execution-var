@@ -20,11 +20,11 @@ public class HistoricalAsset extends Asset {
         this.previousLossReturn = previousLossReturn;
     }
 
-    public double getCurrentLossReturn(){
+    public double getCurrentLossReturn() {
         return currentLossReturn;
     }
 
-    public void setCurrentLossReturn(double currentLossReturn){
+    public void setCurrentLossReturn(double currentLossReturn) {
         this.currentLossReturn = currentLossReturn;
     }
 }

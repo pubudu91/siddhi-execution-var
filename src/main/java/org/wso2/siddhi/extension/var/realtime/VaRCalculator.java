@@ -32,54 +32,51 @@ public abstract class VaRCalculator {
     }
 
     /**
-     *
      * @param event
      * @return
      */
-    public Double addEvent(Event event) {
+    public void addEvent(Event event) {
 
-        if(event.getPortfolioID() != null)
+        if (event.getPortfolioID() != null)
             updatePortfolioPool(event.getPortfolioID(), event.getShares(), event.getSymbol());
 
         //update asset pool
-        return updateAssetPool(event.getSymbol(), event.getPrice());
+        updateAssetPool(event.getSymbol(), event.getPrice());
     }
 
     /**
-     *
      * @param symbol
      * @param price
      * @return
      */
-    protected Double updateAssetPool(String symbol, double price) {       //double check protected access
+    protected void updateAssetPool(String symbol, double price) {       //double check protected access
         double priceBeforeLastPrice;
 
-        Asset temp = assetList.get(symbol);
-        if (temp == null) {
+        Asset asset = assetList.get(symbol);
+        if (asset == null) {
             assetList.put(symbol, AssetFactory.getAsset(type, batchSize));
-            temp = assetList.get(symbol);
+            asset = assetList.get(symbol);
         }
 
-        priceBeforeLastPrice = temp.getCurrentStockPrice();
-        temp.setPriceBeforeLastPrice(priceBeforeLastPrice);
-        temp.setCurrentStockPrice(price);
+        priceBeforeLastPrice = asset.getCurrentStockPrice();
+        asset.setPriceBeforeLastPrice(priceBeforeLastPrice);
+        asset.setCurrentStockPrice(price);
 
         //assume that all price values of assets cannot be zero or negative
         if (priceBeforeLastPrice > 0) {
             double value = Math.log(price / priceBeforeLastPrice);
-            return temp.addReturnValue(value);                             /**if descriptive stat can be used, this is not required*/
+            asset.addReturnValue(value);                             /**if descriptive stat can be used, this is not
+             required*/
         }
-
-        return null;
     }
 
     /**
-     *
      * @param portfolioID
      * @param shares
      * @param symbol
      */
-    protected void updatePortfolioPool(String portfolioID, int shares, String symbol) {       //double check protected access
+    protected void updatePortfolioPool(String portfolioID, int shares, String symbol) {       //double check
+        // protected access
         Portfolio portfolio = portfolioList.get(portfolioID);
 
         if (portfolio == null) {//first time for the portfolio
@@ -105,7 +102,6 @@ public abstract class VaRCalculator {
     protected abstract Double processData(Portfolio portfolio, Event event);
 
     /**
-     *
      * @param data
      * @return
      */
@@ -119,14 +115,14 @@ public abstract class VaRCalculator {
         String symbol = data[RealTimeVaRConstants.SYMBOL_INDEX].toString();
         double price = ((Double) data[RealTimeVaRConstants.PRICE_INDEX]);
 
-        if (data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX] != null  && data[RealTimeVaRConstants.SHARES_INDEX] != null) {
+        if (data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX] != null && data[RealTimeVaRConstants.SHARES_INDEX] != null) {
             portfolioID = data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].toString();
             shares = (Integer) data[RealTimeVaRConstants.SHARES_INDEX];
         }
 
         Event event = new Event(portfolioID, shares, symbol, price);
-        Double removedEvent = addEvent(event);
-        replaceAssetSimulation(removedEvent, symbol);
+        addEvent(event);
+        replaceAssetSimulation(symbol);
 
         portfolioList.forEach((id, portfolio) -> {
             Integer sharesCount = portfolio.getCurrentSharesCount(symbol);
@@ -145,7 +141,7 @@ public abstract class VaRCalculator {
         return result.toString();
     }
 
-    public abstract double replaceAssetSimulation(Double removedEvent, String symbol);
+    public abstract void replaceAssetSimulation(String symbol);
 
     public String getType() {
         return type;

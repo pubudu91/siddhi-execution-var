@@ -3,9 +3,7 @@ package org.wso2.siddhi.extension.var.realtime.parametric;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.wso2.siddhi.extension.var.models.Asset;
-import org.wso2.siddhi.extension.var.models.ParametricAsset;
-import org.wso2.siddhi.extension.var.models.Portfolio;
+import org.wso2.siddhi.extension.var.models.*;
 
 import java.util.*;
 
@@ -31,56 +29,16 @@ public class ParametricVaRCalculator extends VaRCalculator {
         setType(RealTimeVaRConstants.PARAMETRIC);
     }
 
-    @Override
-    public Double addEvent(Object[] event) {
-
-        if (event[0] != null || event[1] != null) {
-            setPortfolioID(((Number) event[0]).intValue());
-            setShares(((Number) event[1]).intValue());
-            setSymbol(event[2].toString());
-            setPrice(((Number) event[3]).doubleValue());
-            updatePortfolioPool();
-        }
-
-        setSymbol(event[2].toString());
-        setPrice(((Number) event[3]).doubleValue());
-
-        ParametricAsset temp;
-        if (!getAssetList().containsKey(getSymbol())) {
-            temp = new ParametricAsset(getBatchSize());
-            temp.setCurrentStockPrice(getPrice());
-            getAssetList().put(getSymbol(), temp);
-        } else {
-            temp = (ParametricAsset) getAssetList().get(getSymbol());
-            temp.setPriceBeforeLastPrice(temp.getCurrentStockPrice());
-            temp.setCurrentStockPrice(getPrice());
-            double newReturn = Math.log(temp.getCurrentStockPrice() / temp.getPriceBeforeLastPrice());
-            double latestMean;
-            if (temp.getNumberOfReturnValues() == (getBatchSize() - 1)) {
-                double oldReturn = temp.addReturnValue(newReturn);
-                latestMean = temp.getMean() + ((newReturn - oldReturn) / (getBatchSize() - 1));
-            } else {
-                temp.addReturnValue(newReturn);
-                int numberOfReturnValues = temp.getNumberOfReturnValues();
-                latestMean = (temp.getMean() * (numberOfReturnValues - 1) + newReturn) / numberOfReturnValues;
-            }
-            temp.setMean(latestMean);
-            updateExcessReturnList(getSymbol());
-            updateCovarianceTable(getSymbol());
-        }
-        return null;
-    }
-
     /**
      * @return the var of the portfolio
      */
     @Override
-    public Object processData(Portfolio portfolio) {
+    public Double processData(Portfolio portfolio, Event event) {
         return incrementalParametricVaR(portfolio);
         //return batchModeParametricVaR(portfolio);
     }
 
-    private Object incrementalParametricVaR(Portfolio portfolio) {
+    private Double incrementalParametricVaR(Portfolio portfolio) {
 
         double[][] VCV = getVCV(portfolio);
         double[][] weightage = getWeightage(portfolio);
@@ -146,7 +104,8 @@ public class ParametricVaRCalculator extends VaRCalculator {
             symbol = itr.next();
             temp = getAssetList().get(symbol);
             if (temp != null) {
-                portfolioWeighage[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentShare((String) symbol);
+                portfolioWeighage[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentSharesCount((String)
+                        symbol);
                 portfolioValue = portfolioValue + portfolioWeighage[0][i];
             }
             i++;
@@ -168,7 +127,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
         int i = 0;
         Iterator itr = keys.iterator();
         while (itr.hasNext()) {
-            mean = ((ParametricAsset) getAssetList().get(itr.next())).getMean();
+            mean = getAssetList().get(itr.next()).getMean();
             if (mean != null)
                 portfolioMeans[0][i] = mean;
             i++;
@@ -180,7 +139,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
     private void updateExcessReturnList(String symbol) {
         ParametricAsset asset = (ParametricAsset) getAssetList().get(symbol);
         double[] returnValues = asset.getReturnValueSet().getValues();
-        double mean = ((ParametricAsset) getAssetList().get(symbol)).getMean();
+        double mean = getAssetList().get(symbol).getMean();
         double[] excessReturns = new double[returnValues.length];
         for (int i = 0; i < returnValues.length; i++) {
             excessReturns[i] = returnValues[i] - mean;
@@ -216,8 +175,9 @@ public class ParametricVaRCalculator extends VaRCalculator {
     }
 
     @Override
-    public double replaceAssetSimulation(Double removedEvent) {
-        return 0;
+    public void replaceAssetSimulation(String symbol) {
+        updateExcessReturnList(symbol);
+        updateCovarianceTable(symbol);
     }
 
 //    public Object batchModeParametricVaR(Portfolio portfolio) {
