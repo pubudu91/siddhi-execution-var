@@ -4,11 +4,11 @@
 #include <omp.h>
 #include <jni.h>
 #include <ctime>
-#include "header-file/org_wso2_siddhi_extension_var_batchmode_MonteCarloNativeSimulation.h"
+#include "include/org_wso2_siddhi_extension_var_realtime_montecarlo_MonteCarloNativeSimulation.h"
 
 jdouble NormalCDFInverse(jdouble p);
 
-JNIEXPORT jdoubleArray JNICALL Java_org_wso2_siddhi_extension_var_batchmode_MonteCarloNativeSimulation_simulation
+JNIEXPORT jdoubleArray JNICALL Java_org_wso2_siddhi_extension_var_realtime_montecarlo_MonteCarloNativeSimulation_simulation
 (JNIEnv *env, jobject thisObj,jdouble mean, jdouble std, jdouble timeSlice, jdouble currentPrice,jint numberOfTrials,jint calculationsPerDay) {
 
     __m256d stochasticFactorTemp = _mm256_set1_pd(std * sqrt(timeSlice));

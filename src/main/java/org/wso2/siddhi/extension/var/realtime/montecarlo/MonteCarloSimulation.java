@@ -66,7 +66,8 @@ public class MonteCarloSimulation {
      * @param currentStockPrice
      * @return
      */
-    public double[] simulation(int numberOfTrials, int calculationsPerDay, double[] historicalValue, double timeSlice, double currentStockPrice) {
+    public double[] simulation(int numberOfTrials, int calculationsPerDay, double[] historicalValue, double
+            timeSlice, double currentStockPrice) {
         double terminalStockValues[] = new double[numberOfTrials];
 
         Map<String, Double> parameters, tempParameters;

@@ -9,7 +9,6 @@ import java.util.Map;
 public class HistoricalPortfolio extends Portfolio {
     private double historicalVarValue;
 
-
     public HistoricalPortfolio(String ID, Map<String, Integer> assets) {
         super(ID, assets);
     }

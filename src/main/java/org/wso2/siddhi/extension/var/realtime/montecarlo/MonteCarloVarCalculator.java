@@ -1,6 +1,7 @@
 package org.wso2.siddhi.extension.var.realtime.montecarlo;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.wso2.siddhi.extension.var.models.Event;
 import org.wso2.siddhi.extension.var.models.MonteCarloAsset;
 import org.wso2.siddhi.extension.var.models.MonteCarloPortfolio;
 import org.wso2.siddhi.extension.var.models.Portfolio;
@@ -12,159 +13,171 @@ import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
  */
 public class MonteCarloVarCalculator extends VaRCalculator {
 
-    private int numberOfTrials;
-    private int calculationsPerDay;
+    private int numberOfSimulationsHorizontal;
+    private int numberOfSimulationsVertical;
     private double timeSlice;
-    private boolean toggle = true;
 
     public MonteCarloVarCalculator(int limit, double ci,
-                                   int numberOfTrials, int calculationsPerDay, double timeSlice) {
+                                   int numberOfSimulationsHorizontal, int numberOfSimulationsVertical, double
+                                           timeSlice) {
         super(limit, ci);
-        this.numberOfTrials = numberOfTrials;
-        this.calculationsPerDay = calculationsPerDay;
+        this.numberOfSimulationsHorizontal = numberOfSimulationsHorizontal;
+        this.numberOfSimulationsVertical = numberOfSimulationsVertical;
         this.timeSlice = timeSlice;
         setType(RealTimeVaRConstants.MONTE_CARLO);
     }
 
     /**
-     * calculate the var metric using monte carlo simulation
-     *
+     * @param portfolio
+     * @param event
      * @return
      */
     @Override
-    public Object processData(Portfolio portfolio) {
+    public Double processData(Portfolio portfolio, Event event) {
         MonteCarloPortfolio monteCarloPortfolio = (MonteCarloPortfolio) portfolio;
 
-        double[] terminalStockValues;
-        double[] finalPortfolioValues = new double[numberOfTrials];
-//        String[] keys = portfolio.getAssets().keySet().toArray(new String[portfolio.getAssets().size()]);
+        double[] generatedTerminalStockValues;
+        double[] finalPortfolioValues = new double[numberOfSimulationsHorizontal];
         MonteCarloAsset tempAsset;
-        double[] returnList;
-//        double todayMarketValue;
-        int numberOfShares = 0;
-        int numberOfSharesBeforeChange = 0;
+        double[] historicalReturnValueList;
+        int currentSharesCount = 0;
+        int previousSharesCount = 0;
         double latestMarketValue = 0;
 
-        double[] simulatedListBeforeChange;
-        double[] finalPortfolioValuesBeforeUpdate;
+        double[] simulatedListBeforeAssetUpdate;
+        double[] finalPortfolioValuesBeforeAssetUpdate;
+        String symbol = event.getSymbol();
 
-//do simulation for all the assets in the portfolio
-        //toggling should be local to a portfolio because every portfolio should follow this initial calculation
-      /*
-            do simulation for the changed asset only
-             */
-        tempAsset = (MonteCarloAsset) getAssetList().get(getSymbol());
-        returnList = tempAsset.getReturnValueSet().getValues();
-        if (returnList != null && returnList.length > 0) {
+        tempAsset = (MonteCarloAsset) getAssetList().get(symbol);
+        historicalReturnValueList = tempAsset.getReturnValueSet().getValues();
+        if (historicalReturnValueList != null && historicalReturnValueList.length > 0) {
             /**
              * get the latest number of shares
              */
-            numberOfShares = monteCarloPortfolio.getCurrentShare(getSymbol());
+            currentSharesCount = monteCarloPortfolio.getCurrentSharesCount(symbol);
             /**
              * get the number of shares that particular asset hold for corresponding portfolio before change happens
              */
-            if (monteCarloPortfolio.getAssetSharesBeforeChange().get(getSymbol()) == null) {
-                numberOfSharesBeforeChange = 0;
+            if (monteCarloPortfolio.getShareCountMapBeforePortfolioUpdate().get(symbol) == null) {
+                previousSharesCount = 0;
             } else {
-                numberOfSharesBeforeChange = monteCarloPortfolio.getAssetSharesBeforeChange().get(getSymbol());
+                previousSharesCount = monteCarloPortfolio.getShareCountMapBeforePortfolioUpdate().get(symbol);
             }
             /**
              * Save the number of shares affected to the calculation for further compensation
              */
-            monteCarloPortfolio.getAssetSharesBeforeChange().put(getSymbol(), numberOfShares);
+            monteCarloPortfolio.getShareCountMapBeforePortfolioUpdate().put(symbol, currentSharesCount);
 
             /**
              * retrieve latest simulated list
              */
-            terminalStockValues = tempAsset.getSimulatedList();
+            generatedTerminalStockValues = tempAsset.getSimulatedList();
 
             /**
              * newly added part for simulation improvement
              */
 
-            simulatedListBeforeChange = tempAsset.getPreviousSimulatedList();
+            simulatedListBeforeAssetUpdate = tempAsset.getPreviousSimulatedList();
             /**
              * accumulated portfolio value before the asset being changed
              */
-            double lastPortfolioValue = monteCarloPortfolio.getMonteCarlo_Simulation_currentPortfolioValue();
+            double previousPortfolioMarketValue = monteCarloPortfolio.getMonteCarloSimulationCurrentPortfolioValue();
             /**
              * get the final distribution vector before the portfolio being changed
              */
-            finalPortfolioValuesBeforeUpdate = monteCarloPortfolio.getMonteCarlo_Simulation_finalPortfolioValueList();
+            finalPortfolioValuesBeforeAssetUpdate = monteCarloPortfolio
+                    .getMonteCarloSimulationFinalPortfolioValueList();
             /**
              * following condition decide whether the calculation is done for first time or not.
              * final portfolio values before update is null indicating that the
              * calculation has never happened before.
              */
-            if (lastPortfolioValue > 0 && finalPortfolioValuesBeforeUpdate != null) {
-                //calculate latest portfolio value and store it in portfolio. set the latest stock price as recentStock price in the changed asset
-                latestMarketValue = lastPortfolioValue - tempAsset.getPriceBeforeLastPrice() * numberOfSharesBeforeChange + tempAsset.getCurrentStockPrice() * numberOfShares;
+            if (previousPortfolioMarketValue > 0 && finalPortfolioValuesBeforeAssetUpdate != null) {
+                //calculate latest portfolio value and store it in portfolio. set the latest stock price as
+                // recentStock price in the changed asset
+                latestMarketValue = previousPortfolioMarketValue - tempAsset.getPriceBeforeLastPrice() *
+                        previousSharesCount + tempAsset.getCurrentStockPrice() * currentSharesCount;
 //                tempAsset.setPriceBeforeLastPrice(tempAsset.getCurrentStockPrice());
                 /**
                  * calculation may happen earlier but there can be assets where they have not been simulated before.
                  * if the simulation has not been done before then
                  */
-                if (simulatedListBeforeChange != null) {
-                    for (int i = 0; i < this.numberOfTrials; i++) {
+                if (simulatedListBeforeAssetUpdate != null) {
+                    for (int i = 0; i < this.numberOfSimulationsHorizontal; i++) {
                         /**
-                         * unchangedSimulatedListCollection[i] = lastPortfolioValue - (simulatedListBeforeChange[i] * numberOfSharesBeforeChange + finalPortfolioValuesBeforeUpdate[i]);
-                         * finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares + unchangedSimulatedListCollection[i]);
+                         * unchangedSimulatedListCollection[i] = previousPortfolioMarketValue -
+                         * (simulatedListBeforeAssetUpdate[i] *
+                         * previousSharesCount + finalPortfolioValuesBeforeAssetUpdate[i]);
+                         * finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
+                         * currentSharesCount +
+                         * unchangedSimulatedListCollection[i]);
                          */
 
-                        finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares +
-                                (lastPortfolioValue - (simulatedListBeforeChange[i] * numberOfSharesBeforeChange + finalPortfolioValuesBeforeUpdate[i])));
+                        finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
+                                currentSharesCount +
+                                (previousPortfolioMarketValue - (simulatedListBeforeAssetUpdate[i] *
+                                        previousSharesCount +
+                                        finalPortfolioValuesBeforeAssetUpdate[i])));
                     }
                 } else {
-                    for (int i = 0; i < this.numberOfTrials; i++) {
+                    for (int i = 0; i < this.numberOfSimulationsHorizontal; i++) {
                         /**
-                         * unchangedSimulatedListCollection[i] = lastPortfolioValue - (finalPortfolioValuesBeforeUpdate[i]);
-                         * finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares + unchangedSimulatedListCollection[i]);
+                         * unchangedSimulatedListCollection[i] = previousPortfolioMarketValue -
+                         * (finalPortfolioValuesBeforeAssetUpdate[i]);
+                         * finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
+                         * currentSharesCount +
+                         * unchangedSimulatedListCollection[i]);
                          */
 
-                        finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares +
-                                (lastPortfolioValue - (finalPortfolioValuesBeforeUpdate[i])));
+                        finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
+                                currentSharesCount +
+                                (previousPortfolioMarketValue - (finalPortfolioValuesBeforeAssetUpdate[i])));
                     }
                 }
             } else {
-                latestMarketValue = tempAsset.getCurrentStockPrice() * numberOfShares;
-                for (int i = 0; i < this.numberOfTrials; i++) {
-                    finalPortfolioValues[i] = latestMarketValue - (terminalStockValues[i] * numberOfShares);
+                latestMarketValue = tempAsset.getCurrentStockPrice() * currentSharesCount;
+                for (int i = 0; i < this.numberOfSimulationsHorizontal; i++) {
+                    finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
+                            currentSharesCount);
                 }
             }
-            monteCarloPortfolio.setMonteCarlo_Simulation_currentPortfolioValue(latestMarketValue);
-
+            monteCarloPortfolio.setMonteCarloSimulationCurrentPortfolioValue(latestMarketValue);
         } else {
-            if (monteCarloPortfolio.getMonteCarlo_Simulation_finalPortfolioValueList() != null) {
-                finalPortfolioValues = monteCarloPortfolio.getMonteCarlo_Simulation_finalPortfolioValueList();
+            /**
+             * new Asset being added later. portfolio can have distribution already but asset may not have historical
+             * values.
+             */
+            if (monteCarloPortfolio.getMonteCarloSimulationFinalPortfolioValueList() != null) {
+                finalPortfolioValues = monteCarloPortfolio.getMonteCarloSimulationFinalPortfolioValueList();
             } else {
-                return 0;
+                return null;
             }
         }
 
-        monteCarloPortfolio.setMonteCarlo_Simulation_finalPortfolioValueList(finalPortfolioValues);
+        monteCarloPortfolio.setMonteCarloSimulationFinalPortfolioValueList(finalPortfolioValues);
         return new DescriptiveStatistics(finalPortfolioValues).getPercentile((1 - getConfidenceInterval()) * 100);
     }
 
     @Override
-    public double replaceAssetSimulation(Double removedEvent) {
+    public void replaceAssetSimulation(String symbol) {
         MonteCarloAsset tempAsset;
-        double[] returnList;
-        double[] terminalStockValues;
-        tempAsset = (MonteCarloAsset) getAssetList().get(getSymbol());
-        returnList = tempAsset.getReturnValueSet().getValues();
-        MonteCarloSimulation calcReference = new MonteCarloSimulation();
+        double[] historicalReturnValueList;
+        double[] generatedTerminalStockValues;
+        tempAsset = (MonteCarloAsset) getAssetList().get(symbol);
+        historicalReturnValueList = tempAsset.getReturnValueSet().getValues();
+        MonteCarloSimulation calculatorReference = new MonteCarloSimulation();
         MonteCarloNativeSimulation calcNativeReference = new MonteCarloNativeSimulation();
 
-        if (returnList != null && returnList.length > 0) {
-            Double mean = calcReference.getMeanReturnAndStandardDeviation(returnList).get("meanReturn");
-            Double std = calcReference.getMeanReturnAndStandardDeviation(returnList).get("meanStandardDeviation");
+        if (historicalReturnValueList != null && historicalReturnValueList.length > 0) {
+            Double mean = calculatorReference.getMeanReturnAndStandardDeviation(historicalReturnValueList).get
+                    ("meanReturn");
+            Double std = calculatorReference.getMeanReturnAndStandardDeviation(historicalReturnValueList).get
+                    ("meanStandardDeviation");
             tempAsset.setPreviousSimulatedList(tempAsset.getSimulatedList());
-            terminalStockValues = calcNativeReference.simulation(mean, std, timeSlice,
-                    tempAsset.getCurrentStockPrice(), numberOfTrials, calculationsPerDay);
-            tempAsset.setSimulatedList(terminalStockValues);
+            generatedTerminalStockValues = calcNativeReference.simulation(mean, std, timeSlice,
+                    tempAsset.getCurrentStockPrice(), numberOfSimulationsHorizontal, numberOfSimulationsVertical);
+            tempAsset.setSimulatedList(generatedTerminalStockValues);
         }
-
-        return 0;
     }
 
 }

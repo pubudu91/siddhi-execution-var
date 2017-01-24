@@ -26,6 +26,10 @@ public abstract class Portfolio {
         return ID;
     }
 
+    public void setID(String ID) {
+        this.ID = ID;
+    }
+
     public Integer getCurrentSharesCount(String symbol) {
         if (currentShares.get(symbol) != null)
             return currentShares.get(symbol);
