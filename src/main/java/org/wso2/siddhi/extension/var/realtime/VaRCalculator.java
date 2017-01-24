@@ -32,13 +32,12 @@ public abstract class VaRCalculator {
     }
 
     /**
-     *
      * @param event
      * @return
      */
     public Double addEvent(Event event) {
 
-        if(event.getPortfolioID() != null)
+        if (event.getPortfolioID() != null)
             updatePortfolioPool(event.getPortfolioID(), event.getShares(), event.getSymbol());
 
         //update asset pool
@@ -46,7 +45,6 @@ public abstract class VaRCalculator {
     }
 
     /**
-     *
      * @param symbol
      * @param price
      * @return
@@ -74,7 +72,6 @@ public abstract class VaRCalculator {
     }
 
     /**
-     *
      * @param portfolioID
      * @param shares
      * @param symbol
@@ -105,7 +102,6 @@ public abstract class VaRCalculator {
     protected abstract Double processData(Portfolio portfolio, Event event);
 
     /**
-     *
      * @param data
      * @return
      */
@@ -119,7 +115,7 @@ public abstract class VaRCalculator {
         String symbol = data[RealTimeVaRConstants.SYMBOL_INDEX].toString();
         double price = ((Double) data[RealTimeVaRConstants.PRICE_INDEX]);
 
-        if (data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX] != null  && data[RealTimeVaRConstants.SHARES_INDEX] != null) {
+        if (data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX] != null && data[RealTimeVaRConstants.SHARES_INDEX] != null) {
             portfolioID = data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].toString();
             shares = (Integer) data[RealTimeVaRConstants.SHARES_INDEX];
         }

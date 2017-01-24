@@ -12,7 +12,7 @@ public class Asset {
 
     public Asset(int windowSize) {
         returnValueSet = new DescriptiveStatistics();
-        returnValueSet.setWindowSize(windowSize-1);
+        returnValueSet.setWindowSize(windowSize - 1);
     }
 
     public double getCurrentStockPrice() {

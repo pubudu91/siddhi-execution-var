@@ -6,8 +6,8 @@ import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
  * Created by dilini92 on 1/10/17.
  */
 public class AssetFactory {
-    public static Asset getAsset(String type, int windowSize){
-        switch (type){
+    public static Asset getAsset(String type, int windowSize) {
+        switch (type) {
             case RealTimeVaRConstants.HISTORICAL:
                 return new HistoricalAsset(windowSize);
             case RealTimeVaRConstants.PARAMETRIC:
