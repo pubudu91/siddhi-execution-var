@@ -1,13 +1,10 @@
 package org.wso2.siddhi.extension.var.realtime.montecarlo;
 
-import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Created by yellowflash on 11/23/16.
  */
 public class MonteCarloNativeSimulation {
-
 
     static {
         try {

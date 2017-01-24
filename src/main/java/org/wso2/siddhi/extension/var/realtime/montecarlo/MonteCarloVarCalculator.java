@@ -163,7 +163,6 @@ public class MonteCarloVarCalculator extends VaRCalculator {
                     tempAsset.getCurrentStockPrice(), numberOfTrials, calculationsPerDay);
             tempAsset.setSimulatedList(terminalStockValues);
         }
-
         return 0;
     }
 
