@@ -65,7 +65,7 @@ public class HistoricalVaRCalculator extends VaRCalculator {
         HistoricalAsset asset = (HistoricalAsset)getAssetList().get(symbol);
         if(asset.getNumberOfReturnValues() > 0) {
             asset.setPreviousLossReturn(asset.getCurrentLossReturn());
-            double currentReturnValue = asset.getReturnValueSet().getPercentile((1 - getConfidenceInterval()) * 100);
+            double currentReturnValue = asset.getPercentile((1 - getConfidenceInterval()) * 100);
             asset.setCurrentLossReturn(currentReturnValue);
         }
     }

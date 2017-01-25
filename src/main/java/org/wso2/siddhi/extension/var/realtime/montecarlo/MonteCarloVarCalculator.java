@@ -49,7 +49,7 @@ public class MonteCarloVarCalculator extends VaRCalculator {
         String symbol = event.getSymbol();
 
         tempAsset = (MonteCarloAsset) getAssetList().get(symbol);
-        historicalReturnValueList = tempAsset.getReturnValueSet().getValues();
+        historicalReturnValueList = tempAsset.getReturnValues();
         if (historicalReturnValueList != null && historicalReturnValueList.length > 0) {
             /**
              * get the latest number of shares
@@ -164,7 +164,7 @@ public class MonteCarloVarCalculator extends VaRCalculator {
         double[] historicalReturnValueList;
         double[] generatedTerminalStockValues;
         tempAsset = (MonteCarloAsset) getAssetList().get(symbol);
-        historicalReturnValueList = tempAsset.getReturnValueSet().getValues();
+        historicalReturnValueList = tempAsset.getReturnValues();
         MonteCarloSimulation calculatorReference = new MonteCarloSimulation();
         MonteCarloNativeSimulation calcNativeReference = new MonteCarloNativeSimulation();
 

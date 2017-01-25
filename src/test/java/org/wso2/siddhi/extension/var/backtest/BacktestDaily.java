@@ -8,6 +8,7 @@ import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.historical.HistoricalVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
+import org.wso2.siddhi.extension.var.realtime.parametric.ParametricVaRCalculator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,8 +42,8 @@ public class BacktestDaily {
 
     private void runBackTest() throws FileNotFoundException {
 
-        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-        //VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        //VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
         //VaRCalculator varCalculator = new MonteCarloSimulation().parallelSimulation(BATCH_SIZE, VAR_CI, 2500,100,0.01);
 
         ArrayList<Object[]> list = readBacktestData();

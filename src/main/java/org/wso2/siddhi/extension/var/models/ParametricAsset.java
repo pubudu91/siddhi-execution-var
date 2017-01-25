@@ -8,6 +8,7 @@ public class ParametricAsset extends Asset {
 
     public ParametricAsset(int windowSize) {
         super(windowSize);
+        excessReturns = null;
     }
 
     public double[] getExcessReturns() {

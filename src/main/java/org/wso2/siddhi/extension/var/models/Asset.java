@@ -1,6 +1,5 @@
 package org.wso2.siddhi.extension.var.models;
 
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.realtime.util.CustomDescriptiveStatistics;
 
 /**
@@ -24,8 +23,8 @@ public class Asset {
         this.currentStockPrice = currentStockPrice;
     }
 
-    public DescriptiveStatistics getReturnValueSet() {
-        return returnValueSet;
+    public double[] getReturnValues() {
+        return returnValueSet.getValues();
     }
 
     public void addReturnValue(double value) {
@@ -41,7 +40,11 @@ public class Asset {
     }
 
     public int getNumberOfReturnValues() {
-        return returnValueSet.getValues().length;
+        return (int) returnValueSet.getN();
+    }
+
+    public double getPercentile(double percentile) {
+        return returnValueSet.getPercentile(percentile);
     }
 
     public double getMean() {
