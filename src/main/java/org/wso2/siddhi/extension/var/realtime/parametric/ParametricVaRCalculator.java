@@ -12,6 +12,8 @@ import com.google.common.collect.HashBasedTable;
 import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
+//TODO check direct double comparison
+
 /**
  * Created by dilip on 30/06/16.
  */
@@ -20,56 +22,57 @@ public class ParametricVaRCalculator extends VaRCalculator {
     private double portfolioValue;
 
     /**
-     * @param limit
-     * @param ci
+     * @param batchSize
+     * @param confidenceInterval
      */
-    public ParametricVaRCalculator(int limit, double ci) {
-        super(limit, ci);
+    public ParametricVaRCalculator(int batchSize, double confidenceInterval) {
+        super(batchSize, confidenceInterval);
         covarianceTable = HashBasedTable.create();
         setType(RealTimeVaRConstants.PARAMETRIC);
     }
 
     /**
      * @return the var of the portfolio
+     * Calculate the contribution of the changed asset to the portfolio and then adjust the previous VaR value
+     * using Historical data
      */
     @Override
     public Double processData(Portfolio portfolio, Event event) {
-        String symbol = event.getSymbol();
-        Asset asset = getAssetList().get(symbol);
-        if (asset.getNumberOfReturnValues() > 0)
-            return incrementalParametricVaR(portfolio);
-        else
-            return null;
-        //return batchModeParametricVaR(portfolio);
-    }
 
-    /**
-     * @param portfolio
-     * @return
-     */
-    private Double incrementalParametricVaR(Portfolio portfolio) {
+        Asset asset = getAssetList().get(event.getSymbol());
 
-        //variable names start with capitals
-        /** create matrices from excess returns, means  and weight-age **/
-        RealMatrix matrixVCV = new Array2DRowRealMatrix(getVCVMatrix(portfolio));
-        RealMatrix matrixWeightage = new Array2DRowRealMatrix(getWeightageMatrix(portfolio));
-        RealMatrix matrixMean = new Array2DRowRealMatrix(getMeanMatrix(portfolio));
+        //for parametric simulation there should be at least one return value
+        //TODO check > 0 condition
+        if (asset.getNumberOfReturnValues() > 0) {
+            //TODO variable names start with capitals
+            /** create matrices from excess returns, means  and weight-age **/
+            RealMatrix matrixVCV = new Array2DRowRealMatrix(getVCVMatrix(portfolio));
+            RealMatrix matrixWeightage = new Array2DRowRealMatrix(getWeightageMatrix(portfolio));
+            RealMatrix matrixMean = new Array2DRowRealMatrix(getMeanMatrix(portfolio));
 
-        /** matrix multiplications using apache math library **/
-        RealMatrix matrixPV = matrixWeightage.multiply(matrixVCV).multiply(matrixWeightage.transpose());
-        RealMatrix matrixPM = matrixWeightage.multiply(matrixMean.transpose());
+            /** matrix multiplications using apache math library **/
+            RealMatrix matrixPV = matrixWeightage.multiply(matrixVCV).multiply(matrixWeightage.transpose());
+            RealMatrix matrixPM = matrixWeightage.multiply(matrixMean.transpose());
 
-        double pv = matrixPV.getData()[0][0];
-        if (pv == 0) {                  // NormalDistribution throws an exception when ps = 0
-            return null;
+            double pv = matrixPV.getData()[0][0];
+            /** NormalDistribution throws an exception when ps = 0 **/
+            if (pv == 0) {
+                return null;
+            }
+
+            double ps = Math.sqrt(pv);
+
+            double pm = matrixPM.getData()[0][0];
+
+            NormalDistribution n = new NormalDistribution(pm, ps);
+
+            double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
+
+            return var * portfolioValue;
+
         }
 
-        double ps = Math.sqrt(pv);
-        double pm = matrixPM.getData()[0][0];
-        NormalDistribution n = new NormalDistribution(pm, ps);
-        double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
-
-        return var * portfolioValue;
+        return null;
     }
 
     /**
@@ -80,17 +83,17 @@ public class ParametricVaRCalculator extends VaRCalculator {
         Set<String> keys = portfolio.getAssetListKeySet();
         int numberOfAssets = keys.size();
         String symbols[] = keys.toArray(new String[numberOfAssets]);
-        double[][] VCVMatrix = new double[numberOfAssets][numberOfAssets];
+        double[][] matrixVCV = new double[numberOfAssets][numberOfAssets];
         double covariance;
         for (int i = 0; i < symbols.length; i++) {
             for (int j = i; j < symbols.length; j++) {
                 covariance = covarianceTable.get(symbols[i], symbols[j]);
-                VCVMatrix[i][j] = covariance;
+                matrixVCV[i][j] = covariance;
                 if (i != j)
-                    VCVMatrix[j][i] = covariance;
+                    matrixVCV[j][i] = covariance;
             }
         }
-        return VCVMatrix;
+        return matrixVCV;
     }
 
     /**
@@ -177,12 +180,15 @@ public class ParametricVaRCalculator extends VaRCalculator {
                 }
                 covariance = covariance / (min - 1);
             }
-
             covarianceTable.put(symbol, symbols[i], covariance);
             covarianceTable.put(symbols[i], symbol, covariance);
         }
     }
 
+    /**
+     *
+     * @param symbol
+     */
     @Override
     public void simulateChangedAsset(String symbol) {
         updateExcessReturnList(symbol);
