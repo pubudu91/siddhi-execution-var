@@ -15,21 +15,8 @@ public class MonteCarloSimulation {
 
 
     private NormalDistribution distribution = null;
-    private DescriptiveStatistics stat = null;
     private double randomZValue = 0.0;
     public static double[] finalSimulatedValues;
-    Random rnd = new Random(1);
-
-    public MonteCarloSimulation() {
-    }
-
-    public MonteCarloSimulation(int numberOfTrials) {
-        MonteCarloSimulation.finalSimulatedValues = new double[numberOfTrials];
-    }
-
-    public double getRandomZValue() {
-        return randomZValue;
-    }
 
     /**
      * return a random Z value from thr probability Distribution
@@ -72,11 +59,11 @@ public class MonteCarloSimulation {
 
         Map<String, Double> parameters, tempParameters;
         parameters = new HashMap<>();
-//        tempParameters = this.getMeanReturnAndStandardDeviation(historicalValue);
+        tempParameters = this.getMeanReturnAndStandardDeviation(historicalValue);
         double tempStockValue = 0;
 
-        parameters.put("distributionMean", 0.001216);
-        parameters.put("standardDeviation", 0.01960);
+        parameters.put("distributionMean", tempParameters.get("meanReturn"));
+        parameters.put("standardDeviation", tempParameters.get("meanStandardDeviation"));
         parameters.put("timeSlice", timeSlice);
         parameters.put("randomValue", this.getRandomZVal());
         parameters.put("currentStockValue", currentStockPrice);
@@ -91,17 +78,6 @@ public class MonteCarloSimulation {
             terminalStockValues[i] = tempStockValue;
         }
         return terminalStockValues;
-    }
-
-    /**
-     * get statistical analysis object
-     *
-     * @param historicalValues
-     * @return
-     */
-    protected DescriptiveStatistics getStat(double[] historicalValues) {
-        this.stat = new DescriptiveStatistics(historicalValues);
-        return this.stat;
     }
 
     /**

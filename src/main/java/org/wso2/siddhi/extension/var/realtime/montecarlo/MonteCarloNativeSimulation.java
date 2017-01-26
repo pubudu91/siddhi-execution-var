@@ -14,7 +14,7 @@ public class MonteCarloNativeSimulation {
         }
     }
 
-    // number of trials should be divisible by 4
+
     public native double[] simulation(double mean, double std, double timeSlice, double currentPrice,
                                       int numberOfTrials, int calculationsPerDay);
 

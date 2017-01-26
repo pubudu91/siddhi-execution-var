@@ -7,37 +7,28 @@ import java.util.Map;
  * Created by dilini92 on 1/9/17.
  */
 public class MonteCarloPortfolio extends Portfolio {
-    private Map<String, Integer> shareCountMapBeforePortfolioUpdate = null;
 
-    private double monteCarloSimulationCurrentPortfolioValue;
-    private double[] monteCarloSimulationFinalPortfolioValueList = null;
+    private double currentPortfolioValue;
+    private double[] finalPortfolioValueList = null;
 
     public MonteCarloPortfolio(String ID, Map<String, Integer> assets) {
         super(ID, assets);
-        this.shareCountMapBeforePortfolioUpdate = new HashMap<>();
     }
 
-    public double[] getMonteCarloSimulationFinalPortfolioValueList() {
-        return monteCarloSimulationFinalPortfolioValueList;
+    public double[] getFinalPortfolioValueList() {
+        return finalPortfolioValueList;
     }
 
-    public void setMonteCarloSimulationFinalPortfolioValueList(double[] monteCarloSimulationFinalPortfolioValueList) {
-        this.monteCarloSimulationFinalPortfolioValueList = monteCarloSimulationFinalPortfolioValueList;
+    public void setFinalPortfolioValueList(double[] finalPortfolioValueList) {
+        this.finalPortfolioValueList = finalPortfolioValueList;
     }
 
-    public double getMonteCarloSimulationCurrentPortfolioValue() {
-        return monteCarloSimulationCurrentPortfolioValue;
+    public double getCurrentPortfolioValue() {
+        return currentPortfolioValue;
     }
 
-    public void setMonteCarloSimulationCurrentPortfolioValue(double monteCarloSimulationCurrentPortfolioValue) {
-        this.monteCarloSimulationCurrentPortfolioValue = monteCarloSimulationCurrentPortfolioValue;
+    public void setCurrentPortfolioValue(double currentPortfolioValue) {
+        this.currentPortfolioValue = currentPortfolioValue;
     }
 
-    public Map<String, Integer> getShareCountMapBeforePortfolioUpdate() {
-        return this.shareCountMapBeforePortfolioUpdate;
-    }
-
-    public void setShareCountMapBeforePortfolioUpdate(Map<String, Integer> shareCountMapBeforePortfolioUpdate) {
-        this.shareCountMapBeforePortfolioUpdate = shareCountMapBeforePortfolioUpdate;
-    }
 }
