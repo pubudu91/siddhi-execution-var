@@ -19,9 +19,9 @@ public class ParametricVaRCalculatorTestCase {
         Object[] inputData = new Object[4];
         String[] split;
         ClassLoader classLoader = getClass().getClassLoader();
-        File stockFile = new File(classLoader.getResource("A50E13000.csv").getFile());
+        File stockFile = new File(classLoader.getResource("stock100.csv").getFile());
         Scanner stockScan = new Scanner(stockFile);
-        File portfolioFile = new File(classLoader.getResource("A50Portfolio.csv").getFile());
+        File portfolioFile = new File(classLoader.getResource("A100Portfolio.csv").getFile());
         Scanner portfolioScan = new Scanner(portfolioFile);
         int stockCount = 1;
         while (stockScan.hasNext()) {
