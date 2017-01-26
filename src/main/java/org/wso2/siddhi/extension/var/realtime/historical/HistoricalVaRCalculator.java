@@ -18,7 +18,7 @@ public class HistoricalVaRCalculator extends VaRCalculator {
      */
     public HistoricalVaRCalculator(int batchSize, double ci) {
         super(batchSize, ci);
-        setType(RealTimeVaRConstants.HISTORICAL);
+
     }
 
     /**
@@ -60,7 +60,7 @@ public class HistoricalVaRCalculator extends VaRCalculator {
     }
 
     /**
-     * simulate the changed asset once
+     * simulation the changed asset once
      *
      * @param symbol
      */

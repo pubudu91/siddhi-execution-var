@@ -50,4 +50,8 @@ public class Asset {
     public double getMean() {
         return returnValueSet.getMean();
     }
+
+    public double getStandardDeviation() {
+        return returnValueSet.getStandardDeviation();
+    }
 }

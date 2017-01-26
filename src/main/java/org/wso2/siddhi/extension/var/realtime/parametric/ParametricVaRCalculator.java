@@ -28,7 +28,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
     public ParametricVaRCalculator(int batchSize, double confidenceInterval) {
         super(batchSize, confidenceInterval);
         covarianceTable = HashBasedTable.create();
-        setType(RealTimeVaRConstants.PARAMETRIC);
+
     }
 
     /**

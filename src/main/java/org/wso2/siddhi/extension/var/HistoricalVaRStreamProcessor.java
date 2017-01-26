@@ -24,7 +24,7 @@ import java.util.List;
  * Created by dilini92 on 6/26/16.
  */
 public class HistoricalVaRStreamProcessor extends StreamProcessor {
-    private int batchSize = 251;                           // Maximum # of events, used for regression calculation
+    private int batchSize = 251;                           // Maximum # of events, used for var calculation
     private double confidenceInterval = 0.95;              // Confidence Interval
     private VaRCalculator varCalculator = null;
 
@@ -40,7 +40,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
-                //get the symbol and price attributes from the stream to process
+                //get the portfolioID,symbol,shares and price attributes from the stream to process
                 Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
                 for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
                     inputData[i] = attributeExpressionExecutors[i].execute(complexEvent);

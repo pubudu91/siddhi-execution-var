@@ -17,5 +17,4 @@ public class MonteCarloNativeSimulation {
 
     public native double[] simulation(double mean, double std, double timeSlice, double currentPrice,
                                       int numberOfTrials, int calculationsPerDay);
-
 }

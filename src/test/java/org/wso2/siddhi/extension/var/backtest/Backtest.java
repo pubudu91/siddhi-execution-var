@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.historical.HistoricalVaRCalculator;
+import org.wso2.siddhi.extension.var.realtime.montecarlo.MonteCarloVarCalculator;
 import org.wso2.siddhi.extension.var.realtime.parametric.ParametricVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 
@@ -42,10 +43,9 @@ public class Backtest {
 
     private void runBackTest() throws FileNotFoundException {
 
-        //VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
-        //VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500,100,0.01);
-
+        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+//        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+//        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
         ArrayList<Object[]> list = readBacktestData();
         int i = 0;
         int totalEvents = ((BATCH_SIZE + 1) * NUMBER_OF_ASSETS) + (VAR_PER_SAMPLE * NUMBER_OF_ASSETS * SAMPLE_SIZE) + 1;
@@ -83,13 +83,16 @@ public class Backtest {
         for (int i = 0; i < VAR_PER_SAMPLE; i++) {
             if (actualVarList.get(i) <= calculatedVarList.get(i)) {
                 numberOfExceptions++;
-                meanViolations.add(actualVarList.get(i)-calculatedVarList.get(i));
+                meanViolations.add(actualVarList.get(i) - calculatedVarList.get(i));
             }
         }
 
-        DescriptiveStatistics dsLoss = new DescriptiveStatistics(actualVarList.stream().mapToDouble(Double::doubleValue).toArray());
-        DescriptiveStatistics dsVaR = new DescriptiveStatistics(calculatedVarList.stream().mapToDouble(Double::doubleValue).toArray());
-        DescriptiveStatistics dsMV = new DescriptiveStatistics(meanViolations.stream().mapToDouble(Double::doubleValue).toArray());
+        DescriptiveStatistics dsLoss = new DescriptiveStatistics(actualVarList.stream().mapToDouble
+                (Double::doubleValue).toArray());
+        DescriptiveStatistics dsVaR = new DescriptiveStatistics(calculatedVarList.stream().mapToDouble
+                (Double::doubleValue).toArray());
+        DescriptiveStatistics dsMV = new DescriptiveStatistics(meanViolations.stream().mapToDouble
+                (Double::doubleValue).toArray());
 
         System.out.println("Loss mean : " + dsLoss.getMean());
         System.out.println("VaR mean  : " + dsVaR.getMean());

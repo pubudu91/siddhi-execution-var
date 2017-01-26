@@ -24,9 +24,8 @@ import java.util.List;
  * Created by flash on 7/7/16.
  */
 public class MonteCarloVaRStreamProcessor extends StreamProcessor {
-    private int batchSize = 251;                                        // Maximum # of events, used for regression
-    // calculation
-    private double confidenceInterval = 0.95;                                           // Confidence Interval
+    private int batchSize = 251;                                  // Maximum # of events, used for var calculation
+    private double confidenceInterval = 0.95;                     // Confidence Interval
     private VaRCalculator varCalculator = null;
     private int numberOfSimulationHorizontal = 2000;
     private int numberOfSimulationVertical = 100;
@@ -40,17 +39,16 @@ public class MonteCarloVaRStreamProcessor extends StreamProcessor {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
                 Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
-                //get the symbol and price attributes from the stream to process
+                //get the portfolioID,symbol,shares and price attributes from the stream to process
                 for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
                     inputData[i] = attributeExpressionExecutors[i].execute(complexEvent);
                 }
 
                 Object outputData[] = new Object[1];
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
-                // Skip processing if user has specified calculation interval
-                if (outputData[0] == null) { //if there is no output
+                if (outputData[0] == null) {    //if there is no output
                     streamEventChunk.remove();
-                } else {
+                } else {    //if there is an output, publish it to the output stream
                     complexEventPopulater.populateComplexEvent(complexEvent, outputData);
                 }
             }
@@ -61,7 +59,7 @@ public class MonteCarloVaRStreamProcessor extends StreamProcessor {
     @Override
     protected List<Attribute> init(AbstractDefinition inputDefinition, ExpressionExecutor[]
             attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
-        if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
+        if (attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX] instanceof ConstantExpressionExecutor) {
             try {
                 this.batchSize = ((Integer) attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX]
                         .execute(null));
@@ -72,14 +70,14 @@ public class MonteCarloVaRStreamProcessor extends StreamProcessor {
                 this.numberOfSimulationVertical = ((Integer) attributeExpressionExecutors[RealTimeVaRConstants
                         .MONTE_CARLO_VERTICAL_SIMULATION_COUNT_INDEX].execute(null));
             } catch (ClassCastException c) {
-                throw new ExecutionPlanCreationException("Calculation interval, batch size and range should be of " +
-                        "type int");
+                throw new ExecutionPlanCreationException("Batch size should be an integer");
             }
             try {
-                confidenceInterval = ((Double) attributeExpressionExecutors[1].execute(null));
+                confidenceInterval = ((Double) attributeExpressionExecutors[RealTimeVaRConstants.CI_INDEX].execute
+                        (null));
             } catch (ClassCastException c) {
-                throw new ExecutionPlanCreationException("Confidence interval should be of type double and a value " +
-                        "between 0 and 1");
+                throw new ExecutionPlanCreationException("Confidence interval should be a double value between 0 and " +
+                        "1");
             }
         }
 
@@ -89,7 +87,7 @@ public class MonteCarloVaRStreamProcessor extends StreamProcessor {
 
         // Add attribute for var
         ArrayList<Attribute> attributes = new ArrayList<>(1);
-        attributes.add(new Attribute("var", Attribute.Type.STRING));
+        attributes.add(new Attribute(RealTimeVaRConstants.OUTPUT_NAME, Attribute.Type.STRING));
 
         return attributes;
     }

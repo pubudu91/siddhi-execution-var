@@ -17,8 +17,6 @@ public abstract class VaRCalculator {
     private Map<String, Portfolio> portfolioPool;
     private Map<String, Asset> assetPool;
 
-    private String type;
-
     /**
      * @param batchSize
      * @param confidenceInterval
@@ -53,10 +51,9 @@ public abstract class VaRCalculator {
      */
     private void updateAssetPool(String symbol, double price) {       //double check protected access
         double priceBeforeLastPrice;
-
         Asset asset = assetPool.get(symbol);
         if (asset == null) {
-            assetPool.put(symbol, AssetFactory.getAsset(type, batchSize));
+            assetPool.put(symbol, AssetFactory.getAsset(this.getClass().getSimpleName(), batchSize));
             asset = assetPool.get(symbol);
         }
 
@@ -85,7 +82,7 @@ public abstract class VaRCalculator {
         if (portfolio == null) {//first time for the portfolio
             Map<String, Integer> assets = new HashMap<>();
             assets.put(symbol, shares);
-            portfolio = PortfolioFactory.getPortfolio(type, portfolioID, assets);
+            portfolio = PortfolioFactory.getPortfolio(this.getClass().getSimpleName(), portfolioID, assets);
             portfolioPool.put(portfolioID, portfolio);
         } else if (portfolio.getCurrentSharesCount(symbol) == null) {//first time for the asset within portfolio
             portfolio.setCurrentSharesCount(symbol, shares);
@@ -150,14 +147,6 @@ public abstract class VaRCalculator {
     }
 
     public abstract void simulateChangedAsset(String symbol);
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
 
     public double getConfidenceInterval() {
         return confidenceInterval;

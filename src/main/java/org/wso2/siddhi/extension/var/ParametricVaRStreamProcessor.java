@@ -40,7 +40,7 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
-                //get the symbol and price attributes from the stream to process
+                //get the portfolioID,symbol,shares and price attributes from the stream to process
                 Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
                 for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
                     inputData[i] = attributeExpressionExecutors[i].execute(complexEvent);
