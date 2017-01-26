@@ -19,7 +19,6 @@ import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
  */
 public class ParametricVaRCalculator extends VaRCalculator {
     private final Table<String, String, Double> covarianceTable;
-    private double portfolioValue;
 
     /**
      * @param batchSize
@@ -42,8 +41,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
         Asset asset = getAssetPool().get(event.getSymbol());
 
         //for parametric simulation there should be at least one return value
-        //TODO check > 0 condition
-        if (asset.getNumberOfReturnValues() > 0) {
+        if (asset.getNumberOfReturnValues()>2) {
             //TODO variable names start with capitals
             /** create matrices from excess returns, means  and weight-age **/
             RealMatrix matrixVCV = new Array2DRowRealMatrix(getVCVMatrix(portfolio));
@@ -68,7 +66,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
 
             double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
 
-            return var * portfolioValue;
+            return var * portfolio.getTotalPortfolioValue();
 
         }
 
@@ -105,7 +103,6 @@ public class ParametricVaRCalculator extends VaRCalculator {
         Set<String> keys = portfolio.getAssetListKeySet();
         int numberOfAssets = keys.size();
         double[][] weighageMatrix = new double[1][numberOfAssets];
-        double portfolioValue = 0.0;
         int i = 0;
         Asset temp;
         Object symbol;
@@ -113,15 +110,10 @@ public class ParametricVaRCalculator extends VaRCalculator {
         while (itr.hasNext()) {
             symbol = itr.next();
             temp = getAssetPool().get(symbol);
-            weighageMatrix[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentSharesCount((String)
-                    symbol);
-            portfolioValue = portfolioValue + weighageMatrix[0][i];
+            weighageMatrix[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentSharesCount((String) symbol)/portfolio.getTotalPortfolioValue();
             i++;
         }
-        this.portfolioValue = portfolioValue;
-        for (int j = 0; j < numberOfAssets; j++) {
-            weighageMatrix[0][j] = weighageMatrix[0][j] / portfolioValue;
-        }
+
         return weighageMatrix;
     }
 

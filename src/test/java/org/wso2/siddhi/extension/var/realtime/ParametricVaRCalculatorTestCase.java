@@ -11,11 +11,6 @@ import java.util.*;
  */
 public class ParametricVaRCalculatorTestCase {
 
-
-
-
-
-
     @Test
     public void testProcessData() throws Exception {
         int batchSize = 251;
