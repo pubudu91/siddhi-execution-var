@@ -41,7 +41,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
 
         Asset asset = getAssetPool().get(event.getSymbol());
 
-        //for parametric simulation there should be at least one return value
+        //for parametric simulate there should be at least one return value
         //TODO check > 0 condition
         if (asset.getNumberOfReturnValues() > 0) {
             //TODO variable names start with capitals
