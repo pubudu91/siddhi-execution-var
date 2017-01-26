@@ -11,13 +11,14 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
+import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.historical.HistoricalVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
-import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by dilini92 on 6/26/16.

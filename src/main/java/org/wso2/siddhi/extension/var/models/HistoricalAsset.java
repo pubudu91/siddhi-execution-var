@@ -12,19 +12,19 @@ public class HistoricalAsset extends Asset {
         super(windowSize);
     }
 
-    public double getPreviousLossReturn() {
+    public double getPreviousReturnValue() {
         return previousLossReturn;
     }
 
-    public void setPreviousLossReturn(double previousLossReturn) {
+    public void setPreviousReturnValue(double previousLossReturn) {
         this.previousLossReturn = previousLossReturn;
     }
 
-    public double getCurrentLossReturn() {
+    public double getCurrentReturnValue() {
         return currentLossReturn;
     }
 
-    public void setCurrentLossReturn(double currentLossReturn) {
+    public void setCurrentReturnValue(double currentLossReturn) {
         this.currentLossReturn = currentLossReturn;
     }
 }

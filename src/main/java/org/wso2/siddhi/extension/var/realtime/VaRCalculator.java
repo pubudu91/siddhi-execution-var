@@ -4,7 +4,8 @@ import org.json.JSONObject;
 import org.wso2.siddhi.extension.var.models.*;
 import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by dilini92 on 6/26/16.
@@ -49,7 +50,7 @@ public abstract class VaRCalculator {
      * @param price
      * @return
      */
-    protected void updateAssetPool(String symbol, double price) {       //double check protected access
+    private void updateAssetPool(String symbol, double price) {       //double check protected access
         double priceBeforeLastPrice;
 
         Asset asset = assetList.get(symbol);
@@ -75,7 +76,7 @@ public abstract class VaRCalculator {
      * @param shares
      * @param symbol
      */
-    protected void updatePortfolioPool(String portfolioID, int shares, String symbol) {       //double check
+    private void updatePortfolioPool(String portfolioID, int shares, String symbol) {       //double check
         // protected access
         Portfolio portfolio = portfolioList.get(portfolioID);
 
@@ -93,13 +94,12 @@ public abstract class VaRCalculator {
         }
     }
 
-
     /**
      * @param portfolio
+     * @param event
      * @return
      */
-    //TODO - remove event object if not required
-    protected abstract Double processData(Portfolio portfolio, Event event);
+    public abstract Double processData(Portfolio portfolio, Event event);
 
     /**
      * @param data
