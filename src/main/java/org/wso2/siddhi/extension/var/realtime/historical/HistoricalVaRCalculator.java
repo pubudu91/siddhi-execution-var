@@ -65,7 +65,7 @@ public class HistoricalVaRCalculator extends VaRCalculator {
      * @param symbol
      */
     @Override
-    public void replaceAssetSimulation(String symbol) {
+    public void simulateChangedAsset(String symbol) {
         HistoricalAsset asset = (HistoricalAsset) getAssetList().get(symbol);
         if (asset.getNumberOfReturnValues() > 0) {
             asset.setPreviousReturnValue(asset.getCurrentReturnValue());

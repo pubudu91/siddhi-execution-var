@@ -95,7 +95,7 @@ public class MonteCarloVarCalculator extends VaRCalculator {
             if (previousPortfolioMarketValue > 0 && finalPortfolioValuesBeforeAssetUpdate != null) {
                 //calculate latest portfolio value and store it in portfolio. set the latest stock price as
                 // recentStock price in the changed asset
-                latestMarketValue = previousPortfolioMarketValue - tempAsset.getPriceBeforeLastPrice() *
+                latestMarketValue = previousPortfolioMarketValue - tempAsset.getPreviousStockPrice() *
                         previousSharesCount + tempAsset.getCurrentStockPrice() * currentSharesCount;
 //                tempAsset.setPriceBeforeLastPrice(tempAsset.getCurrentStockPrice());
                 /**
@@ -159,7 +159,7 @@ public class MonteCarloVarCalculator extends VaRCalculator {
     }
 
     @Override
-    public void replaceAssetSimulation(String symbol) {
+    public void simulateChangedAsset(String symbol) {
         MonteCarloAsset tempAsset;
         double[] historicalReturnValueList;
         double[] generatedTerminalStockValues;

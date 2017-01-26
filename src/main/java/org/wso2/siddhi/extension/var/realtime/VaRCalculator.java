@@ -38,6 +38,7 @@ public abstract class VaRCalculator {
      */
     public void addEvent(Event event) {
 
+        //update portfolio pool
         if (event.getPortfolioID() != null)
             updatePortfolioPool(event.getPortfolioID(), event.getShares(), event.getSymbol());
 
@@ -48,7 +49,7 @@ public abstract class VaRCalculator {
     /**
      * @param symbol
      * @param price
-     * @return
+     * @return update the asset pool when an event comes from the stock price stream
      */
     private void updateAssetPool(String symbol, double price) {       //double check protected access
         double priceBeforeLastPrice;
@@ -66,12 +67,13 @@ public abstract class VaRCalculator {
         //assume that all price values of assets cannot be zero or negative
         if (priceBeforeLastPrice > 0) {
             double value = Math.log(price / priceBeforeLastPrice);
-            asset.addReturnValue(value);                             /**if descriptive stat can be used, this is not
-             required*/
+            asset.addReturnValue(value);
         }
     }
 
     /**
+     * update portfolio pool when an event comes from the portfolio stream
+     *
      * @param portfolioID
      * @param shares
      * @param symbol
@@ -89,7 +91,7 @@ public abstract class VaRCalculator {
             portfolio.setCurrentSharesCount(symbol, shares);
         } else {//portfolio exists, asset within portfolio exists
             int currentShares = portfolio.getCurrentSharesCount(symbol);
-            portfolio.setPreviousSharesCount(symbol, currentShares);
+            //portfolio.setPreviousSharesCount(symbol, currentShares);
             portfolio.setCurrentSharesCount(symbol, shares + currentShares);
         }
     }
@@ -122,7 +124,7 @@ public abstract class VaRCalculator {
 
         Event event = new Event(portfolioID, shares, symbol, price);
         addEvent(event);
-        replaceAssetSimulation(symbol);
+        simulateChangedAsset(symbol);
 
         portfolioList.forEach((id, portfolio) -> {
             Integer sharesCount = portfolio.getCurrentSharesCount(symbol);
@@ -132,6 +134,7 @@ public abstract class VaRCalculator {
                     result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var.doubleValue());
                 }
             }
+            portfolio.setPreviousSharesCount(symbol, portfolio.getCurrentSharesCount(symbol));
         });
 
         //if no var has been calculated
@@ -141,7 +144,7 @@ public abstract class VaRCalculator {
         return result.toString();
     }
 
-    public abstract void replaceAssetSimulation(String symbol);
+    public abstract void simulateChangedAsset(String symbol);
 
     public String getType() {
         return type;
