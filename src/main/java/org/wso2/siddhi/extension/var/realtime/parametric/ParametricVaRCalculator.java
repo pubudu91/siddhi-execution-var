@@ -10,7 +10,6 @@ import java.util.*;
 import com.google.common.collect.Table;
 import com.google.common.collect.HashBasedTable;
 import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
-import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
 //TODO check direct double comparison
 
@@ -40,31 +39,31 @@ public class ParametricVaRCalculator extends VaRCalculator {
 
         Asset asset = getAssetPool().get(event.getSymbol());
 
-        //for parametric simulation there should be at least one return value
+        //for parametric simulation there should be at least two return(co-variance) value
         if (asset.getNumberOfReturnValues()>2) {
-            //TODO variable names start with capitals
+
             /** create matrices from excess returns, means  and weight-age **/
-            RealMatrix matrixVCV = new Array2DRowRealMatrix(getVCVMatrix(portfolio));
-            RealMatrix matrixWeightage = new Array2DRowRealMatrix(getWeightageMatrix(portfolio));
-            RealMatrix matrixMean = new Array2DRowRealMatrix(getMeanMatrix(portfolio));
+            RealMatrix vcvMatrix = new Array2DRowRealMatrix(getVCVMatrix(portfolio));
+            RealMatrix weightageMatrix = new Array2DRowRealMatrix(getWeightageMatrix(portfolio));
+            RealMatrix meanMatrix = new Array2DRowRealMatrix(getMeanMatrix(portfolio));
 
             /** matrix multiplications using apache math library **/
-            RealMatrix matrixPV = matrixWeightage.multiply(matrixVCV).multiply(matrixWeightage.transpose());
-            RealMatrix matrixPM = matrixWeightage.multiply(matrixMean.transpose());
+            RealMatrix pvMatrix = weightageMatrix.multiply(vcvMatrix).multiply(weightageMatrix.transpose());
+            RealMatrix pmMeatrix = weightageMatrix.multiply(meanMatrix.transpose());
 
-            double pv = matrixPV.getData()[0][0];
+            double pv = pvMatrix.getData()[0][0];
+
             /** NormalDistribution throws an exception when ps = 0 **/
             if (pv == 0) {
                 return null;
             }
 
             double ps = Math.sqrt(pv);
+            double pm = pmMeatrix.getData()[0][0];
 
-            double pm = matrixPM.getData()[0][0];
+            NormalDistribution normalDistribution = new NormalDistribution(pm, ps);
 
-            NormalDistribution n = new NormalDistribution(pm, ps);
-
-            double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
+            double var = normalDistribution.inverseCumulativeProbability(1 - getConfidenceInterval());
 
             return var * portfolio.getTotalPortfolioValue();
 
@@ -81,17 +80,17 @@ public class ParametricVaRCalculator extends VaRCalculator {
         Set<String> keys = portfolio.getAssetListKeySet();
         int numberOfAssets = keys.size();
         String symbols[] = keys.toArray(new String[numberOfAssets]);
-        double[][] matrixVCV = new double[numberOfAssets][numberOfAssets];
+        double[][] vcvMatrix = new double[numberOfAssets][numberOfAssets];
         double covariance;
         for (int i = 0; i < symbols.length; i++) {
             for (int j = i; j < symbols.length; j++) {
                 covariance = covarianceTable.get(symbols[i], symbols[j]);
-                matrixVCV[i][j] = covariance;
+                vcvMatrix[i][j] = covariance;
                 if (i != j)
-                    matrixVCV[j][i] = covariance;
+                    vcvMatrix[j][i] = covariance;
             }
         }
-        return matrixVCV;
+        return vcvMatrix;
     }
 
     /**
@@ -102,19 +101,18 @@ public class ParametricVaRCalculator extends VaRCalculator {
 
         Set<String> keys = portfolio.getAssetListKeySet();
         int numberOfAssets = keys.size();
-        double[][] weighageMatrix = new double[1][numberOfAssets];
+        double[][] weightageMatrix = new double[1][numberOfAssets];
         int i = 0;
         Asset temp;
-        Object symbol;
-        Iterator itr = keys.iterator();
+        String symbol;
+        Iterator<String> itr = keys.iterator();
         while (itr.hasNext()) {
             symbol = itr.next();
             temp = getAssetPool().get(symbol);
-            weighageMatrix[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentSharesCount((String) symbol)/portfolio.getTotalPortfolioValue();
+            weightageMatrix[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentSharesCount((String) symbol)/portfolio.getTotalPortfolioValue();
             i++;
         }
-
-        return weighageMatrix;
+        return weightageMatrix;
     }
 
     /**
