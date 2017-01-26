@@ -14,8 +14,8 @@ public abstract class VaRCalculator {
     private double confidenceInterval;
     private int batchSize;
 
-    private Map<String, Portfolio> portfolioList;
-    private Map<String, Asset> assetList;
+    private Map<String, Portfolio> portfolioPool;
+    private Map<String, Asset> assetPool;
 
     private String type;
 
@@ -28,8 +28,8 @@ public abstract class VaRCalculator {
         this.batchSize = batchSize;
 
         //ensures that there will be only one instance of each
-        portfolioList = new HashMap<>();
-        assetList = new HashMap<>();
+        portfolioPool = new HashMap<>();
+        assetPool = new HashMap<>();
     }
 
     /**
@@ -54,10 +54,10 @@ public abstract class VaRCalculator {
     private void updateAssetPool(String symbol, double price) {       //double check protected access
         double priceBeforeLastPrice;
 
-        Asset asset = assetList.get(symbol);
+        Asset asset = assetPool.get(symbol);
         if (asset == null) {
-            assetList.put(symbol, AssetFactory.getAsset(type, batchSize));
-            asset = assetList.get(symbol);
+            assetPool.put(symbol, AssetFactory.getAsset(type, batchSize));
+            asset = assetPool.get(symbol);
         }
 
         priceBeforeLastPrice = asset.getCurrentStockPrice();
@@ -80,13 +80,13 @@ public abstract class VaRCalculator {
      */
     private void updatePortfolioPool(String portfolioID, int shares, String symbol) {       //double check
         // protected access
-        Portfolio portfolio = portfolioList.get(portfolioID);
+        Portfolio portfolio = portfolioPool.get(portfolioID);
 
         if (portfolio == null) {//first time for the portfolio
             Map<String, Integer> assets = new HashMap<>();
             assets.put(symbol, shares);
             portfolio = PortfolioFactory.getPortfolio(type, portfolioID, assets);
-            portfolioList.put(portfolioID, portfolio);
+            portfolioPool.put(portfolioID, portfolio);
         } else if (portfolio.getCurrentSharesCount(symbol) == null) {//first time for the asset within portfolio
             portfolio.setCurrentSharesCount(symbol, shares);
         } else {//portfolio exists, asset within portfolio exists
@@ -116,7 +116,6 @@ public abstract class VaRCalculator {
         int shares = 0;
         String symbol = data[RealTimeVaRConstants.SYMBOL_INDEX].toString();
         double price = ((Double) data[RealTimeVaRConstants.PRICE_INDEX]);
-
         if (data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX] != null && data[RealTimeVaRConstants.SHARES_INDEX] != null) {
             portfolioID = data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].toString();
             shares = (Integer) data[RealTimeVaRConstants.SHARES_INDEX];
@@ -126,9 +125,15 @@ public abstract class VaRCalculator {
         addEvent(event);
         simulateChangedAsset(symbol);
 
-        portfolioList.forEach((id, portfolio) -> {
+        portfolioPool.forEach((id, portfolio) -> {
             Integer sharesCount = portfolio.getCurrentSharesCount(symbol);
             if (sharesCount != null) {
+
+                //update total portfolio value
+                double previousPrice = assetPool.get(symbol).getPreviousStockPrice();
+                portfolio.updatePortfolioValue(event, previousPrice);
+
+                //calculate value at risk
                 Double var = processData(portfolio, event);
                 if (var != null) {
                     result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var.doubleValue());
@@ -162,11 +167,11 @@ public abstract class VaRCalculator {
         return batchSize;
     }
 
-    public Map<String, Portfolio> getPortfolioList() {
-        return portfolioList;
+    public Map<String, Portfolio> getPortfolioPool() {
+        return portfolioPool;
     }
 
-    public Map<String, Asset> getAssetList() {
-        return assetList;
+    public Map<String, Asset> getAssetPool() {
+        return assetPool;
     }
 }

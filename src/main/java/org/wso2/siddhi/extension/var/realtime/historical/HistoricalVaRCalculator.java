@@ -31,7 +31,7 @@ public class HistoricalVaRCalculator extends VaRCalculator {
 
         HistoricalPortfolio historicalPortfolio = (HistoricalPortfolio) portfolio;
         String symbol = event.getSymbol();
-        HistoricalAsset asset = (HistoricalAsset) getAssetList().get(symbol);
+        HistoricalAsset asset = (HistoricalAsset) getAssetPool().get(symbol);
 
         //for historical simulation there should be at least one return value
         if (asset.getNumberOfReturnValues() > 0) {
@@ -66,7 +66,7 @@ public class HistoricalVaRCalculator extends VaRCalculator {
      */
     @Override
     public void simulateChangedAsset(String symbol) {
-        HistoricalAsset asset = (HistoricalAsset) getAssetList().get(symbol);
+        HistoricalAsset asset = (HistoricalAsset) getAssetPool().get(symbol);
         if (asset.getNumberOfReturnValues() > 0) {
             asset.setPreviousReturnValue(asset.getCurrentReturnValue());
             double currentReturnValue = asset.getPercentile((1 - getConfidenceInterval()) * 100);

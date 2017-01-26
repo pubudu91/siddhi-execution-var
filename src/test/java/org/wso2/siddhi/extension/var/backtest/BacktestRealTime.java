@@ -61,7 +61,7 @@ public class BacktestRealTime {
                 Double calculatedVar = (Double) jsonObject.get(PORTFOLIO_KEY);  // hardcoded for portfolio ID 1
                 System.out.print(String.format("CV : %-15f", calculatedVar));
                 calculatedVarList.add(calculatedVar);                           // should filter
-                calculateActualLoss(varCalculator.getPortfolioList().get("1"), varCalculator.getAssetList());
+                calculateActualLoss(varCalculator.getPortfolioPool().get("1"), varCalculator.getAssetPool());
                 System.out.println();
                 i++;
             }

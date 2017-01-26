@@ -11,6 +11,7 @@ public abstract class Portfolio {
     private String ID;
     private Map<String, Integer> currentShares;
     private Map<String, Integer> previousShares;
+    private double totalPortfolioValue;
 
     public Portfolio() {
         currentShares = new HashMap<>();
@@ -61,5 +62,23 @@ public abstract class Portfolio {
         if (previousShares.get(symbol) != null)
             return previousShares.get(symbol);
         return 0;
+    }
+
+    public double getTotalPortfolioValue() {
+        return totalPortfolioValue;
+    }
+
+    public void updatePortfolioValue(Event event, double previousPrice){
+        String symbol = event.getSymbol();
+        //first event for the portfolio
+        if(Double.compare(totalPortfolioValue, 0.0) == 0){
+            totalPortfolioValue = event.getPrice() * getCurrentSharesCount(symbol);
+        }else{  //portfolio already have data
+            int previousShares = getPreviousSharesCount(symbol);
+            totalPortfolioValue -= previousPrice * previousShares;
+
+            int currentShares = getCurrentSharesCount(symbol);
+            totalPortfolioValue += currentShares * event.getPrice();
+        }
     }
 }

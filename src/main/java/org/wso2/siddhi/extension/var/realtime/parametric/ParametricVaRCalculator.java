@@ -39,7 +39,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
     @Override
     public Double processData(Portfolio portfolio, Event event) {
 
-        Asset asset = getAssetList().get(event.getSymbol());
+        Asset asset = getAssetPool().get(event.getSymbol());
 
         //for parametric simulation there should be at least one return value
         //TODO check > 0 condition
@@ -112,7 +112,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
         Iterator itr = keys.iterator();
         while (itr.hasNext()) {
             symbol = itr.next();
-            temp = getAssetList().get(symbol);
+            temp = getAssetPool().get(symbol);
             weighageMatrix[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentSharesCount((String)
                     symbol);
             portfolioValue = portfolioValue + weighageMatrix[0][i];
@@ -136,7 +136,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
         int i = 0;
         Iterator itr = keys.iterator();
         while (itr.hasNext()) {
-            mean = getAssetList().get(itr.next()).getMean();
+            mean = getAssetPool().get(itr.next()).getMean();
             meanMatrix[0][i] = mean;
             i++;
         }
@@ -147,9 +147,9 @@ public class ParametricVaRCalculator extends VaRCalculator {
      * @param symbol
      */
     private void updateExcessReturnList(String symbol) {
-        ParametricAsset asset = (ParametricAsset) getAssetList().get(symbol);
+        ParametricAsset asset = (ParametricAsset) getAssetPool().get(symbol);
         double[] returnValues = asset.getReturnValues();
-        double mean = getAssetList().get(symbol).getMean();
+        double mean = getAssetPool().get(symbol).getMean();
         double[] excessReturns = new double[returnValues.length];
         for (int i = 0; i < returnValues.length; i++) {
             excessReturns[i] = returnValues[i] - mean;
@@ -161,14 +161,14 @@ public class ParametricVaRCalculator extends VaRCalculator {
      * @param symbol
      */
     private void updateCovarianceTable(String symbol) {
-        Set<String> keys = getAssetList().keySet();
-        String symbols[] = keys.toArray(new String[getAssetList().size()]);
-        double[] mainExcessReturns = ((ParametricAsset) getAssetList().get(symbol)).getExcessReturns();
+        Set<String> keys = getAssetPool().keySet();
+        String symbols[] = keys.toArray(new String[getAssetPool().size()]);
+        double[] mainExcessReturns = ((ParametricAsset) getAssetPool().get(symbol)).getExcessReturns();
         int min;
         double covariance;
         for (int i = 0; i < symbols.length; i++) {
             covariance = 0.0;
-            double[] tempExcessReturns = ((ParametricAsset) getAssetList().get(symbols[i])).getExcessReturns();
+            double[] tempExcessReturns = ((ParametricAsset) getAssetPool().get(symbols[i])).getExcessReturns();
             if (mainExcessReturns.length > tempExcessReturns.length)
                 min = tempExcessReturns.length;
             else

@@ -48,7 +48,7 @@ public class MonteCarloVarCalculator extends VaRCalculator {
         double[] finalPortfolioValuesBeforeAssetUpdate;
         String symbol = event.getSymbol();
 
-        tempAsset = (MonteCarloAsset) getAssetList().get(symbol);
+        tempAsset = (MonteCarloAsset) getAssetPool().get(symbol);
         historicalReturnValueList = tempAsset.getReturnValues();
         if (historicalReturnValueList != null && historicalReturnValueList.length > 0) {
             /**
@@ -163,7 +163,7 @@ public class MonteCarloVarCalculator extends VaRCalculator {
         MonteCarloAsset tempAsset;
         double[] historicalReturnValueList;
         double[] generatedTerminalStockValues;
-        tempAsset = (MonteCarloAsset) getAssetList().get(symbol);
+        tempAsset = (MonteCarloAsset) getAssetPool().get(symbol);
         historicalReturnValueList = tempAsset.getReturnValues();
         MonteCarloSimulation calculatorReference = new MonteCarloSimulation();
         MonteCarloNativeSimulation calcNativeReference = new MonteCarloNativeSimulation();
