@@ -24,8 +24,8 @@ import java.util.List;
  * Created by dilip on 30/06/16.
  */
 public class ParametricVaRStreamProcessor extends StreamProcessor {
-    private int batchSize = 251;                             // Maximum # of events, used for regression calculation
-    private double confidenceInterval = 0.95;                // Confidence Interval
+    private int batchSize = 251;                  // Maximum # of events, used for var calculation
+    private double confidenceInterval = 0.95;
     private VaRCalculator varCalculator = null;
 
     /**
@@ -43,13 +43,12 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
                 //get the symbol and price attributes from the stream to process
                 Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
                 for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
-                    inputData[i] = attributeExpressionExecutors[i + 2].execute(complexEvent);
+                    inputData[i] = attributeExpressionExecutors[i].execute(complexEvent);
                 }
 
                 Object outputData[] = new Object[1];
                 outputData[0] = varCalculator.calculateValueAtRisk(inputData);
 
-                // Skip processing if user has specified calculation interval
                 if (outputData[0] == null) { //if there is no output
                     streamEventChunk.remove();
                 } else {    //if there is an output, publish it to the output stream
@@ -97,21 +96,35 @@ public class ParametricVaRStreamProcessor extends StreamProcessor {
         return attributes;
     }
 
+    /**
+     *
+     */
     @Override
     public void start() {
 
     }
 
+    /**
+     *
+     */
     @Override
     public void stop() {
 
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public Object[] currentState() {
         return new Object[0];
     }
 
+    /**
+     *
+     * @param state the stateful objects of the element as an array on
+     */
     @Override
     public void restoreState(Object[] state) {
 

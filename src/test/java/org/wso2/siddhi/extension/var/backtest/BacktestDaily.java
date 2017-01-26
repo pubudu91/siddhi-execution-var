@@ -64,7 +64,7 @@ public class BacktestDaily {
                     Double calculatedVar = (Double) jsonObject.get(PORTFOLIO_KEY);  // hardcoded for portfolio ID 1
                     System.out.print("CV : " + calculatedVar);
                     calculatedVarList.add(calculatedVar);                           // should filter
-                    calculateActualLoss(varCalculator.getPortfolioList().get("1"), varCalculator.getAssetList());
+                    calculateActualLoss(varCalculator.getPortfolioPool().get("1"), varCalculator.getAssetPool());
                     System.out.println();
                 } else {
                     varCalculator.calculateValueAtRisk(list.get(i));

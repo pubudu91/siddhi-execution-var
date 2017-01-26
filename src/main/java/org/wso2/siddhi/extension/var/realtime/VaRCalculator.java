@@ -116,7 +116,6 @@ public abstract class VaRCalculator {
         int shares = 0;
         String symbol = data[RealTimeVaRConstants.SYMBOL_INDEX].toString();
         double price = ((Double) data[RealTimeVaRConstants.PRICE_INDEX]);
-
         if (data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX] != null && data[RealTimeVaRConstants.SHARES_INDEX] != null) {
             portfolioID = data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].toString();
             shares = (Integer) data[RealTimeVaRConstants.SHARES_INDEX];
