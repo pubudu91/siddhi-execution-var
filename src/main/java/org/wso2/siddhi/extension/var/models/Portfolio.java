@@ -42,14 +42,6 @@ public abstract class Portfolio {
         currentShares.put(symbol, shares);
     }
 
-    public void removeAsset(String symbol) {
-        currentShares.remove(symbol);
-    }
-
-    public int getAssetsSize() {
-        return currentShares.size();
-    }
-
     public Set<String> getAssetListKeySet() {
         return currentShares.keySet();
     }
