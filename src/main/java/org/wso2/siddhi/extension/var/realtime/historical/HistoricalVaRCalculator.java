@@ -5,7 +5,6 @@ import org.wso2.siddhi.extension.var.models.HistoricalAsset;
 import org.wso2.siddhi.extension.var.models.HistoricalPortfolio;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
-import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 
 /**
  * Created by dilini92 on 6/26/16.
@@ -60,7 +59,7 @@ public class HistoricalVaRCalculator extends VaRCalculator {
     }
 
     /**
-     * simulation the changed asset once
+     * simulate the changed asset once
      *
      * @param symbol
      */

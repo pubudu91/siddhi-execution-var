@@ -25,7 +25,6 @@ public abstract class VaRCalculator {
         this.confidenceInterval = confidenceInterval;
         this.batchSize = batchSize;
 
-        //ensures that there will be only one instance of each
         portfolioPool = new HashMap<>();
         assetPool = new HashMap<>();
     }
@@ -49,7 +48,7 @@ public abstract class VaRCalculator {
      * @param price
      * @return update the asset pool when an event comes from the stock price stream
      */
-    private void updateAssetPool(String symbol, double price) {       //double check protected access
+    private void updateAssetPool(String symbol, double price) {
         double priceBeforeLastPrice;
         Asset asset = assetPool.get(symbol);
         if (asset == null) {
@@ -75,8 +74,7 @@ public abstract class VaRCalculator {
      * @param shares
      * @param symbol
      */
-    private void updatePortfolioPool(String portfolioID, int shares, String symbol) {       //double check
-        // protected access
+    private void updatePortfolioPool(String portfolioID, int shares, String symbol) {
         Portfolio portfolio = portfolioPool.get(portfolioID);
 
         if (portfolio == null) {//first time for the portfolio
@@ -88,7 +86,6 @@ public abstract class VaRCalculator {
             portfolio.setCurrentSharesCount(symbol, shares);
         } else {//portfolio exists, asset within portfolio exists
             int currentShares = portfolio.getCurrentSharesCount(symbol);
-            //portfolio.setPreviousSharesCount(symbol, currentShares);
             portfolio.setCurrentSharesCount(symbol, shares + currentShares);
         }
     }
@@ -150,10 +147,6 @@ public abstract class VaRCalculator {
 
     public double getConfidenceInterval() {
         return confidenceInterval;
-    }
-
-    public int getBatchSize() {
-        return batchSize;
     }
 
     public Map<String, Portfolio> getPortfolioPool() {
