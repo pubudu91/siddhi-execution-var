@@ -13,7 +13,6 @@ import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
 public class HistoricalVaRCalculator extends VaRCalculator {
 
     /**
-     *
      * @param batchSize
      * @param ci
      */
@@ -32,22 +31,23 @@ public class HistoricalVaRCalculator extends VaRCalculator {
 
         HistoricalPortfolio historicalPortfolio = (HistoricalPortfolio) portfolio;
         String symbol = event.getSymbol();
-        HistoricalAsset asset = (HistoricalAsset)getAssetList().get(symbol);
-        if(asset.getNumberOfReturnValues() > 0) {
+        HistoricalAsset asset = (HistoricalAsset) getAssetList().get(symbol);
+        if (asset.getNumberOfReturnValues() > 0) {
             double var = historicalPortfolio.getHistoricalVarValue();
 
+            //TODO change method names
             double previousReturnValue = asset.getPreviousLossReturn();
             double currentReturnValue = asset.getCurrentLossReturn();
 
             int previousShares;
-            if(portfolio.getID().equals(event.getPortfolioID()))
+            if (portfolio.getID().equals(event.getPortfolioID()))
                 previousShares = historicalPortfolio.getPreviousSharesCount(symbol);
             else
                 previousShares = historicalPortfolio.getCurrentSharesCount(symbol);
 
             int currentShares = historicalPortfolio.getCurrentSharesCount(symbol);
 
-            double previousPrice = asset.getPriceBeforeLastPrice();
+            double previousPrice = asset.getPreviousStockPrice();
             double currentPrice = asset.getCurrentStockPrice();
 
             var -= previousReturnValue * previousPrice * previousShares;
@@ -61,9 +61,9 @@ public class HistoricalVaRCalculator extends VaRCalculator {
     }
 
     @Override
-    public void replaceAssetSimulation(String symbol) {
-        HistoricalAsset asset = (HistoricalAsset)getAssetList().get(symbol);
-        if(asset.getNumberOfReturnValues() > 0) {
+    public void simulateChangedAsset(String symbol) {
+        HistoricalAsset asset = (HistoricalAsset) getAssetList().get(symbol);
+        if (asset.getNumberOfReturnValues() > 0) {
             asset.setPreviousLossReturn(asset.getCurrentLossReturn());
             double currentReturnValue = asset.getPercentile((1 - getConfidenceInterval()) * 100);
             asset.setCurrentLossReturn(currentReturnValue);

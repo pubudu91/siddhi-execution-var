@@ -6,6 +6,7 @@ import org.wso2.siddhi.extension.var.models.Asset;
 import org.wso2.siddhi.extension.var.models.Portfolio;
 import org.wso2.siddhi.extension.var.realtime.historical.HistoricalVaRCalculator;
 import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
+import org.wso2.siddhi.extension.var.realtime.parametric.ParametricVaRCalculator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,9 +20,9 @@ public class BacktestRealTime {
     private static final int BATCH_SIZE = 251;
     private static final double VAR_CI = 0.95;
     private static final double BACKTEST_CI = 0.05;
-    private static final int NUMBER_OF_ASSETS = 25;
-    private static final int SAMPLE_SIZE = 20;
-    private static final int VAR_PER_SAMPLE = 500;
+    private static final int NUMBER_OF_ASSETS = 1;
+    private static final int SAMPLE_SIZE = 1;
+    private static final int VAR_PER_SAMPLE = 130;
     private static final String PORTFOLIO_KEY = "Portfolio 1";
     private ArrayList<Double> calculatedVarList;
     private ArrayList<Double> actualVarList;
@@ -39,8 +40,8 @@ public class BacktestRealTime {
 
     private void runBackTest() throws FileNotFoundException {
 
-        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-        //VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        //VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
         //VaRCalculator varCalculator = new MonteCarloSimulation().parallelSimulation(BATCH_SIZE, VAR_CI, 2500,100,0.01);
 
         ArrayList<Object[]> list = readBacktestData();
@@ -78,21 +79,22 @@ public class BacktestRealTime {
         System.out.println("Left End :" + leftEnd);
         System.out.println("Right End :" + rightEnd);
 
-        int numberOfExceptions;
-        int successCount = 0;
+        int numberOfExceptions = 0;
+//        int successCount = 0;
         for (int j = 0; j < SAMPLE_SIZE * NUMBER_OF_ASSETS; j++) {
-            numberOfExceptions = 0;
             for (int i = j * VAR_PER_SAMPLE; i < (j + 1) * VAR_PER_SAMPLE; i++) {
                 //System.out.println(actualVarList.get(i) + " " + calculatedVarList.get(i));
                 if (actualVarList.get(i) <= calculatedVarList.get(i))
                     numberOfExceptions++;
             }
             System.out.println("Sample Set : " + (j + 1) + " Exceptions : " + numberOfExceptions);
-            if (rightEnd >= numberOfExceptions && leftEnd <= numberOfExceptions) {
-                successCount++;
-            }
+
+//            if (rightEnd >= numberOfExceptions && leftEnd <= numberOfExceptions) {
+//                successCount++;
+//            }
         }
-        System.out.println("Success Percentage : " + (((double) successCount) / (SAMPLE_SIZE * NUMBER_OF_ASSETS)) * 100);
+        System.out.println("Failure Rate : " + (((double) numberOfExceptions) / (VAR_PER_SAMPLE)) * 100);
+
     }
 
     private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetList) {
@@ -111,18 +113,18 @@ public class BacktestRealTime {
             System.out.print(String.format("AV : %-15f", currentPortfolioValue - previousPortfolioValue));
         }
         previousPortfolioValue = currentPortfolioValue;
-        System.out.print(String.format("Portfolio Value : %-15f", currentPortfolioValue));
+        //System.out.print(String.format("Portfolio Value : %-15f", currentPortfolioValue));
     }
 
     public ArrayList<Object[]> readBacktestData() throws FileNotFoundException {
         ClassLoader classLoader = getClass().getClassLoader();
-        Scanner scan = new Scanner(new File(classLoader.getResource("BackTestDataReal.csv").getFile()));
+        Scanner scan = new Scanner(new File(classLoader.getResource("fb-1-23-copy.csv").getFile()));
         ArrayList<Object[]> list = new ArrayList();
         Object[] data;
         String[] split;
         while (scan.hasNext()) {
             data = new Object[4];
-            split = scan.nextLine().split(",");
+            split = scan.nextLine().split(";");
             if (split.length == 2) {
                 data[2] = split[0];
                 data[3] = Double.parseDouble(split[1]);

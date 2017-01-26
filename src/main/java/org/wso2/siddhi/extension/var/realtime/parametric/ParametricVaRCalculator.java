@@ -49,25 +49,26 @@ public class ParametricVaRCalculator extends VaRCalculator {
      */
     private Double incrementalParametricVaR(Portfolio portfolio) {
 
+        //variable names start with capitals
         /** create matrices from excess returns, means  and weight-age **/
-        RealMatrix VCVMatrix = new Array2DRowRealMatrix(getVCVMatrix(portfolio));
-        RealMatrix weightageMatrix = new Array2DRowRealMatrix(getWeightageMatrix(portfolio));
-        RealMatrix meanMatrix = new Array2DRowRealMatrix(getMeanMatrix(portfolio));
+        RealMatrix matrixVCV = new Array2DRowRealMatrix(getVCVMatrix(portfolio));
+        RealMatrix matrixWeightage = new Array2DRowRealMatrix(getWeightageMatrix(portfolio));
+        RealMatrix matrixMean = new Array2DRowRealMatrix(getMeanMatrix(portfolio));
 
         /** matrix multiplications using apache math library **/
-        RealMatrix PVMatrix = weightageMatrix.multiply(VCVMatrix).multiply(weightageMatrix.transpose());
-        RealMatrix PMMatrix = weightageMatrix.multiply(meanMatrix.transpose());
+        RealMatrix matrixPV = matrixWeightage.multiply(matrixVCV).multiply(matrixWeightage.transpose());
+        RealMatrix matrixPM = matrixWeightage.multiply(matrixMean.transpose());
 
-        double pv = PVMatrix.getData()[0][0];
-        if (pv == 0) {                  /** NormalDistribution throws an exception when ps = 0 **/
+        double pv = matrixPV.getData()[0][0];
+        if (pv == 0) {                  // NormalDistribution throws an exception when ps = 0
             return null;
         }
 
         double ps = Math.sqrt(pv);
-        double pm = PMMatrix.getData()[0][0];
+        double pm = matrixPM.getData()[0][0];
         NormalDistribution n = new NormalDistribution(pm, ps);
         double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
-        //System.out.print(portfolio.getID() + " : " + var * portfolioValue + " ");
+
         return var * portfolioValue;
     }
 
@@ -183,93 +184,9 @@ public class ParametricVaRCalculator extends VaRCalculator {
     }
 
     @Override
-    public void replaceAssetSimulation(String symbol) {
+    public void simulateChangedAsset(String symbol) {
         updateExcessReturnList(symbol);
         updateCovarianceTable(symbol);
     }
 
-//    public Object batchModeParametricVaR(Portfolio portfolio) {
-//        double priceReturns[][] = new double[getBatchSize() - 1][portfolio.getAssetsSize()];
-//        double portfolioValue = 0.0;
-//        double weightage[][] = new double[1][portfolio.getAssetsSize()];
-//        DescriptiveStatistics stat = new DescriptiveStatistics();
-//        stat.setWindowSize(getBatchSize() - 1);
-//
-//        Set<String> keys = portfolio.getAssetListKeySet();
-//        String symbols[] = keys.toArray(new String[portfolio.getAssetsSize()]);
-//        double[][] means = new double[1][portfolio.getAssetsSize()];
-//
-//        Asset asset;
-//        LinkedList<Double> returnList;
-//        int length;
-//
-//        /** fill priceReturns and calculate means **/
-//        for (int i = 0; i < symbols.length; i++) {
-//            asset = getAssetList().get(symbols[i]);
-//            returnList = asset.getLatestReturnValues();
-//            length = returnList.size();
-//            weightage[0][i] = asset.getCurrentStockPrice() * portfolio.getCurrentShare(symbols[i]);
-//            portfolioValue += weightage[0][i];
-//            for (int j = 0; j < length; j++) {
-//                priceReturns[j][i] = returnList.get(j);
-//                stat.addValue(priceReturns[j][i]);
-//            }
-//            if (length == 0)
-//                means[0][i] = 0;
-//            else
-//                means[0][i] = stat.getMean();
-//        }
-//
-//        /** calculate  weight-ages **/
-//        for (int i = 0; i < symbols.length; i++) {
-//            weightage[0][i] = weightage[0][i] / portfolioValue;
-//            //weightage[0][i] = 1.0/symbols.length; // for equal weight
-//        }
-//
-//        /** calculate excess returns **/
-//        double[][] excessReturns = new double[getBatchSize()- 1][portfolio.getAssetsSize()];
-//        for (int i = 0; i < portfolio.getAssetsSize(); i++) {
-//            for (int j = 0; j < getAssetList().get(symbols[i]).getReturnValues().getN(); j++) {
-//                excessReturns[j][i] = priceReturns[j][i] - means[0][i];
-//            }
-//        }
-//
-//        /** create matrices from excess returns, means  and weight-age **/
-//        RealMatrix returnMatrix = new Array2DRowRealMatrix(excessReturns);
-//        RealMatrix weightageMatrix = new Array2DRowRealMatrix(weightage);
-//        RealMatrix meanMatrix = new Array2DRowRealMatrix(means);
-//
-//        /** matrix multiplications using apache math library **/
-//        RealMatrix VCV = (returnMatrix.transpose().multiply(returnMatrix)).scalarMultiply(1.0 / (getBatchSize() - 2));
-//        RealMatrix PV = weightageMatrix.multiply(VCV).multiply(weightageMatrix.transpose());
-//        RealMatrix PM = weightageMatrix.multiply(meanMatrix.transpose());
-//
-//        double pv = PV.getData()[0][0];
-//        double pm = PM.getData()[0][0];
-//
-////      /** matrix multiplications using jama library **/
-////      Jama.Matrix returnMatrixJ = new Jama.Matrix(excessReturns);
-////      Jama.Matrix weightageMatrixJ = new Jama.Matrix(weightage);
-////      Jama.Matrix meanMatrixJ = new Jama.Matrix(means);
-////
-////      Jama.Matrix VCVJ = returnMatrixJ.transpose().times(returnMatrixJ).times(1.0 / (batchSize - 2));
-////      Jama.Matrix PVJ = (weightageMatrixJ.times(VCVJ).times(weightageMatrixJ.transpose()));
-////      Jama.Matrix PMJ = weightageMatrixJ.times(meanMatrixJ.transpose());
-////
-////      double pv = PVJ.get(0, 0);
-////      double pm = PMJ.get(0, 0);
-////      double ps = Math.sqrt(pv);
-//
-//        /** NormalDistribution throws an exception when ps = 0, this condition return pm when ps = 0 **/
-//        if (pv == 0) {
-//            //System.out.print(portfolio.getID() + " : " + pm + " ");
-//            return pm;
-//        }
-//
-//        double ps = Math.sqrt(pv);
-//        NormalDistribution n = new NormalDistribution(pm, ps);
-//        double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
-//        //System.out.print(portfolio.getID() + " : " + var * portfolioValue + " ");
-//        return var * portfolioValue;
-//    }
 }

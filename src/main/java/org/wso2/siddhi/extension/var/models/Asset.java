@@ -31,7 +31,7 @@ public class Asset {
         returnValueSet.addValue(value);
     }
 
-    public double getPriceBeforeLastPrice() {
+    public double getPreviousStockPrice() {
         return priceBeforeLastPrice;
     }
 

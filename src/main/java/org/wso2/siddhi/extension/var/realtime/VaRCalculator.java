@@ -75,7 +75,7 @@ public abstract class VaRCalculator {
      * @param shares
      * @param symbol
      */
-    protected void updatePortfolioPool(String portfolioID, int shares, String symbol) {       //double check
+    private void updatePortfolioPool(String portfolioID, int shares, String symbol) {       //double check
         // protected access
         Portfolio portfolio = portfolioList.get(portfolioID);
 
@@ -88,7 +88,7 @@ public abstract class VaRCalculator {
             portfolio.setCurrentSharesCount(symbol, shares);
         } else {//portfolio exists, asset within portfolio exists
             int currentShares = portfolio.getCurrentSharesCount(symbol);
-            portfolio.setPreviousSharesCount(symbol, currentShares);
+            //portfolio.setPreviousSharesCount(symbol, currentShares);
             portfolio.setCurrentSharesCount(symbol, shares + currentShares);
         }
     }
@@ -98,8 +98,7 @@ public abstract class VaRCalculator {
      * @param portfolio
      * @return
      */
-    //TODO - remove event object if not required
-    protected abstract Double processData(Portfolio portfolio, Event event);
+    public abstract Double processData(Portfolio portfolio, Event event);
 
     /**
      * @param data
@@ -122,7 +121,7 @@ public abstract class VaRCalculator {
 
         Event event = new Event(portfolioID, shares, symbol, price);
         addEvent(event);
-        replaceAssetSimulation(symbol);
+        simulateChangedAsset(symbol);
 
         portfolioList.forEach((id, portfolio) -> {
             Integer sharesCount = portfolio.getCurrentSharesCount(symbol);
@@ -132,6 +131,7 @@ public abstract class VaRCalculator {
                     result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var.doubleValue());
                 }
             }
+            portfolio.setPreviousSharesCount(symbol, portfolio.getCurrentSharesCount(symbol));
         });
 
         //if no var has been calculated
@@ -141,7 +141,7 @@ public abstract class VaRCalculator {
         return result.toString();
     }
 
-    public abstract void replaceAssetSimulation(String symbol);
+    public abstract void simulateChangedAsset(String symbol);
 
     public String getType() {
         return type;
