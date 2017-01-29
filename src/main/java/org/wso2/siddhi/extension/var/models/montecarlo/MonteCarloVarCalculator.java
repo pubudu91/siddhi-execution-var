@@ -1,11 +1,11 @@
-package org.wso2.siddhi.extension.var.realtime.montecarlo;
+package org.wso2.siddhi.extension.var.models.montecarlo;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.wso2.siddhi.extension.var.models.Event;
-import org.wso2.siddhi.extension.var.models.MonteCarloAsset;
-import org.wso2.siddhi.extension.var.models.MonteCarloPortfolio;
-import org.wso2.siddhi.extension.var.models.Portfolio;
-import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
+import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.siddhi.extension.var.models.util.asset.MonteCarloAsset;
+import org.wso2.siddhi.extension.var.models.util.portfolio.MonteCarloPortfolio;
+import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
+import org.wso2.siddhi.extension.var.models.VaRCalculator;
 
 /**
  * Created by flash on 6/29/16.

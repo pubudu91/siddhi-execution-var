@@ -11,11 +11,13 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
-import org.wso2.siddhi.extension.var.realtime.historical.HistoricalVaRCalculator;
-import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
+import org.wso2.siddhi.extension.var.models.VaRCalculator;
+import org.wso2.siddhi.extension.var.models.historical.HistoricalVaRCalculator;
+import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.siddhi.extension.var.models.util.RealTimeVaRConstants;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
+import org.wso2.siddhi.query.api.exception.ExecutionPlanValidationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,13 +43,29 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
                 //get the portfolioID,symbol,shares and price attributes from the stream to process
-                Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
-                for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
-                    inputData[i] = attributeExpressionExecutors[i].execute(complexEvent);
+                Event event = new Event();
+
+                //Portfolio ID
+                Object portfolioID;
+                if((portfolioID = attributeExpressionExecutors[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].execute
+                        (complexEvent)) != null) {
+                    event.setPortfolioID(portfolioID.toString());
                 }
+                //Quantity
+                Object quantity;
+                if((quantity = attributeExpressionExecutors[RealTimeVaRConstants.QUANTITY_INDEX].execute
+                        (complexEvent)) != null) {
+                    event.setQuantity((Integer) quantity);
+                }
+                //Symbol
+                event.setSymbol(attributeExpressionExecutors[RealTimeVaRConstants.SYMBOL_INDEX].execute(complexEvent)
+                        .toString());
+                //Price
+                event.setPrice((Double) attributeExpressionExecutors[RealTimeVaRConstants.PRICE_INDEX].execute
+                        (complexEvent));
 
                 Object outputData[] = new Object[1];
-                outputData[0] = varCalculator.calculateValueAtRisk(inputData);
+                outputData[0] = varCalculator.calculateValueAtRisk(event);
 
                 if (outputData[0] == null) { //if there is no output
                     streamEventChunk.remove();
@@ -69,20 +87,54 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
     protected List<Attribute> init(AbstractDefinition inputDefinition,
                                    ExpressionExecutor[] attributeExpressionExecutors,
                                    ExecutionPlanContext executionPlanContext) {
-        // Capture constant inputs
+        // Capture batch size
         if (attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX] instanceof ConstantExpressionExecutor) {
-            try {
+            if (attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX].execute(null) instanceof Integer) {
                 batchSize =
                         ((Integer) attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX].execute(null));
-            } catch (ClassCastException c) {
+            } else {
                 throw new ExecutionPlanCreationException("Batch size should be an integer");
             }
-            try {
+        } else {
+            throw new ExecutionPlanValidationException("Dynamic batch size values are not supported. Batch size " +
+                    "should be a constant.");
+        }
+
+        // Capture confidence level
+        if (attributeExpressionExecutors[RealTimeVaRConstants.CI_INDEX] instanceof ConstantExpressionExecutor) {
+            if (attributeExpressionExecutors[RealTimeVaRConstants.CI_INDEX].execute(null) instanceof Double) {
                 confidenceInterval =
                         ((Double) attributeExpressionExecutors[RealTimeVaRConstants.CI_INDEX].execute(null));
-            } catch (ClassCastException c) {
+            } else {
                 throw new ExecutionPlanCreationException("Confidence interval should be a double value between 0 and 1");
             }
+        } else {
+            throw new ExecutionPlanValidationException("Dynamic confidence interval values are not supported. " +
+                    "Confidence interval should be a constant");
+        }
+
+        //validate portfolioID
+        if (!(RealTimeVaRConstants.STRING.equals(attributeExpressionExecutors[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].
+                getReturnType().toString()))) {
+            throw new ExecutionPlanValidationException("Portfolio ID should be a String value");
+        }
+
+        //validate asset quantity
+        if (!(RealTimeVaRConstants.INTEGER.equals(attributeExpressionExecutors[RealTimeVaRConstants.QUANTITY_INDEX]
+                .getReturnType().toString()))) {
+            throw new ExecutionPlanValidationException("Quantity should be a integer value");
+        }
+
+        //validate asset symbol
+        if (!(RealTimeVaRConstants.STRING.equals(attributeExpressionExecutors[RealTimeVaRConstants.SYMBOL_INDEX]
+                .getReturnType().toString()))) {
+            throw new ExecutionPlanValidationException("Symbol should be a String value");
+        }
+
+        //validate price
+        if (!(RealTimeVaRConstants.DOUBLE.equals(attributeExpressionExecutors[RealTimeVaRConstants.PRICE_INDEX]
+                .getReturnType().toString()))) {
+            throw new ExecutionPlanValidationException("Price should be a double value");
         }
 
         // set the var calculator

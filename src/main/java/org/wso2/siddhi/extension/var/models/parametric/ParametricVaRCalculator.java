@@ -1,16 +1,18 @@
-package org.wso2.siddhi.extension.var.realtime.parametric;
+package org.wso2.siddhi.extension.var.models.parametric;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.wso2.siddhi.extension.var.models.*;
 
 import java.util.*;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.HashBasedTable;
-import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
-import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
+import org.wso2.siddhi.extension.var.models.VaRCalculator;
+import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.siddhi.extension.var.models.util.asset.Asset;
+import org.wso2.siddhi.extension.var.models.util.asset.ParametricAsset;
+import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
 
 //TODO check direct double comparison
 

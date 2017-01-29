@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.realtime.montecarlo;
+package org.wso2.siddhi.extension.var.models.montecarlo;
 
 
 /**

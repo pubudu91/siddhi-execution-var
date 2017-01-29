@@ -1,10 +1,13 @@
-package org.wso2.siddhi.extension.var.realtime.historical;
+package org.wso2.siddhi.extension.var.models.historical;
 
-import org.wso2.siddhi.extension.var.models.Event;
-import org.wso2.siddhi.extension.var.models.HistoricalAsset;
-import org.wso2.siddhi.extension.var.models.HistoricalPortfolio;
-import org.wso2.siddhi.extension.var.models.Portfolio;
-import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
+import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.siddhi.extension.var.models.util.asset.Asset;
+import org.wso2.siddhi.extension.var.models.util.asset.HistoricalAsset;
+import org.wso2.siddhi.extension.var.models.util.portfolio.HistoricalPortfolio;
+import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
+import org.wso2.siddhi.extension.var.models.VaRCalculator;
+
+import java.util.Map;
 
 /**
  * Created by dilini92 on 6/26/16.
@@ -39,17 +42,17 @@ public class HistoricalVaRCalculator extends VaRCalculator {
             double previousReturnValue = asset.getPreviousReturnValue();
             double currentReturnValue = asset.getCurrentReturnValue();
 
-            int previousShares = historicalPortfolio.getPreviousSharesCount(symbol);
-            int currentShares = historicalPortfolio.getCurrentSharesCount(symbol);
+            int previousAssetQuantities = historicalPortfolio.getPreviousAssetQuantities(symbol);
+            int currentAssetQuantities = historicalPortfolio.getCurrentAssetQuantities(symbol);
 
             double previousPrice = asset.getPreviousStockPrice();
             double currentPrice = asset.getCurrentStockPrice();
 
             //remove the contribution of the asset before the price was changed
-            var -= previousReturnValue * previousPrice * previousShares;
+            var -= previousReturnValue * previousPrice * previousAssetQuantities;
 
             //add the new contribution of the asset after the price changed.
-            var += currentReturnValue * currentPrice * currentShares;
+            var += currentReturnValue * currentPrice * currentAssetQuantities;
 
             historicalPortfolio.setHistoricalVarValue(var);
 
@@ -71,5 +74,15 @@ public class HistoricalVaRCalculator extends VaRCalculator {
             double currentReturnValue = asset.getPercentile((1 - getConfidenceInterval()) * 100);
             asset.setCurrentReturnValue(currentReturnValue);
         }
+    }
+
+    @Override
+    public Portfolio createPortfolio(String ID, Map<String, Integer> assets) {
+        return new HistoricalPortfolio(ID, assets);
+    }
+
+    @Override
+    public Asset createAsset(int windowSize) {
+        return new HistoricalAsset(windowSize);
     }
 }
