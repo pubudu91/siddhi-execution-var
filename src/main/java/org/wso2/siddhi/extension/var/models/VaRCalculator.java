@@ -134,7 +134,6 @@ public abstract class VaRCalculator {
         //if no var has been calculated
         if (result.length() == 0)
             return null;
-
         return result.toString();
     }
 
@@ -147,6 +146,8 @@ public abstract class VaRCalculator {
     public double getConfidenceInterval() {
         return confidenceInterval;
     }
+
+    public int getBatchSize() {return batchSize;}
 
     public Map<String, Portfolio> getPortfolioPool() {
         return portfolioPool;

@@ -18,10 +18,14 @@ import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
 
 /**
  * Created by dilip on 30/06/16.
+ * VaR  : value at risk
+ * PV   : portfolio variance
+ * PM   : portfolio mean
+ * VCV  : variance co-variance
+ * PSD  : portfolio standard deviation
  */
 public class ParametricVaRCalculator extends VaRCalculator {
     private final Table<String, String, Double> covarianceTable;
-    private double portfolioValue;
 
     /**
      * @param batchSize
@@ -35,118 +39,100 @@ public class ParametricVaRCalculator extends VaRCalculator {
 
     /**
      * @return the var of the portfolio
-     * Calculate the contribution of the changed asset to the portfolio and then adjust the previous VaR value
-     * using Historical data
+     * Calculate var for the given portfolio using updated covariances and means
      */
     @Override
     public Double processData(Portfolio portfolio, Event event) {
 
         Asset asset = getAssetPool().get(event.getSymbol());
+        if (asset.getNumberOfReturnValues() > 1) {
 
-        //for parametric simulation there should be at least one return value
-        //TODO check > 0 condition
-        if (asset.getNumberOfReturnValues() > 0) {
-            //TODO variable names start with capitals
-            /** create matrices from excess returns, means  and weight-age **/
-            RealMatrix matrixVCV = new Array2DRowRealMatrix(getVCVMatrix(portfolio));
-            RealMatrix matrixWeightage = new Array2DRowRealMatrix(getWeightageMatrix(portfolio));
-            RealMatrix matrixMean = new Array2DRowRealMatrix(getMeanMatrix(portfolio));
+            RealMatrix vcvMatrix = new Array2DRowRealMatrix(getVCVMatrix(portfolio));
+            RealMatrix weightageMatrix = new Array2DRowRealMatrix(getWeightageMatrix(portfolio));
+            RealMatrix meanMatrix = new Array2DRowRealMatrix(getMeanMatrix(portfolio));
 
-            /** matrix multiplications using apache math library **/
-            RealMatrix matrixPV = matrixWeightage.multiply(matrixVCV).multiply(matrixWeightage.transpose());
-            RealMatrix matrixPM = matrixWeightage.multiply(matrixMean.transpose());
+            RealMatrix pvMatrix = weightageMatrix.multiply(vcvMatrix).multiply(weightageMatrix.transpose());
+            RealMatrix pmMatrix = weightageMatrix.multiply(meanMatrix.transpose());
 
-            double pv = matrixPV.getData()[0][0];
-            /** NormalDistribution throws an exception when ps = 0 **/
-            if (pv == 0) {
+            double pv = pvMatrix.getData()[0][0];
+            double pm = pmMatrix.getData()[0][0];
+
+            if (pv == 0) { // a normal distribution cannot be defined when sd = 0
                 return null;
             }
 
-            double ps = Math.sqrt(pv);
+            double psd = Math.sqrt(pv);
 
-            double pm = matrixPM.getData()[0][0];
+            NormalDistribution normalDistribution = new NormalDistribution(pm, psd);
+            double zValue = normalDistribution.inverseCumulativeProbability(1 - getConfidenceInterval());
+            double var = zValue * portfolio.getTotalPortfolioValue();
 
-            NormalDistribution n = new NormalDistribution(pm, ps);
-
-            double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
-
-            return var * portfolioValue;
-
+            return var;
         }
-
         return null;
     }
 
     /**
      * @param portfolio
-     * @return
+     * @return Get VCV matrix for a given portfolio
      */
     private double[][] getVCVMatrix(Portfolio portfolio) {
         Set<String> keys = portfolio.getAssetListKeySet();
         int numberOfAssets = keys.size();
         String symbols[] = keys.toArray(new String[numberOfAssets]);
-        double[][] matrixVCV = new double[numberOfAssets][numberOfAssets];
+        double[][] vcvMatrix = new double[numberOfAssets][numberOfAssets];
         double covariance;
         for (int i = 0; i < symbols.length; i++) {
             for (int j = i; j < symbols.length; j++) {
                 covariance = covarianceTable.get(symbols[i], symbols[j]);
-                matrixVCV[i][j] = covariance;
+                vcvMatrix[i][j] = covariance;
                 if (i != j)
-                    matrixVCV[j][i] = covariance;
+                    vcvMatrix[j][i] = covariance;
             }
         }
-        return matrixVCV;
+        return vcvMatrix;
     }
 
     /**
      * @param portfolio
-     * @return
+     * @return Get weightage matrix for a given portfolio
      */
     private double[][] getWeightageMatrix(Portfolio portfolio) {
-
         Set<String> keys = portfolio.getAssetListKeySet();
         int numberOfAssets = keys.size();
-        double[][] weighageMatrix = new double[1][numberOfAssets];
-        double portfolioValue = 0.0;
+        double[][] weightageMatrix = new double[1][numberOfAssets];
         int i = 0;
         Asset temp;
-        Object symbol;
-        Iterator itr = keys.iterator();
+        String symbol;
+        Iterator<String> itr = keys.iterator();
         while (itr.hasNext()) {
             symbol = itr.next();
             temp = getAssetPool().get(symbol);
-            weighageMatrix[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentSharesCount((String)
-                    symbol);
-            portfolioValue = portfolioValue + weighageMatrix[0][i];
+            weightageMatrix[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities(symbol) /
+                    portfolio.getTotalPortfolioValue();
             i++;
         }
-        this.portfolioValue = portfolioValue;
-        for (int j = 0; j < numberOfAssets; j++) {
-            weighageMatrix[0][j] = weighageMatrix[0][j] / portfolioValue;
-        }
-        return weighageMatrix;
+        return weightageMatrix;
     }
 
     /**
      * @param portfolio
-     * @return
+     * @return Get mean matrix for a given portfolio
      */
     private double[][] getMeanMatrix(Portfolio portfolio) {
         Set<String> keys = portfolio.getAssetListKeySet();
         double[][] meanMatrix = new double[1][keys.size()];
-        Double mean;
         int i = 0;
-        Iterator itr = keys.iterator();
+        Iterator<String> itr = keys.iterator();
         while (itr.hasNext()) {
-            mean = getAssetPool().get(itr.next()).getMean();
-            meanMatrix[0][i] = mean;
+            meanMatrix[0][i] = getAssetPool().get(itr.next()).getMean();
             i++;
         }
         return meanMatrix;
     }
 
     /**
-     * @param symbol
+     * @param symbol Update excess returns based on latest event
      */
     private void updateExcessReturnList(String symbol) {
         ParametricAsset asset = (ParametricAsset) getAssetPool().get(symbol);
@@ -160,41 +146,54 @@ public class ParametricVaRCalculator extends VaRCalculator {
     }
 
     /**
-     * @param symbol
+     * @param symbol Update global co-variance table based on latest event
      */
     private void updateCovarianceTable(String symbol) {
         Set<String> keys = getAssetPool().keySet();
-        String symbols[] = keys.toArray(new String[getAssetPool().size()]);
         double[] mainExcessReturns = ((ParametricAsset) getAssetPool().get(symbol)).getExcessReturns();
         int min;
         double covariance;
-        for (int i = 0; i < symbols.length; i++) {
+        String tempSymbol;
+        Iterator<String> itr = keys.iterator();
+        while (itr.hasNext()) {
+            tempSymbol = itr.next();
             covariance = 0.0;
-            double[] tempExcessReturns = ((ParametricAsset) getAssetPool().get(symbols[i])).getExcessReturns();
+            double[] tempExcessReturns = ((ParametricAsset) getAssetPool().get(tempSymbol)).getExcessReturns();
             if (mainExcessReturns.length > tempExcessReturns.length)
                 min = tempExcessReturns.length;
             else
                 min = mainExcessReturns.length;
 
-            if (min > 1) {
-                for (int j = 0; j < min; j++) {
-                    covariance += mainExcessReturns[j] * tempExcessReturns[j];
-                }
-                covariance = covariance / (min - 1);
+            for (int j = 0; j < min; j++) {
+                covariance += mainExcessReturns[j] * tempExcessReturns[j];
             }
-            covarianceTable.put(symbol, symbols[i], covariance);
-            covarianceTable.put(symbols[i], symbol, covariance);
+            covariance = covariance / (getBatchSize() - 2);
+
+            covarianceTable.put(symbol, tempSymbol, covariance);
+            covarianceTable.put(tempSymbol, symbol, covariance);
         }
     }
 
     /**
-     *
-     * @param symbol
+     * @param symbol Update covariance table and excess returns based on latest event
      */
     @Override
     public void simulateChangedAsset(String symbol) {
         updateExcessReturnList(symbol);
         updateCovarianceTable(symbol);
     }
+
+    //TODO implement this methods
+    @Override
+    public Portfolio createPortfolio(String ID, Map<String, Integer> assets) {
+        return null;
+    }
+
+    //TODO implement this methods
+    @Override
+    public Asset createAsset(int windowSize) {
+        return null;
+    }
+
 
 }

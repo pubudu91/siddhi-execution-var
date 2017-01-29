@@ -35,7 +35,7 @@ public class HistoricalVaRCalculator extends VaRCalculator {
         String symbol = event.getSymbol();
         HistoricalAsset asset = (HistoricalAsset) getAssetPool().get(symbol);
 
-        //for historical simulation there should be at least one return value
+        //for historical simulate there should be at least one return value
         if (asset.getNumberOfReturnValues() > 0) {
             double var = historicalPortfolio.getHistoricalVarValue();
 

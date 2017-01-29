@@ -9,10 +9,10 @@ extern "C" {
 #endif
 /*
  * Class:     org_wso2_siddhi_extension_var_realtime_montecarlo_MonteCarloNativeSimulation
- * Method:    simulation
+ * Method:    simulate
  * Signature: (DDDDII)[D
  */
-JNIEXPORT jdoubleArray JNICALL Java_org_wso2_siddhi_extension_var_realtime_montecarlo_MonteCarloNativeSimulation_simulation
+JNIEXPORT jdoubleArray JNICALL Java_org_wso2_siddhi_extension_var_realtime_montecarlo_MonteCarloNativeSimulation_simulate
   (JNIEnv *, jobject, jdouble, jdouble, jdouble, jdouble, jint, jint);
 
 #ifdef __cplusplus

@@ -8,13 +8,12 @@ public class MonteCarloNativeSimulation {
 
     static {
         try {
-            System.load("/var/www/html/FYP/wso2das-3.1.0-SNAPSHOT/Native_Simulation.so");
+            System.load("/var/www/html/FYP/wso2das-3.1.0-SNAPSHOT/lib/Native_Simulation.so");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-
-    public native double[] simulation(double mean, double std, double timeSlice, double currentPrice,
-                                      int numberOfTrials, int calculationsPerDay);
+    public native double[] simulate(double mean, double std, double timeSlice, double currentPrice,
+                                    int numberOfTrials, int calculationsPerDay);
 }
