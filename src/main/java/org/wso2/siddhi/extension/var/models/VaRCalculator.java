@@ -139,7 +139,7 @@ public abstract class VaRCalculator {
 
     public abstract void simulateChangedAsset(String symbol);
 
-    public abstract Portfolio createPortfolio(String ID, Map<String, Integer> assets);
+    public abstract Portfolio createPortfolio(String id, Map<String, Integer> assets);
 
     public abstract Asset createAsset(int windowSize);
 

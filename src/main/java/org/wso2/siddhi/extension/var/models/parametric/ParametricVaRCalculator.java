@@ -12,6 +12,7 @@ import org.wso2.siddhi.extension.var.models.VaRCalculator;
 import org.wso2.siddhi.extension.var.models.util.Event;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
 import org.wso2.siddhi.extension.var.models.util.asset.ParametricAsset;
+import org.wso2.siddhi.extension.var.models.util.portfolio.ParametricPortfolio;
 import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
 
 //TODO check direct double comparison
@@ -183,16 +184,16 @@ public class ParametricVaRCalculator extends VaRCalculator {
         updateCovarianceTable(symbol);
     }
 
-    //TODO implement this methods
+    //TODO Check whether the implementation is correct
     @Override
-    public Portfolio createPortfolio(String ID, Map<String, Integer> assets) {
-        return null;
+    public Portfolio createPortfolio(String id, Map<String, Integer> assets) {
+        return new ParametricPortfolio(id, assets);
     }
 
-    //TODO implement this methods
+    //TODO Check whether the implementation is correct
     @Override
     public Asset createAsset(int windowSize) {
-        return null;
+        return new ParametricAsset(windowSize);
     }
 
 

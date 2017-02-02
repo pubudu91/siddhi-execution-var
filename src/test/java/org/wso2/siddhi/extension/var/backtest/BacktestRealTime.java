@@ -126,7 +126,7 @@ public class BacktestRealTime {
 
         while (scan.hasNext()) {
             event = new Event();
-            split = scan.nextLine().split(";");
+            split = scan.nextLine().split(",");
             if (split.length == 2) {
                 event.setSymbol(split[0]);
                 event.setPrice(Double.parseDouble(split[1]));

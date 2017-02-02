@@ -183,14 +183,14 @@ public class MonteCarloVarCalculator extends VaRCalculator {
 
     //TODO implement this methods
     @Override
-    public Portfolio createPortfolio(String ID, Map<String, Integer> assets) {
-        return null;
+    public Portfolio createPortfolio(String id, Map<String, Integer> assets) {
+        return new MonteCarloPortfolio(id, assets);
     }
 
     //TODO implement this methods
     @Override
     public Asset createAsset(int windowSize) {
-        return null;
+        return new MonteCarloAsset(windowSize);
     }
 
 }
