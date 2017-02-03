@@ -1,6 +1,8 @@
 package org.wso2.siddhi.extension.var.realtime.montecarlo;
 
 
+import org.apache.log4j.Logger;
+
 /**
  * Created by yellowflash on 11/23/16.
  */
@@ -8,9 +10,10 @@ public class MonteCarloNativeSimulation {
 
     static {
         try {
-            System.load("/var/www/html/FYP/wso2das-3.1.0-SNAPSHOT/lib/Native_Simulation.so");
+            System.load(System.getenv("JNI_LIB_HOME"));
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger log = Logger.getLogger(MonteCarloNativeSimulation.class);
+            log.info(e.getMessage());
         }
     }
 

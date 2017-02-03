@@ -39,8 +39,8 @@ public class MonteCarloVarCalculator extends VaRCalculator {
         double[] finalPortfolioValues = new double[horizontalSimulationsCount];
         MonteCarloAsset tempAsset;
         double[] historicalReturnValueList;
-        int currentSharesCount = 0;
-        int previousSharesCount = 0;
+        int currentShareQuantity = 0;
+        int previousShareQuantity = 0;
         double latestMarketValue = 0;
 
         double[] simulatedListBeforeAssetUpdate;
@@ -54,13 +54,13 @@ public class MonteCarloVarCalculator extends VaRCalculator {
             /**
              * get the latest number of shares
              */
-            currentSharesCount = monteCarloPortfolio.getCurrentSharesCount(symbol);
+            currentShareQuantity = monteCarloPortfolio.getCurrentSharesCount(symbol);
             /**
              * get the number of shares that particular asset hold for corresponding portfolio before change happens
              */
 
             if (monteCarloPortfolio.getCurrentSharesCount(symbol) >= 0) {
-                previousSharesCount = monteCarloPortfolio.getPreviousSharesCount(symbol);
+                previousShareQuantity = monteCarloPortfolio.getPreviousSharesCount(symbol);
             }
 
             /**
@@ -109,14 +109,14 @@ public class MonteCarloVarCalculator extends VaRCalculator {
                         /**
                          * unchangedSimulatedListCollection[i] = previousPortfolioMarketValue -
                          * (simulatedListBeforeAssetUpdate[i] *
-                         * previousSharesCount + finalPortfolioValuesBeforeAssetUpdate[i]);
+                         * previousShareQuantity + finalPortfolioValuesBeforeAssetUpdate[i]);
                          * finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
-                         * currentSharesCount +
+                         * currentShareQuantity +
                          * unchangedSimulatedListCollection[i]);
                          */
                         finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
-                                currentSharesCount + (previousPortfolioMarketValue -
-                                (simulatedListBeforeAssetUpdate[i] * previousSharesCount +
+                                currentShareQuantity + (previousPortfolioMarketValue -
+                                (simulatedListBeforeAssetUpdate[i] * previousShareQuantity +
                                         finalPortfolioValuesBeforeAssetUpdate[i])));
                     }
                 } else {
@@ -125,20 +125,20 @@ public class MonteCarloVarCalculator extends VaRCalculator {
                          * unchangedSimulatedListCollection[i] = previousPortfolioMarketValue -
                          * (finalPortfolioValuesBeforeAssetUpdate[i]);
                          * finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
-                         * currentSharesCount +
+                         * currentShareQuantity +
                          * unchangedSimulatedListCollection[i]);
                          */
 
                         finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
-                                currentSharesCount + (previousPortfolioMarketValue -
+                                currentShareQuantity + (previousPortfolioMarketValue -
                                 (finalPortfolioValuesBeforeAssetUpdate[i])));
                     }
                 }
             } else {
-                latestMarketValue = tempAsset.getCurrentStockPrice() * currentSharesCount;
+                latestMarketValue = tempAsset.getCurrentStockPrice() * currentShareQuantity;
                 for (int i = 0; i < horizontalSimulationsCount; i++) {
                     finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
-                            currentSharesCount);
+                            currentShareQuantity);
                 }
             }
             monteCarloPortfolio.setCurrentPortfolioValue(latestMarketValue);
