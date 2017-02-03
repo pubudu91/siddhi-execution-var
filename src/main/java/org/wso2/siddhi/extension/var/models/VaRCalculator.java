@@ -138,11 +138,12 @@ public abstract class VaRCalculator {
     }
 
     public Portfolio addPortfolio(String id, Portfolio portfolio) {
-        return portfolioPool.put(id, portfolio); // returns null if there wasn't an existing mapping for id. 
+        return portfolioPool.put(id, portfolio); // returns null if there wasn't an existing mapping for id.
     }
 
     public abstract void simulateChangedAsset(String symbol);
 
+    // TODO: Think about whether this method should add the newly created portfolio to the portfolio pool by default
     public abstract Portfolio createPortfolio(String id, Map<String, Integer> assets);
 
     public abstract Asset createAsset(int windowSize);
