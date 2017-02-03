@@ -60,7 +60,7 @@ public abstract class VaRCalculator {
         }
 
         previousPrice = asset.getCurrentStockPrice();
-        asset.setPreviousPrice(previousPrice);
+        asset.setPreviousStockPrice(previousPrice);
         asset.setCurrentStockPrice(price);
 
         //assume that all price values of assets cannot be zero or negative
