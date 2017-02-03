@@ -23,10 +23,7 @@ public class CustomDescriptiveStatistics extends DescriptiveStatistics {
 
     @Override
     public double getMean() {
-        if(getN()==0)
-            return Double.NaN;
-        else
-            return mean;
+        return mean;
     }
 
     @Override
