@@ -5,7 +5,6 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * Created by yellowflash on 2/3/17.
@@ -17,7 +16,6 @@ public class MonteCarloStandardSimulation {
     private DescriptiveStatistics stat = null;
     private double randomZValue = 0.0;
     public static double[] finalSimulatedValues;
-    Random rnd = new Random(1);
 
     public MonteCarloStandardSimulation() {
     }
@@ -26,16 +24,12 @@ public class MonteCarloStandardSimulation {
         MonteCarloStandardSimulation.finalSimulatedValues = new double[numberOfTrials];
     }
 
-    public double getRandomZValue() {
-        return randomZValue;
-    }
-
     /**
      * return a random Z value from thr probability Distribution
      *
      * @return
      */
-    protected double getRandomZVal() {
+    private double getRandomZVal() {
         randomZValue = this.getDistribution().inverseCumulativeProbability(Math.random());
         return randomZValue;
     }
@@ -46,7 +40,7 @@ public class MonteCarloStandardSimulation {
      * @param parameters
      * @return
      */
-    protected double getBrownianMotionOutput(Map<String, Double> parameters) {
+    public double getBrownianMotionOutput(Map<String, Double> parameters) {
 
         double drift = (parameters.get("distributionMean") - (parameters.get("standardDeviation") *
                 parameters.get("standardDeviation")) / 2) * parameters.get("timeSlice");
@@ -96,7 +90,7 @@ public class MonteCarloStandardSimulation {
      * @param historicalValues
      * @return
      */
-    protected DescriptiveStatistics getStat(double[] historicalValues) {
+    public DescriptiveStatistics getStat(double[] historicalValues) {
         this.stat = new DescriptiveStatistics(historicalValues);
         return this.stat;
     }
@@ -106,7 +100,7 @@ public class MonteCarloStandardSimulation {
      *
      * @return
      */
-    protected NormalDistribution getDistribution() {
+    public NormalDistribution getDistribution() {
         if (!(distribution instanceof NormalDistribution)) {
             this.distribution = new NormalDistribution();
         }

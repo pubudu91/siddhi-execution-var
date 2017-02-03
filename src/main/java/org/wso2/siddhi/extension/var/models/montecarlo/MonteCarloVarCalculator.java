@@ -208,7 +208,6 @@ public class MonteCarloVarCalculator extends VaRCalculator {
                         tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
                 tempAsset.setSimulatedList(generatedTerminalStockValues);
             }
-
         }
     }
 
