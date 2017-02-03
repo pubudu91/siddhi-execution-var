@@ -1,8 +1,6 @@
-package org.wso2.siddhi.extension.var.realtime.montecarlo;
+package org.wso2.siddhi.extension.var.models.montecarlo;
 
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by yellowflash on 1/24/17.

@@ -1,8 +1,4 @@
-package org.wso2.siddhi.extension.var.realtime.util;
-
-import org.wso2.siddhi.extension.var.realtime.historical.HistoricalVaRCalculator;
-import org.wso2.siddhi.extension.var.realtime.montecarlo.MonteCarloVarCalculator;
-import org.wso2.siddhi.extension.var.realtime.parametric.ParametricVaRCalculator;
+package org.wso2.siddhi.extension.var.models.util;
 
 /**
  * Created by dilini92 on 9/1/16.
@@ -11,9 +7,9 @@ public class RealTimeVaRConstants {
     public static String PORTFOLIO = "Portfolio ";
     public static int NUMBER_OF_PARAMETERS = 4;
 
-    public static final String HISTORICAL = "HistoricalVaRCalculator";
-    public static final String PARAMETRIC = "ParametricVaRCalculator";
-    public static final String MONTE_CARLO = "MonteCarloVarCalculator";
+    public static final String STRING = "STRING";
+    public static final String DOUBLE = "DOUBLE";
+    public static final String INTEGER = "INT";
 
     public static final String OUTPUT_NAME = "var";
 
@@ -21,7 +17,7 @@ public class RealTimeVaRConstants {
      * Array Indices
      */
     public static final int PORTFOLIO_ID_INDEX = 0;
-    public static final int SHARES_INDEX = 1;
+    public static final int QUANTITY_INDEX = 1;
     public static final int SYMBOL_INDEX = 2;
     public static final int PRICE_INDEX = 3;
     public static final int BATCH_SIZE_INDEX = 4;

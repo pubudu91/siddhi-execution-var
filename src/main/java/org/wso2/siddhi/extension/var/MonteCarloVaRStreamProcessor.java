@@ -11,9 +11,10 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.extension.var.realtime.montecarlo.MonteCarloVarCalculator;
-import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
-import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
+import org.wso2.siddhi.extension.var.models.VaRCalculator;
+import org.wso2.siddhi.extension.var.models.montecarlo.MonteCarloVarCalculator;
+import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.siddhi.extension.var.models.util.RealTimeVaRConstants;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 
@@ -38,14 +39,31 @@ public class MonteCarloVaRStreamProcessor extends StreamProcessor {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
-                Object inputData[] = new Object[RealTimeVaRConstants.NUMBER_OF_PARAMETERS];
                 //get the portfolioID,symbol,shares and price attributes from the stream to process
-                for (int i = 0; i < RealTimeVaRConstants.NUMBER_OF_PARAMETERS; i++) {
-                    inputData[i] = attributeExpressionExecutors[i].execute(complexEvent);
+                Event event = new Event();
+
+                //Portfolio ID
+                Object portfolioID;
+                if((portfolioID = attributeExpressionExecutors[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].execute
+                        (complexEvent)) != null) {
+                    event.setPortfolioID(portfolioID.toString());
                 }
+                //Quantity
+                Object quantity;
+                if((quantity = attributeExpressionExecutors[RealTimeVaRConstants.QUANTITY_INDEX].execute
+                        (complexEvent)) != null) {
+                    event.setQuantity((Integer) quantity);
+                }
+                //Symbol
+                event.setSymbol(attributeExpressionExecutors[RealTimeVaRConstants.SYMBOL_INDEX].execute(complexEvent)
+                        .toString());
+                //Price
+                event.setPrice((Double) attributeExpressionExecutors[RealTimeVaRConstants.PRICE_INDEX].execute
+                        (complexEvent));
 
                 Object outputData[] = new Object[1];
-                outputData[0] = varCalculator.calculateValueAtRisk(inputData);
+                outputData[0] = varCalculator.calculateValueAtRisk(event);
+
                 if (outputData[0] == null) {    //if there is no output
                     streamEventChunk.remove();
                 } else {    //if there is an output, publish it to the output stream

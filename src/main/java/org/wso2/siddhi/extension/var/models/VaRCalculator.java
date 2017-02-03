@@ -1,8 +1,10 @@
-package org.wso2.siddhi.extension.var.realtime;
+package org.wso2.siddhi.extension.var.models;
 
 import org.json.JSONObject;
-import org.wso2.siddhi.extension.var.models.*;
-import org.wso2.siddhi.extension.var.realtime.util.RealTimeVaRConstants;
+import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.siddhi.extension.var.models.util.RealTimeVaRConstants;
+import org.wso2.siddhi.extension.var.models.util.asset.Asset;
+import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +38,9 @@ public abstract class VaRCalculator {
     public void addEvent(Event event) {
 
         //update portfolio pool
-        if (event.getPortfolioID() != null)
-            updatePortfolioPool(event.getPortfolioID(), event.getShares(), event.getSymbol());
+        if (event.getPortfolioID() != null) {
+            updatePortfolioPool(event.getPortfolioID(), event.getQuantity(), event.getSymbol());
+        }
 
         //update asset pool
         updateAssetPool(event.getSymbol(), event.getPrice());
@@ -49,20 +52,20 @@ public abstract class VaRCalculator {
      * @return update the asset pool when an event comes from the stock price stream
      */
     private void updateAssetPool(String symbol, double price) {
-        double priceBeforeLastPrice;
+        double previousPrice;
         Asset asset = assetPool.get(symbol);
         if (asset == null) {
-            assetPool.put(symbol, AssetFactory.getAsset(this.getClass().getSimpleName(), batchSize));
+            assetPool.put(symbol, createAsset(batchSize));
             asset = assetPool.get(symbol);
         }
 
-        priceBeforeLastPrice = asset.getCurrentStockPrice();
-        asset.setPriceBeforeLastPrice(priceBeforeLastPrice);
+        previousPrice = asset.getCurrentStockPrice();
+        asset.setPreviousPrice(previousPrice);
         asset.setCurrentStockPrice(price);
 
         //assume that all price values of assets cannot be zero or negative
-        if (priceBeforeLastPrice > 0) {
-            double value = Math.log(price / priceBeforeLastPrice);
+        if (previousPrice > 0) {
+            double value = Math.log(price / previousPrice);
             asset.addReturnValue(value);
         }
     }
@@ -80,13 +83,13 @@ public abstract class VaRCalculator {
         if (portfolio == null) {//first time for the portfolio
             Map<String, Integer> assets = new HashMap<>();
             assets.put(symbol, shares);
-            portfolio = PortfolioFactory.getPortfolio(this.getClass().getSimpleName(), portfolioID, assets);
+            portfolio = createPortfolio(portfolioID, assets);
             portfolioPool.put(portfolioID, portfolio);
-        } else if (portfolio.getCurrentSharesCount(symbol) == null) {//first time for the asset within portfolio
-            portfolio.setCurrentSharesCount(symbol, shares);
+        } else if (portfolio.getCurrentAssetQuantities(symbol) == null) {//first time for the asset within portfolio
+            portfolio.setCurrentAssetQuantities(symbol, shares);
         } else {//portfolio exists, asset within portfolio exists
-            int currentShares = portfolio.getCurrentSharesCount(symbol);
-            portfolio.setCurrentSharesCount(symbol, shares + currentShares);
+            int currentShares = portfolio.getCurrentAssetQuantities(symbol);
+            portfolio.setCurrentAssetQuantities(symbol, shares + currentShares);
         }
     }
 
@@ -98,29 +101,21 @@ public abstract class VaRCalculator {
     public abstract Double processData(Portfolio portfolio, Event event);
 
     /**
-     * @param data
+     *
+     * @param event
      * @return
      */
-    public Object calculateValueAtRisk(Object data[]) {
+    public Object calculateValueAtRisk(Event event) {
 
         JSONObject result = new JSONObject();
 
-        //initialize variables from the streams
-        String portfolioID = null;
-        int shares = 0;
-        String symbol = data[RealTimeVaRConstants.SYMBOL_INDEX].toString();
-        double price = ((Double) data[RealTimeVaRConstants.PRICE_INDEX]);
-        if (data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX] != null && data[RealTimeVaRConstants.SHARES_INDEX] != null) {
-            portfolioID = data[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].toString();
-            shares = (Integer) data[RealTimeVaRConstants.SHARES_INDEX];
-        }
+        String symbol = event.getSymbol();
 
-        Event event = new Event(portfolioID, shares, symbol, price);
         addEvent(event);
         simulateChangedAsset(symbol);
 
         portfolioPool.forEach((id, portfolio) -> {
-            Integer sharesCount = portfolio.getCurrentSharesCount(symbol);
+            Integer sharesCount = portfolio.getCurrentAssetQuantities(symbol);
             if (sharesCount != null) {
 
                 //update total portfolio value
@@ -133,7 +128,7 @@ public abstract class VaRCalculator {
                     result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var.doubleValue());
                 }
             }
-            portfolio.setPreviousSharesCount(symbol, portfolio.getCurrentSharesCount(symbol));
+            portfolio.setPreviousAssetQuantities(symbol, portfolio.getCurrentAssetQuantities(symbol));
         });
 
         //if no var has been calculated
@@ -142,7 +137,16 @@ public abstract class VaRCalculator {
         return result.toString();
     }
 
+    public Portfolio addPortfolio(String id, Portfolio portfolio) {
+        return portfolioPool.put(id, portfolio); // returns null if there wasn't an existing mapping for id.
+    }
+
     public abstract void simulateChangedAsset(String symbol);
+
+    // TODO: Think about whether this method should add the newly created portfolio to the portfolio pool by default
+    public abstract Portfolio createPortfolio(String id, Map<String, Integer> assets);
+
+    public abstract Asset createAsset(int windowSize);
 
     public double getConfidenceInterval() {
         return confidenceInterval;

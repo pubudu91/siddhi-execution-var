@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.realtime.util;
+package org.wso2.siddhi.extension.var.models.util;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 

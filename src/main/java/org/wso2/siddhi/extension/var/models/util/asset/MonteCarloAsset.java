@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.models;
+package org.wso2.siddhi.extension.var.models.util.asset;
 
 /**
  * Created by dilini92 on 1/9/17.

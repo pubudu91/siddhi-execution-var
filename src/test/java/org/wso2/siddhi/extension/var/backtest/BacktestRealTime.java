@@ -20,9 +20,9 @@ public class BacktestRealTime {
     private static final int BATCH_SIZE = 251;
     private static final double VAR_CI = 0.95;
     private static final double BACKTEST_CI = 0.05;
-    private static final int NUMBER_OF_ASSETS = 1;
-    private static final int SAMPLE_SIZE = 1;
-    private static final int VAR_PER_SAMPLE = 130;
+    private static final int NUMBER_OF_ASSETS = 25;
+    private static final int SAMPLE_SIZE = 20;
+    private static final int VAR_PER_SAMPLE = 500;
     private static final String PORTFOLIO_KEY = "Portfolio 1";
     private ArrayList<Double> calculatedVarList;
     private ArrayList<Double> actualVarList;
@@ -59,7 +59,7 @@ public class BacktestRealTime {
                 String jsonString = (String) varCalculator.calculateValueAtRisk(list.get(i));
                 JSONObject jsonObject = new JSONObject(jsonString);
                 Double calculatedVar = (Double) jsonObject.get(PORTFOLIO_KEY);  // hardcoded for portfolio ID 1
-                System.out.print(String.format("CV : %-15f", calculatedVar));
+                System.out.print(String.format("CV : %-15f", calculatedVar/Math.sqrt(24*60)));
                 calculatedVarList.add(calculatedVar);                           // should filter
                 calculateActualLoss(varCalculator.getPortfolioPool().get("1"), varCalculator.getAssetPool());
                 System.out.println();
@@ -118,13 +118,13 @@ public class BacktestRealTime {
 
     public ArrayList<Object[]> readBacktestData() throws FileNotFoundException {
         ClassLoader classLoader = getClass().getClassLoader();
-        Scanner scan = new Scanner(new File(classLoader.getResource("fb-1-23-copy.csv").getFile()));
+        Scanner scan = new Scanner(new File(classLoader.getResource("BackTestDataReal.csv").getFile()));
         ArrayList<Object[]> list = new ArrayList();
         Object[] data;
         String[] split;
         while (scan.hasNext()) {
             data = new Object[4];
-            split = scan.nextLine().split(";");
+            split = scan.nextLine().split(",");
             if (split.length == 2) {
                 data[2] = split[0];
                 data[3] = Double.parseDouble(split[1]);

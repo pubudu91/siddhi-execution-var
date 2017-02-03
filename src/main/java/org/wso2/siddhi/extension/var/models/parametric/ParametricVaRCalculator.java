@@ -1,15 +1,21 @@
-package org.wso2.siddhi.extension.var.realtime.parametric;
+package org.wso2.siddhi.extension.var.models.parametric;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.wso2.siddhi.extension.var.models.*;
 
 import java.util.*;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.HashBasedTable;
-import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
+import org.wso2.siddhi.extension.var.models.VaRCalculator;
+import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.siddhi.extension.var.models.util.asset.Asset;
+import org.wso2.siddhi.extension.var.models.util.asset.ParametricAsset;
+import org.wso2.siddhi.extension.var.models.util.portfolio.ParametricPortfolio;
+import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
+
+//TODO check direct double comparison
 
 /**
  * Created by dilip on 30/06/16.
@@ -103,7 +109,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
         while (itr.hasNext()) {
             symbol = itr.next();
             temp = getAssetPool().get(symbol);
-            weightageMatrix[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentSharesCount(symbol) /
+            weightageMatrix[0][i] = temp.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities(symbol) /
                     portfolio.getTotalPortfolioValue();
             i++;
         }
@@ -177,4 +183,18 @@ public class ParametricVaRCalculator extends VaRCalculator {
         updateExcessReturnList(symbol);
         updateCovarianceTable(symbol);
     }
+
+    //TODO Check whether the implementation is correct
+    @Override
+    public Portfolio createPortfolio(String id, Map<String, Integer> assets) {
+        return new ParametricPortfolio(id, assets);
+    }
+
+    //TODO Check whether the implementation is correct
+    @Override
+    public Asset createAsset(int windowSize) {
+        return new ParametricAsset(windowSize);
+    }
+
+
 }

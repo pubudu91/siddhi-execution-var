@@ -1,6 +1,6 @@
-package org.wso2.siddhi.extension.var.models;
+package org.wso2.siddhi.extension.var.models.util.asset;
 
-import org.wso2.siddhi.extension.var.realtime.util.CustomDescriptiveStatistics;
+import org.wso2.siddhi.extension.var.models.util.CustomDescriptiveStatistics;
 
 /**
  * Created by flash on 6/30/16.
@@ -35,7 +35,7 @@ public class Asset {
         return priceBeforeLastPrice;
     }
 
-    public void setPriceBeforeLastPrice(double priceBeforeLastPrice) {
+    public void setPreviousPrice(double priceBeforeLastPrice) {
         this.priceBeforeLastPrice = priceBeforeLastPrice;
     }
 

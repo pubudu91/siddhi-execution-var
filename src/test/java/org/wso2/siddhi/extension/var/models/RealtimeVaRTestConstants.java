@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.realtime;
+package org.wso2.siddhi.extension.var.models;
 
 /**
  * Created by dilini92 on 9/1/16.
