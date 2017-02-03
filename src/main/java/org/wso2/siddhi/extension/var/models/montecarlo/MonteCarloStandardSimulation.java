@@ -60,21 +60,20 @@ public class MonteCarloStandardSimulation {
      *
      * @param numberOfTrials
      * @param calculationsPerDay
-     * @param historicalValue
      * @param timeSlice
      * @param currentStockPrice
      * @return
      */
-    public double[] simulation(int numberOfTrials, int calculationsPerDay, double[] historicalValue, double timeSlice, double currentStockPrice) {
+    public double[] simulation(double mean, double std, double timeSlice, double
+            currentStockPrice, int numberOfTrials, int calculationsPerDay) {
         double terminalStockValues[] = new double[numberOfTrials];
 
-        Map<String, Double> parameters, tempParameters;
+        Map<String, Double> parameters;
         parameters = new HashMap<>();
-//        tempParameters = this.getMeanReturnAndStandardDeviation(historicalValue);
         double tempStockValue = 0;
 
-        parameters.put("distributionMean", 0.001216);
-        parameters.put("standardDeviation", 0.01960);
+        parameters.put("distributionMean", mean);
+        parameters.put("standardDeviation", std);
         parameters.put("timeSlice", timeSlice);
         parameters.put("randomValue", this.getRandomZVal());
         parameters.put("currentStockValue", currentStockPrice);
@@ -115,41 +114,20 @@ public class MonteCarloStandardSimulation {
     }
 
     /**
-     * return mean and standard deviation of the historical returns
-     *
-     * @param historicalValues
-     * @return
-     */
-    public Map<String, Double> getMeanReturnAndStandardDeviation(double[] historicalValues) {
-        DescriptiveStatistics stat = new DescriptiveStatistics();
-        for (int i = 0; i < historicalValues.length; i++) {
-            stat.addValue(historicalValues[i]);
-        }
-        Map<String, Double> parameters = new HashMap<>();
-        parameters.put("meanReturn", stat.getMean());
-        parameters.put("meanStandardDeviation", stat.getStandardDeviation());
-        return parameters;
-    }
-
-    /**
      * Do the simulation in parallel
      *
      * @param numberOfTrials
      * @param calculationsPerDay
-     * @param historicalValue
      * @param timeSlice
      * @param currentStockPrice
      * @return
      */
-    public double[] parallelSimulation(int numberOfTrials, int calculationsPerDay, double[] historicalValue,
-                                       double timeSlice, double currentStockPrice) {
+    public double[] parallelSimulation(double mean, double std, double timeSlice, double
+            currentStockPrice, int numberOfTrials, int calculationsPerDay) {
         int cores = Runtime.getRuntime().availableProcessors();
         int taskForOneThread = numberOfTrials / cores;
         int remainingTask = numberOfTrials % cores;
         int startingPoint;
-
-        double mean = 0.001216;
-        double std = 0.01960;
 
         Thread threads[] = new Thread[cores];
 
