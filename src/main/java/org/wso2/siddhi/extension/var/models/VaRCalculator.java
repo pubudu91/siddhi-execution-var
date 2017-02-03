@@ -137,6 +137,10 @@ public abstract class VaRCalculator {
         return result.toString();
     }
 
+    public Portfolio addPortfolio(String id, Portfolio portfolio) {
+        return portfolioPool.put(id, portfolio); // returns null if there wasn't an existing mapping for id. 
+    }
+
     public abstract void simulateChangedAsset(String symbol);
 
     public abstract Portfolio createPortfolio(String id, Map<String, Integer> assets);
