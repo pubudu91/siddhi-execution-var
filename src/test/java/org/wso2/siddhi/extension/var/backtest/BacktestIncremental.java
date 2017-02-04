@@ -29,13 +29,11 @@ public class BacktestIncremental {
     private ArrayList<Double> calculatedVarList;
     private ArrayList<Double> actualLosses;
     private ArrayList<Double> meanViolations;
-    private Double previousPortfolioValue;
 
     public BacktestIncremental() {
         calculatedVarList = new ArrayList();
         actualLosses = new ArrayList();
         meanViolations = new ArrayList();
-        previousPortfolioValue = null;
     }
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -43,8 +41,8 @@ public class BacktestIncremental {
     }
 
     public void runTest() throws FileNotFoundException {
-//        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+//        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
 //        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI , 2500, 100, 0.01);
         ArrayList<Event> list = readBacktestData();
 
@@ -55,6 +53,7 @@ public class BacktestIncremental {
         Portfolio portfolio = varCalculator.createPortfolio("1", assets);
         varCalculator.addPortfolio("1", portfolio);
         Map<String, Asset> assetPool = varCalculator.getAssetPool();
+        int varCalcCount = 0;
 
         for (int i = 0; i < list.size(); i++) {
             // process event only if the portfolio contains the symbol in question
@@ -70,6 +69,7 @@ public class BacktestIncremental {
                     System.out.printf("CV : %.2f", calculatedVar);
 
                     calculatedVarList.add(calculatedVar);                           // should filter
+                    varCalcCount++;
 
                     double actualLoss = getPortfolioValuation(portfolio, assetPool)
                             - getPreviousPortfolioValuation(portfolio, assetPool);
@@ -81,72 +81,59 @@ public class BacktestIncremental {
             }
         }
 
-        runStandardCoverageTest();
+        runStandardCoverageTest(varCalcCount);
     }
 
-    private void runStandardCoverageTest() {
+    private void runStandardCoverageTest(int varCalcCount) {
 
-        BinomialDistribution dist = new BinomialDistribution(NO_OF_OBSERVATIONS, 1 - VAR_CI);
+        BinomialDistribution dist = new BinomialDistribution(varCalcCount, 1 - VAR_CI);
         double leftEnd = dist.inverseCumulativeProbability(BACKTEST_CI / 2);
         double rightEnd = dist.inverseCumulativeProbability(1 - (BACKTEST_CI / 2));
 
         System.out.println("Left End :" + leftEnd);
         System.out.println("Right End :" + rightEnd);
 
-        int numberOfExceptions = 0;
+        int numberOfExceedances = 0;
 //        int successCount = 0;
-        for (int j = 0; j < SAMPLE_SIZE * NUMBER_OF_ASSETS; j++) {
-            for (int i = j * NO_OF_OBSERVATIONS; i < (j + 1) * NO_OF_OBSERVATIONS; i++) {
-                //System.out.println(actualVarList.get(i) + " " + calculatedVarList.get(i));
-                if (actualLosses.get(i) <= calculatedVarList.get(i))
-                    numberOfExceptions++;
+        for (int i = 0; i < calculatedVarList.size(); i++) {
+            if (actualLosses.get(i) <= calculatedVarList.get(i)) {
+                numberOfExceedances++;
             }
-            System.out.println("Sample Set : " + (j + 1) + " Exceptions : " + numberOfExceptions);
-
-//            if (rightEnd >= numberOfExceptions && leftEnd <= numberOfExceptions) {
-//                successCount++;
-//            }
         }
-        System.out.println("Failure Rate : " + (((double) numberOfExceptions) / (NO_OF_OBSERVATIONS)) * 100);
 
-    }
+        System.out.println("Number of exceedances: " + numberOfExceedances);
 
-//    private void runStandardCoverageTest() {
+        if (rightEnd >= numberOfExceedances && leftEnd <= numberOfExceedances) {
+            System.out.println("VaR measure is accepted");
+        } else {
+            System.out.println("VaR measure is rejected");
+        }
 //
-//        int numberOfExceptions = 0;
-//
-//        for (int i = 0; i < calculatedVarList.size(); i++) {
-//            double loss = actualLosses.get(i);
-//            double var = calculatedVarList.get(i);
-//            if (loss <= var) {
-//                numberOfExceptions++;
-//                meanViolations.add(actualLosses.get(i) - calculatedVarList.get(i));
+//        for (int j = 0; j < SAMPLE_SIZE * NUMBER_OF_ASSETS; j++) {
+//            for (int i = j * varCalcCount; i < (j + 1) * varCalcCount; i++) {
+//                //System.out.println(actualVarList.get(i) + " " + calculatedVarList.get(i));
+//                if (actualLosses.get(i) <= calculatedVarList.get(i))
+//                    numberOfExceedances++;
 //            }
+//            System.out.println("Sample Set : " + (j + 1) + " Exceptions : " + numberOfExceedances);
+//
+////            if (rightEnd >= numberOfExceedances && leftEnd <= numberOfExceedances) {
+////                successCount++;
+////            }
 //        }
-//
-//        DescriptiveStatistics dsLoss = new DescriptiveStatistics(actualLosses.stream().mapToDouble
-//                (Double::doubleValue).toArray());
-//        DescriptiveStatistics dsVaR = new DescriptiveStatistics(calculatedVarList.stream().mapToDouble
-//                (Double::doubleValue).toArray());
-//        DescriptiveStatistics dsMV = new DescriptiveStatistics(meanViolations.stream().mapToDouble
-//                (Double::doubleValue).toArray());
-//
-//        System.out.println("Loss mean : " + dsLoss.getMean());
-//        System.out.println("VaR mean  : " + dsVaR.getMean());
-//        System.out.println("No. of violations : " + numberOfExceptions);
-//        System.out.println("Violation mean  : " + dsMV.getMean());
-//        System.out.printf("Violation Rate : %.2f%%\n", (((double) numberOfExceptions) / (NO_OF_OBSERVATIONS)) * 100);
-//    }
+        System.out.println("Failure Rate : " + (((double) numberOfExceedances) / (varCalcCount)) * 100);
 
-    private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetList) {
-        Double currentPortfolioValue = getPortfolioValuation(portfolio, assetList);
-
-        if (previousPortfolioValue != null) {
-            actualLosses.add(currentPortfolioValue - previousPortfolioValue);
-            System.out.printf(" Actual Loss : %.2f", (currentPortfolioValue - previousPortfolioValue));
-        }
-        previousPortfolioValue = currentPortfolioValue;
     }
+
+//    private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetList) {
+//        Double currentPortfolioValue = getPortfolioValuation(portfolio, assetList);
+//
+//        if (previousPortfolioValue != null) {
+//            actualLosses.add(currentPortfolioValue - previousPortfolioValue);
+//            System.out.printf(" Actual Loss : %.2f", (currentPortfolioValue - previousPortfolioValue));
+//        }
+//        previousPortfolioValue = currentPortfolioValue;
+//    }
 
     private double getPortfolioValuation(Portfolio portfolio, Map<String, Asset> assetMap) {
         double currentPortfolioValue = 0;
