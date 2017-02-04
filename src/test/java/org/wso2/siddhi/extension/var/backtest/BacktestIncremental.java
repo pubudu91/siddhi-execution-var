@@ -1,6 +1,8 @@
 package org.wso2.siddhi.extension.var.backtest;
 
 import org.apache.commons.math3.distribution.BinomialDistribution;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.json.JSONObject;
 import org.wso2.siddhi.extension.var.models.VaRCalculator;
 import org.wso2.siddhi.extension.var.models.historical.HistoricalVaRCalculator;
@@ -29,20 +31,22 @@ public class BacktestIncremental {
     private ArrayList<Double> meanViolations;
     private double previousPortfolioValue;
     private double currentPortfolioValue;
+    private static DescriptiveStatistics stat;
 
     public BacktestIncremental() {
         varList = new ArrayList();
         lossList = new ArrayList();
         meanViolations = new ArrayList();
+        stat = new DescriptiveStatistics();
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-        new BacktestIncremental().runTest();
+       new BacktestIncremental().runTest();
     }
 
     public void runTest() throws FileNotFoundException {
-//        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+//        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
 //        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
 
         ArrayList<Event> list = readBacktestData();
@@ -66,6 +70,7 @@ public class BacktestIncremental {
                 System.out.printf("Var : %.2f", calculatedVar);
 
                 varList.add(calculatedVar);                           // should filter
+                stat.addValue(calculatedVar);
 
                 double actualLoss = currentPortfolioValue - previousPortfolioValue;
                 lossList.add(actualLoss);
@@ -76,6 +81,12 @@ public class BacktestIncremental {
 
             previousPortfolioValue = currentPortfolioValue;
         }
+
+        System.out.println("Daily VaR AVG : " + stat.getMean());
+        System.out.println("Daily VaR MAX : " + stat.getMax());
+        System.out.println("Daily VaR MIN : " + stat.getMin());
+        System.out.println("Daily VaR MEDIAN : " + stat.getPercentile(50));
+
         runStandardCoverageTest();
     }
 
