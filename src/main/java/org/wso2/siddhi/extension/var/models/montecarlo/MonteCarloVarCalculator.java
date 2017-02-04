@@ -27,7 +27,11 @@ import java.util.Map;
 
 /**
  * Monte carlo simulation technique should be specified in the list of system properties as follows:
+ * Create an environment variable called 'MONTECARLO_SIMULATION'
  * MONTECARLO_SIMULATION=AVX or MONTECARLO_SIMULATION=JAVA_CONCURRENT
+ *
+ * If you utilize avx technique then specify another environment variable called 'JNI_LIB_HOME'
+ * JNI_LIB_HOME=path to the library file
  */
 
 public class MonteCarloVarCalculator extends VaRCalculator {

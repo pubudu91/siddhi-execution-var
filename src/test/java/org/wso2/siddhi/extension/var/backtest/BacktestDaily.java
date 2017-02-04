@@ -1,10 +1,12 @@
 
+
 package org.wso2.siddhi.extension.var.backtest;
 
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.json.JSONObject;
 import org.wso2.siddhi.extension.var.models.VaRCalculator;
-import org.wso2.siddhi.extension.var.models.montecarlo.MonteCarloVarCalculator;
+import org.wso2.siddhi.extension.var.models.historical.HistoricalVaRCalculator;
+import org.wso2.siddhi.extension.var.models.parametric.ParametricVaRCalculator;
 import org.wso2.siddhi.extension.var.models.util.Event;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
 import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
@@ -42,8 +44,8 @@ public class BacktestDaily {
     private void runBackTest() throws FileNotFoundException {
 
         //VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-//        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
-        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500,100,0.01);
+        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        //VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500,100,0.01);
 
         ArrayList<Event> list = readBacktestData();
         int i = 0;
@@ -102,17 +104,16 @@ public class BacktestDaily {
         System.out.println("Success Percentage : " + (((double) successCount) / SAMPLE_SIZE) * 100);
     }
 
-    private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetList) {
+    private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetMap) {
         Double currentPortfolioValue = 0.0;
-        Asset temp;
-        Object symbol;
+        Asset asset;
         Set<String> keys = portfolio.getAssetListKeySet();
-        Iterator itr = keys.iterator();
-        while (itr.hasNext()) {
-            symbol = itr.next();
-            temp = assetList.get(symbol);
-            currentPortfolioValue += temp.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities((String) symbol);
+
+        for (String symbol : keys) {
+            asset = assetMap.get(symbol);
+            currentPortfolioValue += asset.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities(symbol);
         }
+
         if (previousPortfolioValue != null) {
             actualVarList.add(currentPortfolioValue - previousPortfolioValue);
             System.out.print(" AV : " + (currentPortfolioValue - previousPortfolioValue));
@@ -126,21 +127,21 @@ public class BacktestDaily {
         ArrayList<Event> list = new ArrayList();
         Event event;
         String[] split;
+
         while (scan.hasNext()) {
             event = new Event();
-            split = scan.nextLine().split(";");
+            split = scan.nextLine().split(",");
             if (split.length == 2) {
                 event.setSymbol(split[0]);
                 event.setPrice(Double.parseDouble(split[1]));
             } else {
-                event.setPortfolioID(split[0]);                     //portfolio id
-                event.setQuantity(Integer.parseInt(split[1]));      //shares
-                event.setSymbol(split[2]);                          //symbol
-                event.setPrice(Double.parseDouble(split[3]));       //price
+                event.setPortfolioID(split[0]);
+                event.setQuantity(Integer.parseInt(split[1]));
+                event.setSymbol(split[2]);
+                event.setPrice(Double.parseDouble(split[3]));
             }
             list.add(event);
         }
         return list;
     }
-
 }
