@@ -29,8 +29,8 @@ public class MonteCarloNativeSimulationTest {
         long start = System.currentTimeMillis();
 
         nativeCalculatorReference.simulate(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
-//        standardCalculatorReference.simulation(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
-//        standardCalculatorReference.parallelSimulation(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
+//        nativeCalculatorReference.simulation(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
+//        nativeCalculatorReference.parallelSimulation(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
 
         long end = System.currentTimeMillis();
         System.out.println((double) (end - start) / 1000);
