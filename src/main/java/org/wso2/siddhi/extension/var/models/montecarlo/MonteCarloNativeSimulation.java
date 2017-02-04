@@ -1,7 +1,7 @@
 package org.wso2.siddhi.extension.var.models.montecarlo;
 
 
-
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 /**
  * Created by yellowflash on 11/23/16.
@@ -10,7 +10,7 @@ public class MonteCarloNativeSimulation {
 
     static {
         try {
-            System.load("/var/www/html/FYP/siddhi/modules/siddhi-extensions/var/src/main/resources/libs/Native_Simulation.so");
+            System.load(System.getenv("JNI_LIB_HOME"));
         } catch (Exception e) {
 
         }

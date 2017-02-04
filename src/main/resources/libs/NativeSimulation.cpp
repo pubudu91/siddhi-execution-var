@@ -69,5 +69,9 @@ jdouble NormalCDFInverse(jdouble p) {
         return t - ((c[2] * t + c[1]) * t + c[0]) /(((d[2] * t + d[1]) * t + d[0]) * t + 1.0);
     }
 }
+/*
+Compilation Command
+g++ -mavx -fPIC -fopenmp -I"$JAVA_HOME/include" -I"/usr/local/lib/jdk1.8.0_91/include/linux" -shared -o filename.so filename.cpp
+*/
 
 

@@ -23,7 +23,7 @@ public class MonteCarloNativeSimulationTest {
 
     @Test
     public void performanceComparison() {
-        int horizontalCount = 20000;
+        int horizontalCount = 200000;
         nativeCalculatorReference = new MonteCarloNativeSimulation();
         standardCalculatorReference = new MonteCarloStandardSimulation(horizontalCount);
         long start = System.currentTimeMillis();

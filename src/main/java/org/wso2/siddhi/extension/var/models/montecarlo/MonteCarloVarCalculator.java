@@ -194,11 +194,11 @@ public class MonteCarloVarCalculator extends VaRCalculator {
             Double std = tempAsset.getStandardDeviation();
             tempAsset.setPreviousSimulatedList(tempAsset.getSimulatedList());
 
-            if (calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_AVX)) {
+            if (calculationTechnique != null && calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_AVX)) {
                 generatedTerminalStockValues = calculatorNativeReference.simulate(mean, std, timeSlice,
                         tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
                 tempAsset.setSimulatedList(generatedTerminalStockValues);
-            } else if (calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_JAVA_CONCURRENT)) {
+            } else if (calculationTechnique != null && calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_JAVA_CONCURRENT)) {
                 calculatorStandardReference = new MonteCarloStandardSimulation(horizontalSimulationsCount);
                 generatedTerminalStockValues = calculatorStandardReference.parallelSimulation(mean, std, timeSlice,
                         tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
