@@ -6,6 +6,7 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.json.JSONObject;
 import org.wso2.siddhi.extension.var.models.VaRCalculator;
 import org.wso2.siddhi.extension.var.models.historical.HistoricalVaRCalculator;
+import org.wso2.siddhi.extension.var.models.parametric.ParametricVaRCalculator;
 import org.wso2.siddhi.extension.var.models.util.Event;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
 import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
@@ -42,8 +43,8 @@ public class BacktestDaily {
 
     private void runBackTest() throws FileNotFoundException {
 
-        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-//        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        //VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
         //VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500,100,0.01);
 
         ArrayList<Event> list = readBacktestData();
