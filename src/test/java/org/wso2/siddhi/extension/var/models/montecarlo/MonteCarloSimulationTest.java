@@ -62,6 +62,7 @@ public class MonteCarloSimulationTest {
         simulationReference = new MonteCarloStandardSimulation(horizontalCount);
         double temArrParallel[];
         temArrParallel = simulationReference.parallelSimulation(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
+
         Assert.assertArrayEquals(temArr, temArrParallel, 0);
     }
 

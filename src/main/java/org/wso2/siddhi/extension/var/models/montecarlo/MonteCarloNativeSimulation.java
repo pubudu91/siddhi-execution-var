@@ -10,7 +10,7 @@ public class MonteCarloNativeSimulation {
 
     static {
         try {
-            System.load(System.getenv("JNI_LIB_HOME"));
+            System.load("/var/www/html/FYP/siddhi/modules/siddhi-extensions/var/src/main/resources/libs/Native_Simulation.so");
         } catch (Exception e) {
 
         }
