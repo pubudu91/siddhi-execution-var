@@ -65,7 +65,4 @@ public class CustomDescriptiveStatistics extends DescriptiveStatistics {
         }
     }
 
-    public double getStandardDeviation() {
-        return this.std;
-    }
 }
