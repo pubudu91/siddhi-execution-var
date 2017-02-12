@@ -26,8 +26,7 @@ public class PerformanceTest {
     }
 
     private ArrayList<Event> readPerformanceTestData() throws IOException {
-        FileReader reader = new FileReader(new File("/home/dilini92/Sem7/siddhi " +
-                "new/modules/siddhi-extensions/var/src/test/resources/PerformanceTestData.csv"));
+        FileReader reader = new FileReader(new File("/home/dilip/FYP_UPDATE/siddhi/modules/siddhi-extensions/var/src/test/resources/PerformanceTestData.csv"));
 
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
@@ -62,9 +61,8 @@ public class PerformanceTest {
             while(iterator.hasNext()){
                 count++;
                 event = iterator.next();
-
                 if(count < 6301){
-                    varCalculator.addEvent(event);
+                    varCalculator.calculateValueAtRisk(event);
                 }else{
                     start = System.currentTimeMillis();
                     varCalculator.calculateValueAtRisk(event);

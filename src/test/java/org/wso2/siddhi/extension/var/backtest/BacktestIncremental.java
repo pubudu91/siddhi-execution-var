@@ -45,8 +45,8 @@ public class BacktestIncremental {
                 "corrvar,lossmedian,lossmode");
         String[] dates = {"Jan 23", "Jan 24", "Jan 25", "Jan 26", "Jan 27", "Jan 30", "Jan 31", "Feb 1", "Feb 2",
                 "Feb 3"};
-        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-//        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+//        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
 //        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
 
         Map<String, Integer> assets = initPortfolio();
