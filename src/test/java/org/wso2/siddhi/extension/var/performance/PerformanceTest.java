@@ -3,6 +3,8 @@ package org.wso2.siddhi.extension.var.performance;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.VaRCalculator;
 import org.wso2.siddhi.extension.var.models.historical.HistoricalVaRCalculator;
+import org.wso2.siddhi.extension.var.models.montecarlo.MonteCarloVarCalculator;
+import org.wso2.siddhi.extension.var.models.parametric.ParametricVaRCalculator;
 import org.wso2.siddhi.extension.var.models.util.Event;
 
 import java.io.*;
@@ -45,7 +47,10 @@ public class PerformanceTest {
     }
 
     private double runPerformanceTest(){
-        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+//        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+//        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
+        System.out.println("===============" + varCalculator.getClass().getSimpleName() + "===============");
         long start, stop;
         int count = 0;
         Event event;
@@ -80,6 +85,6 @@ public class PerformanceTest {
     public static void main(String[] args) {
         PerformanceTest test = new PerformanceTest();
         double averageTime = test.runPerformanceTest();
-        System.out.println("Historical Simulation Average Execution Time: " + averageTime);
+        System.out.println("Average Execution Time: " + averageTime + " ms");
     }
 }
