@@ -30,10 +30,7 @@ public abstract class Portfolio {
     }
 
     public Integer getCurrentAssetQuantities(String symbol) {
-        if (currentAssetQuantities.get(symbol) != null)
-            return currentAssetQuantities.get(symbol);
-        else
-            return 0;
+        return currentAssetQuantities.get(symbol);
     }
 
     public void setCurrentAssetQuantities(String symbol, int shares) {
