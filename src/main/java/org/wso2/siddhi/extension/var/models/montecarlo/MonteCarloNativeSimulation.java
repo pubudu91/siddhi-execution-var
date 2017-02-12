@@ -1,7 +1,7 @@
 package org.wso2.siddhi.extension.var.models.montecarlo;
 
 
-
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 /**
  * Created by yellowflash on 11/23/16.

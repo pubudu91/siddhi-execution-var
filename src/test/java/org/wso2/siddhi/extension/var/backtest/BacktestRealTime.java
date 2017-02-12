@@ -8,6 +8,7 @@ import org.wso2.siddhi.extension.var.models.util.Event;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
 import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
 
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -20,9 +21,9 @@ public class BacktestRealTime {
     private static final int BATCH_SIZE = 251;
     private static final double VAR_CI = 0.95;
     private static final double BACKTEST_CI = 0.05;
-    private static final int NUMBER_OF_ASSETS = 25;
-    private static final int SAMPLE_SIZE = 20;
-    private static final int VAR_PER_SAMPLE = 500;
+    private static final int NUMBER_OF_ASSETS = 1;
+    private static final int SAMPLE_SIZE = 1;
+    private static final int VAR_PER_SAMPLE = 130;
     private static final String PORTFOLIO_KEY = "Portfolio 1";
     private ArrayList<Double> calculatedVarList;
     private ArrayList<Double> actualVarList;
@@ -59,7 +60,7 @@ public class BacktestRealTime {
                 String jsonString = (String) varCalculator.calculateValueAtRisk(list.get(i));
                 JSONObject jsonObject = new JSONObject(jsonString);
                 Double calculatedVar = (Double) jsonObject.get(PORTFOLIO_KEY);  // hardcoded for portfolio ID 1
-                System.out.print(String.format("CV : %-15f", calculatedVar/Math.sqrt(24*60)));
+                System.out.print(String.format("CV : %-15f", calculatedVar));
                 calculatedVarList.add(calculatedVar);                           // should filter
                 calculateActualLoss(varCalculator.getPortfolioPool().get("1"), varCalculator.getAssetPool());
                 System.out.println();
@@ -97,16 +98,17 @@ public class BacktestRealTime {
 
     }
 
-    private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetMap) {
+    private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetList) {
         Double currentPortfolioValue = 0.0;
-        Asset asset;
+        Asset temp;
+        Object symbol;
         Set<String> keys = portfolio.getAssetListKeySet();
-
-        for (String symbol : keys) {
-            asset = assetMap.get(symbol);
-            currentPortfolioValue += asset.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities(symbol);
+        Iterator itr = keys.iterator();
+        while (itr.hasNext()) {
+            symbol = itr.next();
+            temp = assetList.get(symbol);
+            currentPortfolioValue += temp.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities((String) symbol);
         }
-
         if (previousPortfolioValue != null) {
             actualVarList.add(currentPortfolioValue - previousPortfolioValue);
             System.out.print(String.format("AV : %-15f", currentPortfolioValue - previousPortfolioValue));
@@ -117,7 +119,7 @@ public class BacktestRealTime {
 
     public ArrayList<Event> readBacktestData() throws FileNotFoundException {
         ClassLoader classLoader = getClass().getClassLoader();
-        Scanner scan = new Scanner(new File(classLoader.getResource("BackTestDataReal.csv").getFile()));
+        Scanner scan = new Scanner(new File(classLoader.getResource("BackTestDataNew.csv").getFile()));
         ArrayList<Event> list = new ArrayList();
         Event event;
         String[] split;
@@ -129,13 +131,14 @@ public class BacktestRealTime {
                 event.setSymbol(split[0]);
                 event.setPrice(Double.parseDouble(split[1]));
             } else {
-                event.setPortfolioID(split[0]);
-                event.setQuantity(Integer.parseInt(split[1]));
-                event.setSymbol(split[2]);
-                event.setPrice(Double.parseDouble(split[3]));
+                event.setPortfolioID(split[0]);                     //portfolio id
+                event.setQuantity(Integer.parseInt(split[1]));      //shares
+                event.setSymbol(split[2]);                          //symbol
+                event.setPrice(Double.parseDouble(split[3]));       //price
             }
             list.add(event);
         }
         return list;
     }
+
 }

@@ -14,6 +14,7 @@ JNIEXPORT jdoubleArray JNICALL Java_org_wso2_siddhi_extension_var_models_monteca
     __m256d stochasticFactorTemp = _mm256_set1_pd(std * sqrt(timeSlice));
     __m256d drift = _mm256_set1_pd((mean - (std * std / 2)) * timeSlice);
 
+
     jdouble *finalValues = new jdouble[numberOfTrials];
     jdoubleArray tempArray= env->NewDoubleArray(numberOfTrials);
     unsigned int seed = (unsigned int) time(0);
@@ -68,5 +69,9 @@ jdouble NormalCDFInverse(jdouble p) {
         return t - ((c[2] * t + c[1]) * t + c[0]) /(((d[2] * t + d[1]) * t + d[0]) * t + 1.0);
     }
 }
+/*
+Compilation Command
+g++ -mavx -fPIC -fopenmp -I"$JAVA_HOME/include" -I"/usr/local/lib/jdk1.8.0_91/include/linux" -shared -o filename.so filename.cpp
+*/
 
 

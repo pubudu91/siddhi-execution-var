@@ -127,8 +127,8 @@ public abstract class VaRCalculator {
                 if (var != null) {
                     result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var.doubleValue());
                 }
+                portfolio.setPreviousAssetQuantities(symbol, portfolio.getCurrentAssetQuantities(symbol));
             }
-            portfolio.setPreviousAssetQuantities(symbol, portfolio.getCurrentAssetQuantities(symbol));
         });
 
         //if no var has been calculated

@@ -27,7 +27,11 @@ import java.util.Map;
 
 /**
  * Monte carlo simulation technique should be specified in the list of system properties as follows:
+ * Create an environment variable called 'MONTECARLO_SIMULATION'
  * MONTECARLO_SIMULATION=AVX or MONTECARLO_SIMULATION=JAVA_CONCURRENT
+ *
+ * If you utilize avx technique then specify another environment variable called 'JNI_LIB_HOME'
+ * JNI_LIB_HOME=path to the library file
  */
 
 public class MonteCarloVarCalculator extends VaRCalculator {
@@ -194,11 +198,11 @@ public class MonteCarloVarCalculator extends VaRCalculator {
             Double std = tempAsset.getStandardDeviation();
             tempAsset.setPreviousSimulatedList(tempAsset.getSimulatedList());
 
-            if (calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_AVX)) {
+            if (calculationTechnique != null && calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_AVX)) {
                 generatedTerminalStockValues = calculatorNativeReference.simulate(mean, std, timeSlice,
                         tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
                 tempAsset.setSimulatedList(generatedTerminalStockValues);
-            } else if (calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_JAVA_CONCURRENT)) {
+            } else if (calculationTechnique != null && calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_JAVA_CONCURRENT)) {
                 calculatorStandardReference = new MonteCarloStandardSimulation(horizontalSimulationsCount);
                 generatedTerminalStockValues = calculatorStandardReference.parallelSimulation(mean, std, timeSlice,
                         tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);

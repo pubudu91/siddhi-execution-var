@@ -5,6 +5,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by yellowflash on 2/3/17.
@@ -16,6 +17,7 @@ public class MonteCarloStandardSimulation {
     private DescriptiveStatistics stat = null;
     private double randomZValue = 0.0;
     public static double[] finalSimulatedValues;
+    Random rnd = new Random(3);
 
     public MonteCarloStandardSimulation() {
     }
@@ -31,6 +33,12 @@ public class MonteCarloStandardSimulation {
      */
     private double getRandomZVal() {
         randomZValue = this.getDistribution().inverseCumulativeProbability(Math.random());
+        return randomZValue;
+    }
+
+    private double getRandomZValThreadSafe() {
+//        System.out.println(rnd.nextDouble());
+        randomZValue = this.getDistribution().inverseCumulativeProbability(rnd.nextDouble());
         return randomZValue;
     }
 
@@ -82,17 +90,6 @@ public class MonteCarloStandardSimulation {
             terminalStockValues[i] = tempStockValue;
         }
         return terminalStockValues;
-    }
-
-    /**
-     * get statistical analysis object
-     *
-     * @param historicalValues
-     * @return
-     */
-    public DescriptiveStatistics getStat(double[] historicalValues) {
-        this.stat = new DescriptiveStatistics(historicalValues);
-        return this.stat;
     }
 
     /**
@@ -168,7 +165,7 @@ public class MonteCarloStandardSimulation {
             parameters.put("distributionMean", mean);
             parameters.put("standardDeviation", std);
             parameters.put("timeSlice", timeSlice);
-            parameters.put("randomValue", simulationReference.getRandomZVal());
+            parameters.put("randomValue", simulationReference.getRandomZValThreadSafe());
             parameters.put("currentStockValue", currentStockPrice);
         }
 
@@ -180,7 +177,7 @@ public class MonteCarloStandardSimulation {
                 parameters.put("currentStockValue", currentStockPrice);
                 for (int j = 0; j < calculationsPerDay; j++) {
                     tempStockValue = simulationReference.getBrownianMotionOutput(parameters);
-                    parameters.put("randomValue", simulationReference.getRandomZVal());
+                    parameters.put("randomValue", simulationReference.getRandomZValThreadSafe());
                     parameters.put("currentStockValue", tempStockValue);
                 }
                 MonteCarloStandardSimulation.finalSimulatedValues[i] = tempStockValue;

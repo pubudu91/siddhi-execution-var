@@ -12,6 +12,7 @@ import java.util.Map;
 public class MonteCarloSimulationTest {
 
     MonteCarloStandardSimulation simulationReference;
+    MonteCarloNativeSimulation nativeCalculatorReference;
 
     @Test
     public void getBrownianMotionOutput() throws Exception {
@@ -62,7 +63,25 @@ public class MonteCarloSimulationTest {
         simulationReference = new MonteCarloStandardSimulation(horizontalCount);
         double temArrParallel[];
         temArrParallel = simulationReference.parallelSimulation(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
+
         Assert.assertArrayEquals(temArr, temArrParallel, 0);
+    }
+
+    @Test
+    public void compareStandardSimulationWithNativeSimulation() {
+        int horizontalCount = 2500;
+
+        simulationReference = new MonteCarloStandardSimulation();
+        nativeCalculatorReference = new MonteCarloNativeSimulation();
+        double temArr[];
+        double Arr[];
+        temArr = simulationReference.simulation(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
+        Arr = nativeCalculatorReference.simulate(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
+        int totalSum = 0;
+        for (int i = 0; i < horizontalCount; i++) {
+            totalSum += Math.abs(temArr[i] - Arr[i]);
+        }
+        System.out.println((double) totalSum / horizontalCount);
     }
 
 }

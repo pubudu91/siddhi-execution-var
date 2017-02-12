@@ -4,6 +4,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.json.JSONObject;
 import org.wso2.siddhi.extension.var.models.VaRCalculator;
 import org.wso2.siddhi.extension.var.models.montecarlo.MonteCarloVarCalculator;
+import org.wso2.siddhi.extension.var.models.parametric.ParametricVaRCalculator;
 import org.wso2.siddhi.extension.var.models.util.Event;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
 import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
@@ -100,16 +101,17 @@ public class Backtest {
         System.out.println("Violation Rate : " + (((double) numberOfExceptions) / (VAR_PER_SAMPLE)) * 100 + "%");
     }
 
-    private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetMap) {
+    private void calculateActualLoss(Portfolio portfolio, Map<String, Asset> assetList) {
         Double currentPortfolioValue = 0.0;
-        Asset asset;
+        Asset temp;
+        Object symbol;
         Set<String> keys = portfolio.getAssetListKeySet();
-
-        for (String symbol : keys) {
-            asset = assetMap.get(symbol);
-            currentPortfolioValue += asset.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities(symbol);
+        Iterator itr = keys.iterator();
+        while (itr.hasNext()) {
+            symbol = itr.next();
+            temp = assetList.get(symbol);
+            currentPortfolioValue += temp.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities((String) symbol);
         }
-
         if (previousPortfolioValue != null) {
             actualVarList.add(currentPortfolioValue - previousPortfolioValue);
             System.out.print(" AV : " + (currentPortfolioValue - previousPortfolioValue));
@@ -130,13 +132,14 @@ public class Backtest {
                 event.setSymbol(split[0]);
                 event.setPrice(Double.parseDouble(split[1]));
             } else {
-                event.setPortfolioID(split[0]);
-                event.setQuantity(Integer.parseInt(split[1]));
-                event.setSymbol(split[2]);
-                event.setPrice(Double.parseDouble(split[3]));
+                event.setPortfolioID(split[0]);                     //portfolio id
+                event.setQuantity(Integer.parseInt(split[1]));      //shares
+                event.setSymbol(split[2]);                          //symbol
+                event.setPrice(Double.parseDouble(split[3]));       //price
             }
             list.add(event);
         }
         return list;
     }
+
 }
