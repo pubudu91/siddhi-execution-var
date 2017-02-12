@@ -41,8 +41,8 @@ public class BacktestIncremental {
     }
 
     public void runTest() throws FileNotFoundException {
-//        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+//        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
 //        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
 
         ArrayList<Event> list = readBacktestData();
@@ -67,14 +67,15 @@ public class BacktestIncremental {
 
                 varList.add(calculatedVar);                           // should filter
 
-                double actualLoss = currentPortfolioValue - previousPortfolioValue;
+//                double actualLoss = currentPortfolioValue - previousPortfolioValue;
+                double actualLoss = getPortfolioValuation(portfolio, assetPool) - getPreviousPortfolioValuation(portfolio, assetPool);
                 lossList.add(actualLoss);
                 System.out.printf(" Loss : %.2f\n", actualLoss);
             } else {
                 System.out.println("Insufficient data for VaR calculation");
             }
 
-            previousPortfolioValue = currentPortfolioValue;
+//            previousPortfolioValue = currentPortfolioValue;
         }
         runStandardCoverageTest();
     }
@@ -106,7 +107,7 @@ public class BacktestIncremental {
                 failureRate++;
             }
         }
-        System.out.println("Failure Rate : " + (((double) failureRate) / (NUMBER_OF_SAMPLES)) * 100 + " %");
+        System.out.println("Failure Rate : " + (((double) failureRate) / NUMBER_OF_SAMPLES) * 100 + " %");
     }
 
     private double getPortfolioValuation(Portfolio portfolio, Map<String, Asset> assetMap) {
