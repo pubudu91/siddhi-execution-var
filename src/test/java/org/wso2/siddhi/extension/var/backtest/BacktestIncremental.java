@@ -1,6 +1,5 @@
 package org.wso2.siddhi.extension.var.backtest;
 
-import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.json.JSONObject;
 import org.wso2.siddhi.extension.var.models.VaRCalculator;
@@ -13,7 +12,6 @@ import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -25,14 +23,9 @@ public class BacktestIncremental {
     private static final String PORTFOLIO_KEY = "Portfolio 1";
     private double previousPortfolioValue;
     private double currentPortfolioValue;
-    //private Double closePortfolioValue;
 
     private static int START_DATE = 23;
     private static int END_DATE = 32;
-
-    public BacktestIncremental() {
-        //closePortfolioValue = null;
-    }
 
     public static void main(String[] args) throws FileNotFoundException {
         new BacktestIncremental().runTest();
@@ -40,13 +33,14 @@ public class BacktestIncremental {
 
     public void runTest() throws FileNotFoundException {
 
-        Formatter formatter = new Formatter(new File("HistoricalBacktestResults.csv"));
+        Formatter formatter = new Formatter(new File("ParametricBacktestResults.csv"));
         formatter.format("%s%n", "date,varclose,varavg,varmax,corrloss,varmedian,varmode,lossclose,lossavg,lossmax," +
                 "corrvar,lossmedian,lossmode");
-        String[] dates = {"Jan 23", "Jan 24", "Jan 25", "Jan 26", "Jan 27", "Jan 30", "Jan 31", "Feb 1", "Feb 2",
-                "Feb 3"};
-        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-//        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        String[] dates = {"jan-23", "jan-24", "jan-25", "jan-26", "jan-27", "jan-30", "jan-31", "feb-1", "feb-2",
+                "feb-3"};
+        String write = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s";
+//        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
 //        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
 
         Map<String, Integer> assets = initPortfolio();
@@ -54,19 +48,16 @@ public class BacktestIncremental {
         varCalculator.addPortfolio("1", portfolio);
 
         for (int d = START_DATE; d <= END_DATE; d++) {
+            System.out.println("\nDAY : " + dates[d - START_DATE] + "\n");
+            ArrayList<Event> list = readBacktestData(d);
             HashMap<Integer, Double> varMap = new HashMap();
             HashMap<Integer, Double> lossMap = new HashMap();
-            Double var = null;
-            Double loss = null;
+            double var = 0;
+            double loss = 0;
             String corrVar;
             String corrLoss;
-            String write = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s";
-            ArrayList<Event> list = readBacktestData(d);
-            System.out.println("\nDAY : " + dates[d - START_DATE] + "\n");
 
-            //Double totalLoss = null;
             int counter = 0;
-
             for (int i = 0; i < list.size(); i++) {
 
                 //System.out.print("Event " + (i + 1) + " : ");
@@ -81,16 +72,13 @@ public class BacktestIncremental {
                         var = tempVar;
                         varMap.put(counter, var);
                         //System.out.printf("Var : %.4f", tempVar);
-                        //varList.add(var);                                         // should filter
                     }
 
                     double tempLoss = currentPortfolioValue - previousPortfolioValue;
-
                     if (tempLoss < 0) {
                         loss = tempLoss;
                         lossMap.put(counter, loss);
                         //System.out.printf(" Loss : %.4f", tempLoss);
-                        //lossList.add(actualLoss);
                     }
                     counter++;
                 }
@@ -151,22 +139,13 @@ public class BacktestIncremental {
             System.out.println("Daily Loss MEDIAN  : " + statLoss.getPercentile(50));
             System.out.println("Daily Loss MODE    : " + mode(statLoss.getValues()));
 
-//            if (closePortfolioValue != null) {
-//                totalLoss = currentPortfolioValue - closePortfolioValue;
-//                System.out.println("Daily Loss TOTAL   : " + (totalLoss));
-//            }
-
             formatter.format("%s%n", String.format(write, dates[d - START_DATE], var, statVar.getMean(), statVar
                             .getMin(), corrLoss, statVar.getPercentile(50), mode(statVar.getValues()), loss, statLoss.getMean(),
                     statLoss.getMin(),corrVar, statLoss.getPercentile(50), mode(statLoss.getValues())));
 
-//            closePortfolioValue = currentPortfolioValue;
-
         }
 
         formatter.close();
-
-        //runStandardCoverageTest();
     }
 
     public ArrayList<Event> readBacktestData(int id) throws FileNotFoundException {
@@ -179,15 +158,8 @@ public class BacktestIncremental {
         while (scan.hasNext()) {
             event = new Event();
             split = scan.nextLine().split(",");
-
             event.setSymbol(split[2]);
             event.setPrice(Double.parseDouble(split[1]));
-
-//            if (!"NA".equals(split[3])) {    // assuming if pid is present, so is share volume
-//                event.setPortfolioID(split[4]);                     //portfolio id
-//                event.setQuantity(Integer.parseInt(split[3]));      //shares
-//            }
-
             list.add(event);
         }
         return list;

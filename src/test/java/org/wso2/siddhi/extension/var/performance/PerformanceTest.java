@@ -30,10 +30,9 @@ public class PerformanceTest {
     }
 
     private ArrayList<Event> readPerformanceTestData() throws IOException {
-//        ClassLoader classLoader = getClass().getClassLoader();
-//        FileReader reader = new FileReader(new File(classLoader.getResource("PerformanceTestData.csv").getFile()));
-        FileReader reader = new FileReader(new File("/home/dilini92/Sem7/siddhi new/modules/siddhi-extensions/var/src/" +
-                "test/resources/PerformanceTestData.csv"));
+        ClassLoader classLoader = getClass().getClassLoader();
+        FileReader reader = new FileReader(new File(classLoader.getResource("PerformanceTestData.csv").getFile()));
+
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
         String data[];
@@ -56,7 +55,7 @@ public class PerformanceTest {
 //        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
 //        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
         System.out.println("===============" + varCalculator.getClass().getSimpleName() + "===============");
-        long start = 0, stop = 0;
+        long start, stop;
         int count = 0;
         Event event;
         try {
