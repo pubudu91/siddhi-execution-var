@@ -77,8 +77,8 @@ public class HistoricalVaRCalculator extends VaRCalculator {
     }
 
     @Override
-    public Portfolio createPortfolio(String ID, Map<String, Integer> assets) {
-        return new HistoricalPortfolio(ID, assets);
+    public Portfolio createPortfolio(String id, Map<String, Integer> assets) {
+        return new HistoricalPortfolio(id, assets);
     }
 
     @Override

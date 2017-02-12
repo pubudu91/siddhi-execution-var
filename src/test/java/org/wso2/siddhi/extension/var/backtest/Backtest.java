@@ -2,12 +2,12 @@ package org.wso2.siddhi.extension.var.backtest;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.json.JSONObject;
-import org.wso2.siddhi.extension.var.models.Asset;
-import org.wso2.siddhi.extension.var.models.Portfolio;
-import org.wso2.siddhi.extension.var.realtime.historical.HistoricalVaRCalculator;
-import org.wso2.siddhi.extension.var.realtime.montecarlo.MonteCarloVarCalculator;
-import org.wso2.siddhi.extension.var.realtime.parametric.ParametricVaRCalculator;
-import org.wso2.siddhi.extension.var.realtime.VaRCalculator;
+import org.wso2.siddhi.extension.var.models.VaRCalculator;
+import org.wso2.siddhi.extension.var.models.montecarlo.MonteCarloVarCalculator;
+import org.wso2.siddhi.extension.var.models.parametric.ParametricVaRCalculator;
+import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.siddhi.extension.var.models.util.asset.Asset;
+import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,9 +44,9 @@ public class Backtest {
     private void runBackTest() throws FileNotFoundException {
 
         //VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
-//        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
-        ArrayList<Object[]> list = readBacktestData();
+//        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
+        ArrayList<Event> list = readBacktestData();
         int i = 0;
         int totalEvents = ((BATCH_SIZE + 1) * NUMBER_OF_ASSETS) + (VAR_PER_SAMPLE * NUMBER_OF_ASSETS * SAMPLE_SIZE) + 1;
         System.out.println("Read Total Events : " + totalEvents);
@@ -110,7 +110,7 @@ public class Backtest {
         while (itr.hasNext()) {
             symbol = itr.next();
             temp = assetList.get(symbol);
-            currentPortfolioValue += temp.getCurrentStockPrice() * portfolio.getCurrentSharesCount((String) symbol);
+            currentPortfolioValue += temp.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities((String) symbol);
         }
         if (previousPortfolioValue != null) {
             actualVarList.add(currentPortfolioValue - previousPortfolioValue);
@@ -119,25 +119,25 @@ public class Backtest {
         previousPortfolioValue = currentPortfolioValue;
     }
 
-    public ArrayList<Object[]> readBacktestData() throws FileNotFoundException {
+    public ArrayList<Event> readBacktestData() throws FileNotFoundException {
         ClassLoader classLoader = getClass().getClassLoader();
         Scanner scan = new Scanner(new File(classLoader.getResource("BackTestDataNew.csv").getFile()));
-        ArrayList<Object[]> list = new ArrayList();
-        Object[] data;
+        ArrayList<Event> list = new ArrayList();
+        Event event;
         String[] split;
         while (scan.hasNext()) {
-            data = new Object[4];
+            event = new Event();
             split = scan.nextLine().split(",");
             if (split.length == 2) {
-                data[2] = split[0];
-                data[3] = Double.parseDouble(split[1]);
+                event.setSymbol(split[0]);
+                event.setPrice(Double.parseDouble(split[1]));
             } else {
-                data[0] = Integer.parseInt(split[0]);   //portfolio id
-                data[1] = Integer.parseInt(split[1]);   //shares
-                data[2] = split[2];                     //symbol
-                data[3] = Double.parseDouble(split[3]); //price
+                event.setPortfolioID(split[0]);                     //portfolio id
+                event.setQuantity(Integer.parseInt(split[1]));      //shares
+                event.setSymbol(split[2]);                          //symbol
+                event.setPrice(Double.parseDouble(split[3]));       //price
             }
-            list.add(data);
+            list.add(event);
         }
         return list;
     }

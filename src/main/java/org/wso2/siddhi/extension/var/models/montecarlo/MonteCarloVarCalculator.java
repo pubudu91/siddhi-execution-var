@@ -2,6 +2,7 @@ package org.wso2.siddhi.extension.var.models.montecarlo;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.siddhi.extension.var.models.util.RealTimeVaRConstants;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
 import org.wso2.siddhi.extension.var.models.util.asset.MonteCarloAsset;
 import org.wso2.siddhi.extension.var.models.util.portfolio.MonteCarloPortfolio;
@@ -11,8 +12,28 @@ import org.wso2.siddhi.extension.var.models.VaRCalculator;
 import java.util.Map;
 
 /**
- * Created by flash on 6/29/16.
+ * Assumptions;
+ * P    = finalPortfolioValuesBeforeAssetUpdate
+ * P'   = finalPortfolioValues
+ * A    = simulatedListBeforeAssetUpdate
+ * A'   = generatedTerminalStockValues
+ * MV   = previousPortfolioMarketValue
+ * MV'  = latestMarketValue
+ * <p>
+ * According to the incremental calculation final portfolio value vector which used to calculate var will be as follows:
+ * P'= ( MV'-MV ) - ( A-A') + P
+ * for each event portfolio value vector(P') will be calculated based on the previous portfolio value (P).
  */
+
+/**
+ * Monte carlo simulation technique should be specified in the list of system properties as follows:
+ * Create an environment variable called 'MONTECARLO_SIMULATION'
+ * MONTECARLO_SIMULATION=AVX or MONTECARLO_SIMULATION=JAVA_CONCURRENT
+ *
+ * If you utilize avx technique then specify another environment variable called 'JNI_LIB_HOME'
+ * JNI_LIB_HOME=path to the library file
+ */
+
 public class MonteCarloVarCalculator extends VaRCalculator {
 
     private int horizontalSimulationsCount;
@@ -168,29 +189,40 @@ public class MonteCarloVarCalculator extends VaRCalculator {
         double[] generatedTerminalStockValues;
         tempAsset = (MonteCarloAsset) getAssetPool().get(symbol);
         historicalReturnValueList = tempAsset.getReturnValues();
-
+        String calculationTechnique = System.getenv("MONTECARLO_SIMULATION");
         MonteCarloNativeSimulation calculatorNativeReference = new MonteCarloNativeSimulation();
+        MonteCarloStandardSimulation calculatorStandardReference = new MonteCarloStandardSimulation();
 
         if (historicalReturnValueList != null && historicalReturnValueList.length > 0) {
             Double mean = tempAsset.getMean();
             Double std = tempAsset.getStandardDeviation();
             tempAsset.setPreviousSimulatedList(tempAsset.getSimulatedList());
-            generatedTerminalStockValues = calculatorNativeReference.simulate(mean, std, timeSlice,
-                    tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
-            tempAsset.setSimulatedList(generatedTerminalStockValues);
+
+            if (calculationTechnique != null && calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_AVX)) {
+                generatedTerminalStockValues = calculatorNativeReference.simulate(mean, std, timeSlice,
+                        tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
+                tempAsset.setSimulatedList(generatedTerminalStockValues);
+            } else if (calculationTechnique != null && calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_JAVA_CONCURRENT)) {
+                calculatorStandardReference = new MonteCarloStandardSimulation(horizontalSimulationsCount);
+                generatedTerminalStockValues = calculatorStandardReference.parallelSimulation(mean, std, timeSlice,
+                        tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
+                tempAsset.setSimulatedList(generatedTerminalStockValues);
+            } else {
+                generatedTerminalStockValues = calculatorStandardReference.simulation(mean, std, timeSlice,
+                        tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
+                tempAsset.setSimulatedList(generatedTerminalStockValues);
+            }
         }
     }
 
-    //TODO implement this methods
     @Override
-    public Portfolio createPortfolio(String ID, Map<String, Integer> assets) {
-        return null;
+    public Portfolio createPortfolio(String id, Map<String, Integer> assets) {
+        return new MonteCarloPortfolio(id, assets);
     }
 
-    //TODO implement this methods
     @Override
     public Asset createAsset(int windowSize) {
-        return null;
+        return new MonteCarloAsset(windowSize);
     }
 
 }

@@ -8,7 +8,7 @@ import org.wso2.siddhi.extension.var.models.util.CustomDescriptiveStatistics;
 public class Asset {
     private double currentStockPrice;
     private CustomDescriptiveStatistics returnValueSet;
-    private double priceBeforeLastPrice;
+    private double previousStockPrice;
 
     public Asset(int windowSize) {
         returnValueSet = new CustomDescriptiveStatistics();
@@ -32,11 +32,11 @@ public class Asset {
     }
 
     public double getPreviousStockPrice() {
-        return priceBeforeLastPrice;
+        return previousStockPrice;
     }
 
-    public void setPreviousPrice(double priceBeforeLastPrice) {
-        this.priceBeforeLastPrice = priceBeforeLastPrice;
+    public void setPreviousStockPrice(double priceBeforeLastPrice) {
+        this.previousStockPrice = priceBeforeLastPrice;
     }
 
     public int getNumberOfReturnValues() {
