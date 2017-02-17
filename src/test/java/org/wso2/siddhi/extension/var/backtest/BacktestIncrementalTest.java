@@ -6,6 +6,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.json.JSONObject;
 import org.wso2.siddhi.extension.var.models.VaRCalculator;
 import org.wso2.siddhi.extension.var.models.historical.HistoricalVaRCalculator;
+import org.wso2.siddhi.extension.var.models.montecarlo.MonteCarloVarCalculator;
 import org.wso2.siddhi.extension.var.models.parametric.ParametricVaRCalculator;
 import org.wso2.siddhi.extension.var.models.util.Event;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
@@ -20,7 +21,7 @@ import java.util.*;
  */
 public class BacktestIncrementalTest {
     private static final int BATCH_SIZE = 251;
-    private static final double VAR_CI = 0.99;
+    private static final double VAR_CI = 0.90;
     private static final double BACKTEST_CI = 0.05;
     //    private static final int NUMBER_OF_ASSETS = 25;
     private static int NUMBER_OF_SAMPLES;
@@ -43,9 +44,9 @@ public class BacktestIncrementalTest {
     }
 
     public void runTest() throws FileNotFoundException {
-        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+//        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
 //        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
-//        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
+        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
 
         ArrayList<Event> list = readBacktestData();
 
