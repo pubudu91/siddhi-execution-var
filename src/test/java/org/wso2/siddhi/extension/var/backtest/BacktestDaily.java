@@ -79,7 +79,6 @@ public class BacktestDaily {
 
     private void runStandardCoverageTest() {
 
-
         BinomialDistribution dist = new BinomialDistribution(VAR_PER_SAMPLE, 1 - VAR_CI);
         double leftEnd = dist.inverseCumulativeProbability(BACKTEST_CI / 2);
         double rightEnd = dist.inverseCumulativeProbability(1 - (BACKTEST_CI / 2));
