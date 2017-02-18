@@ -96,9 +96,9 @@ public class MonteCarloVarCalculator extends VaRCalculator {
             simulatedListBeforeAssetUpdate = tempAsset.getPreviousSimulatedList();
 
             /**
-             * get current portfolio market value
+             * accumulated portfolio market value before the asset being changed
              */
-            double currentPortfolioMarketValue = monteCarloPortfolio.getCurrentPortfolioValue();
+            double previousPortfolioMarketValue = monteCarloPortfolio.getPreviousPortfolioValue();
 
             /**
              * get the final distribution vector before the portfolio being changed
@@ -112,12 +112,8 @@ public class MonteCarloVarCalculator extends VaRCalculator {
              * calculation has never happened before.
              */
 
-            if (currentPortfolioMarketValue > 0 && finalPortfolioValuesBeforeAssetUpdate != null) {
+            if (previousPortfolioMarketValue > 0 && finalPortfolioValuesBeforeAssetUpdate != null) {
 
-                /**
-                 * accumulated portfolio market value before the asset being changed
-                 */
-                double previousPortfolioMarketValue = currentPortfolioMarketValue;
                 /**
                  * calculate latest portfolio value and store inside portfolio. set the latest stock price as
                  * recentStock price in the changed asset
@@ -165,7 +161,7 @@ public class MonteCarloVarCalculator extends VaRCalculator {
                             currentSharesCount);
                 }
             }
-            monteCarloPortfolio.setCurrentPortfolioValue(latestMarketValue);
+            monteCarloPortfolio.setPreviousPortfolioValue(latestMarketValue);
         } else {
             /**
              * new Asset being added later. portfolio can have distribution already but asset may not have historical
