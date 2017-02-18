@@ -27,8 +27,8 @@ public class BacktestIncrementalTest {
      **/
     private static final double VAR_CI = 0.99;
     private static final String DATA_SET = "set-3";
-//    private static final String METHOD = "historical";
-    private static final String METHOD = "parametric";
+    private static final String METHOD = "historical";
+//    private static final String METHOD = "parametric";
 //    private static final String METHOD = "montecarlo";
     /**
      * end
