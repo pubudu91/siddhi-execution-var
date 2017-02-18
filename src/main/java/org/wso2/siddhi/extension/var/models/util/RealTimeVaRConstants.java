@@ -27,4 +27,6 @@ public class RealTimeVaRConstants {
     public static final int MONTE_CARLO_TIME_SLICE_INDEX = 8;
     public static final String MONTE_CARLO_CALCULATION_TECHNIQUE_AVX = "AVX";
     public static final String MONTE_CARLO_CALCULATION_TECHNIQUE_JAVA_CONCURRENT = "JAVA_CONCURRENT";
+    public static final String MONTE_CARLO_CALCULATION_TECHNIQUE_ENV_VARIABLE = "MONTECARLO_SIMULATION";
+
 }
