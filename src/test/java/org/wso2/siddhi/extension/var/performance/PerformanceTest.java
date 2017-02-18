@@ -67,12 +67,12 @@ public class PerformanceTest {
                 count++;
                 event = iterator.next();
 
-                if(count > FILL_COUNT){
+                if (count > FILL_COUNT) {
                     start = System.currentTimeMillis();
                     varCalculator.calculateValueAtRisk(event);
                     stop = System.currentTimeMillis();
                     averageTime.addValue(stop - start);
-                }else{
+                } else {
                     varCalculator.calculateValueAtRisk(event);
                 }
             }
