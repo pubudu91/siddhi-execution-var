@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  */
 public class BacktestIncremental {
     private static final int BATCH_SIZE = 251;
-    private static final double VAR_CI = 0.95;
+    private static final double VAR_CI = 0.90;
     private static final String PORTFOLIO_KEY = "Portfolio 1";
     private double previousPortfolioValue;
     private double currentPortfolioValue;
@@ -33,7 +33,7 @@ public class BacktestIncremental {
 
     public void runTest() throws FileNotFoundException {
 
-        Formatter formatter = new Formatter(new File("ParametricBacktestResults.csv"));
+        Formatter formatter = new Formatter(new File("MonteCarloBacktestResults.csv"));
         formatter.format("%s%n", "date,varclose,varavg,varmax,corrloss,varmedian,varmode,lossclose,lossavg,lossmax," +
                 "corrvar,lossmedian,lossmode");
         String[] dates = {"jan-23", "jan-24", "jan-25", "jan-26", "jan-27", "jan-30", "jan-31", "feb-1", "feb-2",

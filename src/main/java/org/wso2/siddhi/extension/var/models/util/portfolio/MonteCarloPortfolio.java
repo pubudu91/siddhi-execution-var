@@ -7,7 +7,7 @@ import java.util.Map;
  */
 public class MonteCarloPortfolio extends Portfolio {
 
-    private double currentPortfolioValue;
+    private double previousPortfolioValue;
     private double[] finalPortfolioValueList = null;
 
     public MonteCarloPortfolio(String ID, Map<String, Integer> assets) {
@@ -22,12 +22,12 @@ public class MonteCarloPortfolio extends Portfolio {
         this.finalPortfolioValueList = finalPortfolioValueList;
     }
 
-    public double getCurrentPortfolioValue() {
-        return currentPortfolioValue;
+    public double getPreviousPortfolioValue() {
+        return previousPortfolioValue;
     }
 
-    public void setCurrentPortfolioValue(double currentPortfolioValue) {
-        this.currentPortfolioValue = currentPortfolioValue;
+    public void setPreviousPortfolioValue(double previousPortfolioValue) {
+        this.previousPortfolioValue = previousPortfolioValue;
     }
 
 }

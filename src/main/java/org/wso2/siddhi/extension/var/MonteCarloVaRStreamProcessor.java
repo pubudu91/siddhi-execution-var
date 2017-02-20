@@ -44,13 +44,13 @@ public class MonteCarloVaRStreamProcessor extends StreamProcessor {
 
                 //Portfolio ID
                 Object portfolioID;
-                if((portfolioID = attributeExpressionExecutors[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].execute
+                if ((portfolioID = attributeExpressionExecutors[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].execute
                         (complexEvent)) != null) {
                     event.setPortfolioID(portfolioID.toString());
                 }
                 //Quantity
                 Object quantity;
-                if((quantity = attributeExpressionExecutors[RealTimeVaRConstants.QUANTITY_INDEX].execute
+                if ((quantity = attributeExpressionExecutors[RealTimeVaRConstants.QUANTITY_INDEX].execute
                         (complexEvent)) != null) {
                     event.setQuantity((Integer) quantity);
                 }
@@ -122,11 +122,12 @@ public class MonteCarloVaRStreamProcessor extends StreamProcessor {
 
     @Override
     public Object[] currentState() {
-        return new Object[0];
+        Object[] currentStateObjects = {varCalculator};
+        return currentStateObjects;
     }
 
     @Override
     public void restoreState(Object[] state) {
-
+        varCalculator = (MonteCarloVarCalculator) state[0];
     }
 }

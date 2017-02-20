@@ -37,8 +37,8 @@ public class ParametricVaRCalculator extends VaRCalculator {
      */
     @Override
     public Double processData(Portfolio portfolio, Event event) {
-        //return varIncremental(portfolio,event);
-        return varBatchMode(portfolio);
+        return varIncremental(portfolio,event);
+        //return varBatchMode(portfolio);
     }
 
     public Double varIncremental(Portfolio portfolio,Event event){

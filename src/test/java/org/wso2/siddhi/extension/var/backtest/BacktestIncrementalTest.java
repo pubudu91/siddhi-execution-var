@@ -6,6 +6,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.json.JSONObject;
 import org.wso2.siddhi.extension.var.models.VaRCalculator;
 import org.wso2.siddhi.extension.var.models.historical.HistoricalVaRCalculator;
+import org.wso2.siddhi.extension.var.models.montecarlo.MonteCarloVarCalculator;
 import org.wso2.siddhi.extension.var.models.parametric.ParametricVaRCalculator;
 import org.wso2.siddhi.extension.var.models.util.Event;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
@@ -20,22 +21,31 @@ import java.util.*;
  */
 public class BacktestIncrementalTest {
     private static final int BATCH_SIZE = 251;
+
+    /**
+     * set parameters before run
+     **/
     private static final double VAR_CI = 0.99;
+    private static final String DATA_SET = "set-3";
+    private static final String METHOD = "historical";
+//    private static final String METHOD = "parametric";
+//    private static final String METHOD = "montecarlo";
+    /**
+     * end
+     **/
+
     private static final double BACKTEST_CI = 0.05;
-    //    private static final int NUMBER_OF_ASSETS = 25;
     private static int NUMBER_OF_SAMPLES;
     private static final int VAR_PER_SAMPLE = 500;
     private static final String PORTFOLIO_KEY = "Portfolio 1";
     private ArrayList<Double> varList;
     private ArrayList<Double> lossList;
-    private ArrayList<Double> meanViolations;
 //    private double previousPortfolioValue;
 //    private double currentPortfolioValue;
 
     public BacktestIncrementalTest() {
         varList = new ArrayList();
         lossList = new ArrayList();
-        meanViolations = new ArrayList();
     }
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -43,9 +53,16 @@ public class BacktestIncrementalTest {
     }
 
     public void runTest() throws FileNotFoundException {
-        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
-//        VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
-//        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
+
+        VaRCalculator varCalculator = null;
+        if (METHOD.equalsIgnoreCase("historical"))
+            varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        else if (METHOD.equalsIgnoreCase("parametric"))
+            varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
+        else if (METHOD.equalsIgnoreCase("montecarlo"))
+            varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
+        else
+            System.exit(0);
 
         ArrayList<Event> list = readBacktestData();
 
@@ -115,21 +132,29 @@ public class BacktestIncrementalTest {
     }
 
     private void runViolationTest() {
+        Formatter formatter = null;
+        try {
+            formatter = new Formatter(new File(METHOD + "-" + DATA_SET + "-" + VAR_CI + ".csv"));
+            formatter.format("%s,%s%n", "VaR", "Loss");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         DescriptiveStatistics lossStat = new DescriptiveStatistics(lossList.stream().mapToDouble(Double::doubleValue).toArray());
         DescriptiveStatistics varStat = new DescriptiveStatistics(varList.stream().mapToDouble(Double::doubleValue).toArray());
         DescriptiveStatistics violationStat = new DescriptiveStatistics();
         int failCount = 0;
         int numberOfData = varList.size();
         for (int i = 0; i < numberOfData - 1; i++) {
+            formatter.format("%.3f,%.3f%n", varList.get(i), lossList.get(i + 1));
             if (lossList.get(i + 1) < varList.get(i)) {
                 violationStat.addValue(varList.get(i));
                 failCount++;
             }
         }
+        formatter.close();
+        System.out.println("Number of data : " + numberOfData);
         System.out.printf("Loss Mean : %.2f\n", lossStat.getMean());
-        System.out.printf("Loss SD : %.2f\n", lossStat.getStandardDeviation());
         System.out.printf("Var Mean : %.2f\n", varStat.getMean());
-        System.out.printf("Var SD : %.2f\n", varStat.getStandardDeviation());
         System.out.printf("Number of violations : %d\n", failCount);
         System.out.printf("Mean Violation : %.2f\n", violationStat.getMean());
         System.out.printf("Violation Rate : %.2f%%\n", ((double) failCount) / (numberOfData - 1) * 100);
@@ -141,8 +166,12 @@ public class BacktestIncrementalTest {
         Set<String> keys = portfolio.getAssetListKeySet();
 
         for (String symbol : keys) {
-            Asset asset = assetMap.get(symbol);
-            currentPortfolioValue += asset.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities(symbol);
+            try {
+                Asset asset = assetMap.get(symbol);
+                currentPortfolioValue += asset.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities(symbol);
+            } catch (Exception e) {
+                System.out.println(symbol);
+            }
         }
 
         return currentPortfolioValue;
@@ -163,7 +192,7 @@ public class BacktestIncrementalTest {
 
     public ArrayList<Event> readBacktestData() throws FileNotFoundException {
         ClassLoader classLoader = getClass().getClassLoader();
-        Scanner scan = new Scanner(new File(classLoader.getResource("backtest-data-aio.csv").getFile()));
+        Scanner scan = new Scanner(new File(classLoader.getResource("backtest-data-aio-" + DATA_SET + ".csv").getFile()));
         ArrayList<Event> list = new ArrayList();
         Event event;
         String[] split;
