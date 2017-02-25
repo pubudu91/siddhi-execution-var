@@ -6,19 +6,17 @@ import java.util.Map;
  * Created by dilini92 on 1/9/17.
  */
 public class HistoricalPortfolio extends Portfolio {
-    private double historicalVarValue;
+    private double[] cumulativeLossValues;
 
     public HistoricalPortfolio(String ID, Map<String, Integer> assets) {
         super(ID, assets);
     }
 
-    public double getHistoricalVarValue() {
-        return historicalVarValue;
+    public double[] getCumulativeLossValues() {
+        return cumulativeLossValues;
     }
 
-    public void setHistoricalVarValue(double historicalVarValue) {
-        this.historicalVarValue = historicalVarValue;
+    public void setCumulativeLossValues(double[] cumulativeLossValues) {
+        this.cumulativeLossValues = cumulativeLossValues;
     }
-
-
 }

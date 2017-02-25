@@ -68,8 +68,4 @@ public abstract class Portfolio {
             totalPortfolioValue += currentShares * event.getPrice();
         }
     }
-
-    public boolean containsAsset(String symbol) {
-        return currentAssetQuantities.containsKey(symbol);
-    }
 }

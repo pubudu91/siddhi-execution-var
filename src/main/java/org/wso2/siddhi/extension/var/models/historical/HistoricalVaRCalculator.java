@@ -1,5 +1,6 @@
 package org.wso2.siddhi.extension.var.models.historical;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.siddhi.extension.var.models.util.Event;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
 import org.wso2.siddhi.extension.var.models.util.asset.HistoricalAsset;
@@ -7,7 +8,7 @@ import org.wso2.siddhi.extension.var.models.util.portfolio.HistoricalPortfolio;
 import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
 import org.wso2.siddhi.extension.var.models.VaRCalculator;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by dilini92 on 6/26/16.
@@ -25,38 +26,47 @@ public class HistoricalVaRCalculator extends VaRCalculator {
 
     /**
      * @return the var of the portfolio
-     * Calculate the contribution of the changed asset to the portfolio and then adjust the previous VaR value
-     * using Historical data
+     * Calculate the contribution of the changed asset to the portfolio loss and then adjust the previous loss value
+     * using it.
+     * A distribution is constructed using those loss values and the ultimate VaR value is obtained.
      */
     @Override
     public Double processData(Portfolio portfolio, Event event) {
-
         HistoricalPortfolio historicalPortfolio = (HistoricalPortfolio) portfolio;
         String symbol = event.getSymbol();
         HistoricalAsset asset = (HistoricalAsset) getAssetPool().get(symbol);
+        double[] currentSimulatedPriceList = asset.getCurrentSimulatedPriceList();
+        double[] cumulativeLossValues = historicalPortfolio.getCumulativeLossValues();
 
-        //for historical simulate there should be at least one return value
-        if (asset.getNumberOfReturnValues() > 0) {
-            double var = historicalPortfolio.getHistoricalVarValue();
+        //there should be at least one return value
+        if(asset.getNumberOfReturnValues() > 0) {
+            DescriptiveStatistics descriptiveStatistics = new DescriptiveStatistics(currentSimulatedPriceList.length);
 
-            double previousReturnValue = asset.getPreviousReturnValue();
-            double currentReturnValue = asset.getCurrentReturnValue();
+            //first time for the portfolio
+            if(cumulativeLossValues == null){
+                cumulativeLossValues = new double[getBatchSize() - 1];
+            }
 
-            int previousAssetQuantities = historicalPortfolio.getPreviousAssetQuantities(symbol);
-            int currentAssetQuantities = historicalPortfolio.getCurrentAssetQuantities(symbol);
+            double previousSimulatedPriceList[] = asset.getPreviousSimulatedPriceList();
+            int previousQty = portfolio.getPreviousAssetQuantities(symbol);
+            int currentQty = portfolio.getCurrentAssetQuantities(symbol);
 
-            double previousPrice = asset.getPreviousStockPrice();
-            double currentPrice = asset.getCurrentStockPrice();
+            //incrementally calculate the cumulative loss value
+            //new cumulative loss value = previous loss value + adjustment
+            for (int i = 0; i < currentSimulatedPriceList.length; i++) {
+                //2nd time for the portfolio
+                if(i < previousSimulatedPriceList.length){
+                    cumulativeLossValues[i] = cumulativeLossValues[i] -
+                            (previousSimulatedPriceList[i] * previousQty);
+                }
 
-            //remove the contribution of the asset before the price was changed
-            var -= previousReturnValue * previousPrice * previousAssetQuantities;
+                //incrementally calculate the cumulative loss value
+                cumulativeLossValues[i] += (currentSimulatedPriceList[i] * currentQty);
+                descriptiveStatistics.addValue(cumulativeLossValues[i]);
+            }
 
-            //add the new contribution of the asset after the price changed.
-            var += currentReturnValue * currentPrice * currentAssetQuantities;
-
-            historicalPortfolio.setHistoricalVarValue(var);
-
-            return var;
+            historicalPortfolio.setCumulativeLossValues(cumulativeLossValues);
+            return descriptiveStatistics.getPercentile((1 - getConfidenceInterval()) * 100);
         }
         return null;
     }
@@ -69,10 +79,26 @@ public class HistoricalVaRCalculator extends VaRCalculator {
     @Override
     public void simulateChangedAsset(String symbol) {
         HistoricalAsset asset = (HistoricalAsset) getAssetPool().get(symbol);
+        //there should be at least one return value
         if (asset.getNumberOfReturnValues() > 0) {
-            asset.setPreviousReturnValue(asset.getCurrentReturnValue());
-            double currentReturnValue = asset.getPercentile((1 - getConfidenceInterval()) * 100);
-            asset.setCurrentReturnValue(currentReturnValue);
+            double returnValues[] = asset.getReturnValues();
+            double[] currentSimulatedPriceList = asset.getCurrentSimulatedPriceList();
+
+            //if there are no current simulated price values
+            if(currentSimulatedPriceList == null){
+                asset.setPreviousSimulatedPriceList(new double[1]);
+            }else{
+                //set the current simulated list as the previous one
+                asset.setPreviousSimulatedPriceList(currentSimulatedPriceList);
+            }
+
+            double tempSimulatedPriceList[] = new double[returnValues.length];
+
+            //simulated price = return value * current stock price
+            for (int i = 0; i < returnValues.length; i++) {
+                tempSimulatedPriceList[i] = -returnValues[i] * asset.getCurrentStockPrice();
+            }
+            asset.setCurrentSimulatedPriceList(tempSimulatedPriceList);
         }
     }
 

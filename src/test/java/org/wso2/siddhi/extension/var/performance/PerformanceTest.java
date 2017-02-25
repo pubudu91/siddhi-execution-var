@@ -19,6 +19,10 @@ public class PerformanceTest {
     private static final int BATCH_SIZE = 251;
     private static final double VAR_CI = 0.95;
 
+    private static final int PRICE_EVENT = 2;
+    private static final int PORTFOLIO_EVENT = 4;
+    private static final int FILL_COUNT = 6301;
+
     private DescriptiveStatistics averageTime;
 
     public PerformanceTest() {
@@ -26,18 +30,19 @@ public class PerformanceTest {
     }
 
     private ArrayList<Event> readPerformanceTestData() throws IOException {
-        FileReader reader = new FileReader(new File("/home/dilip/FYP_UPDATE/siddhi/modules/siddhi-extensions/var/src/test/resources/PerformanceTestData.csv"));
+        ClassLoader classLoader = getClass().getClassLoader();
+        FileReader reader = new FileReader(new File(classLoader.getResource("PerformanceTestData.csv").getFile()));
 
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
         String data[];
         ArrayList<Event> list = new ArrayList();
 
-        while((line = bufferedReader.readLine()) != null){
+        while ((line = bufferedReader.readLine()) != null) {
             data = line.split(",");
-            if(data.length == 2){
+            if (data.length == PRICE_EVENT) {
                 list.add(new Event(null, 0, data[0], Double.parseDouble(data[1])));
-            }else if(data.length == 4){
+            } else if (data.length == PORTFOLIO_EVENT) {
                 list.add(new Event(data[0], Integer.parseInt(data[1]), data[2], Double.parseDouble(data[1])));
             }
         }
@@ -45,7 +50,7 @@ public class PerformanceTest {
         return list;
     }
 
-    private double runPerformanceTest(){
+    private double runPerformanceTest() {
 //        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
         VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
 //        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
@@ -58,16 +63,17 @@ public class PerformanceTest {
             ArrayList<Event> list = readPerformanceTestData();
             Iterator<Event> iterator = list.iterator();
 
-            while(iterator.hasNext()){
+            while (iterator.hasNext()) {
                 count++;
                 event = iterator.next();
-                if(count < 6301){
-                    varCalculator.calculateValueAtRisk(event);
-                }else{
+
+                if (count > FILL_COUNT) {
                     start = System.currentTimeMillis();
                     varCalculator.calculateValueAtRisk(event);
                     stop = System.currentTimeMillis();
                     averageTime.addValue(stop - start);
+                } else {
+                    varCalculator.calculateValueAtRisk(event);
                 }
             }
 

@@ -2,6 +2,7 @@ package org.wso2.siddhi.extension.var.models.montecarlo;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.wso2.siddhi.extension.var.models.util.RealTimeVaRConstants;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
 
 /**
@@ -31,7 +32,6 @@ public class MonteCarloNativeSimulationTest {
         nativeCalculatorReference.simulate(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
 //        nativeCalculatorReference.simulation(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
 //        nativeCalculatorReference.parallelSimulation(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
-
         long end = System.currentTimeMillis();
         System.out.println((double) (end - start) / 1000);
 //        Assert.assertNotNull(nativeCalculatorReference);
