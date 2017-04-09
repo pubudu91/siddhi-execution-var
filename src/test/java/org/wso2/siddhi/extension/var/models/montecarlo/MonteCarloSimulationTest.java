@@ -37,11 +37,11 @@ public class MonteCarloSimulationTest {
 
     @Test
     public void simulation() throws Exception {
-        int horizontalCount = 2500;
+        int horizontalCount = 1000;
         simulationReference = new MonteCarloStandardSimulation();
         double temArr[];
-        temArr = simulationReference.simulation(0.026, 0.034, 0.01, 235.31, horizontalCount, 100);
-        Assert.assertEquals(2500, temArr.length);
+        temArr = simulationReference.simulation(0.87, 0.078, 0.01, 354.23, horizontalCount, 100);
+        Assert.assertEquals(1000, temArr.length);
     }
 
     @Test
