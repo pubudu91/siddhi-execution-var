@@ -37,11 +37,6 @@ public class ParametricVaRCalculator extends VaRCalculator {
      */
     @Override
     public Double processData(Portfolio portfolio, Event event) {
-        return varIncremental(portfolio,event);
-        //return varBatchMode(portfolio);
-    }
-
-    public Double varIncremental(Portfolio portfolio,Event event){
         Asset asset = getAssetPool().get(event.getSymbol());
 
         if (asset.getNumberOfReturnValues() > 1) {
@@ -70,6 +65,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
             return var;
         }
         return null;
+
     }
 
     /**
@@ -189,76 +185,6 @@ public class ParametricVaRCalculator extends VaRCalculator {
     @Override
     public Asset createAsset(int windowSize) {
         return new ParametricAsset(windowSize);
-    }
-
-    public Double varBatchMode(Portfolio portfolio) {
-        double priceReturns[][] = new double[getBatchSize() - 1][portfolio.getAssetListKeySet().size()];
-        double portfolioValue = 0.0;
-
-        double weightage[][] = new double[1][portfolio.getAssetListKeySet().size()];
-        DescriptiveStatistics stat = new DescriptiveStatistics();
-        stat.setWindowSize(getBatchSize() - 1);
-
-        Set<String> keys = portfolio.getAssetListKeySet();
-        String symbols[] = keys.toArray(new String[portfolio.getAssetListKeySet().size()]);
-        double[][] means = new double[1][portfolio.getAssetListKeySet().size()];
-
-        Asset asset;
-        double[] returnList;
-
-        /** fill priceReturns and calculate means **/
-        for (int i = 0; i < symbols.length; i++) {
-            asset = getAssetPool().get(symbols[i]);
-            returnList = asset.getReturnValues();
-            weightage[0][i] = asset.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities(symbols[i]);
-            portfolioValue += weightage[0][i];
-            for (int j = 0; j < returnList.length; j++) {
-                priceReturns[j][i] = returnList[j];
-                stat.addValue(priceReturns[j][i]);
-            }
-            if (returnList.length == 0)
-                means[0][i] = 0;
-            else
-                means[0][i] = stat.getMean();
-        }
-
-        /** calculate  weight-ages **/
-        for (int i = 0; i < symbols.length; i++) {
-            weightage[0][i] = weightage[0][i] / portfolioValue;
-        }
-
-        /** calculate excess returns **/
-        double[][] excessReturns = new double[getBatchSize() - 1][portfolio.getAssetListKeySet().size()];
-        for (int i = 0; i < portfolio.getAssetListKeySet().size(); i++) {
-            for (int j = 0; j < getAssetPool().get(symbols[i]).getNumberOfReturnValues(); j++) {
-                excessReturns[j][i] = priceReturns[j][i] - means[0][i];
-            }
-        }
-
-        /** create matrices from excess returns, means  and weight-age **/
-        RealMatrix returnMatrix = new Array2DRowRealMatrix(excessReturns);
-        RealMatrix weightageMatrix = new Array2DRowRealMatrix(weightage);
-        RealMatrix meanMatrix = new Array2DRowRealMatrix(means);
-
-        /** matrix multiplications using apache math library **/
-        RealMatrix VCV = (returnMatrix.transpose().multiply(returnMatrix)).scalarMultiply(1.0 / (getBatchSize() - 2));
-        RealMatrix PV = weightageMatrix.multiply(VCV).multiply(weightageMatrix.transpose());
-        RealMatrix PM = weightageMatrix.multiply(meanMatrix.transpose());
-
-        double pv = PV.getData()[0][0];
-        double pm = PM.getData()[0][0];
-
-        /** NormalDistribution throws an exception when ps = 0, this condition return pm when ps = 0 **/
-        if (pv == 0) {
-            //System.out.print(portfolio.getID() + " : " + pm + " ");
-            return pm;
-        }
-
-        double ps = Math.sqrt(pv);
-        NormalDistribution n = new NormalDistribution(pm, ps);
-        double var = n.inverseCumulativeProbability(1 - getConfidenceInterval());
-        //System.out.print(portfolio.getID() + " : " + var * portfolioValue + " ");
-        return var * portfolioValue;
     }
 
 }
