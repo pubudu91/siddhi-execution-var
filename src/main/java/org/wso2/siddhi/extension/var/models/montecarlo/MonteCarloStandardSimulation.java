@@ -37,7 +37,6 @@ public class MonteCarloStandardSimulation {
     }
 
     private double getRandomZValThreadSafe() {
-//        System.out.println(rnd.nextDouble());
         randomZValue = this.getDistribution().inverseCumulativeProbability(rnd.nextDouble());
         return randomZValue;
     }
@@ -77,14 +76,14 @@ public class MonteCarloStandardSimulation {
         parameters.put("distributionMean", mean);
         parameters.put("standardDeviation", std);
         parameters.put("timeSlice", timeSlice);
-        parameters.put("randomValue", 1.96);
+        parameters.put("randomValue", this.getRandomZVal());
         parameters.put("currentStockValue", currentStockPrice);
 
         for (int i = 0; i < numberOfTrials; i++) {
             parameters.put("currentStockValue", currentStockPrice);
             for (int j = 0; j < calculationsPerDay; j++) {
                 tempStockValue = this.getBrownianMotionOutput(parameters);
-                parameters.put("randomValue", 1.96);
+                parameters.put("randomValue", this.getRandomZVal());
                 parameters.put("currentStockValue", tempStockValue);
             }
             terminalStockValues[i] = tempStockValue;
