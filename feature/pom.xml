@@ -20,14 +20,60 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>siddhi-execution-var-parent</artifactId>
-        <groupId>org.wso2.extension.siddhi.execution.var</groupId>
-        <version>1.0.0-SNAPSHOT</version>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.wso2.extension.siddhi.execution.var</groupId>
+        <artifactId>siddhi-execution-var-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
     <artifactId>siddhi-execution-var-feature</artifactId>
+    <packaging>pom</packaging>
+    <name>WSO2 Siddhi Execution Extension - Value at Risk Feature</name>
+    <url>http://wso2.org</url>
+    <description>This feature contains Siddhi extension feature for real time Value at Risk computation.</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.extension.siddhi.execution.var</groupId>
+            <artifactId>siddhi-execution-var</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wso2.maven</groupId>
+                <artifactId>carbon-p2-plugin</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <id>4-p2-feature-generation</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>p2-feature-gen</goal>
+                        </goals>
+                        <configuration>
+                            <id>siddhi-execution-math</id>
+                            <propertiesFile>feature.properties</propertiesFile>
+                            <adviceFile>
+                                <properties>
+                                    <propertyDef>org.wso2.carbon.p2.category.type:server</propertyDef>
+                                    <propertyDef>org.eclipse.equinox.p2.type.group:false</propertyDef>
+                                </properties>
+                            </adviceFile>
+                            <bundles>
+                                <bundleDef>
+                                    org.wso2.extension.siddhi.execution.var:siddhi-execution-var
+                                </bundleDef>
+                            </bundles>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
