@@ -31,7 +31,7 @@
 
     <packaging>bundle</packaging>
     <artifactId>siddhi-execution-var</artifactId>
-    <name>Siddhi Extension - Value at Risk</name>
+    <name>WSO2 Siddhi Execution Extension - Value at Risk</name>
     <url>http://wso2.org</url>
 
     <dependencies>
