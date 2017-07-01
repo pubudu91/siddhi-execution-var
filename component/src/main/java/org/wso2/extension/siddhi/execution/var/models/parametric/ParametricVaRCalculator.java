@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.models.parametric;
+package org.wso2.extension.siddhi.execution.var.models.parametric;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -8,13 +8,12 @@ import java.util.*;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.HashBasedTable;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.wso2.siddhi.extension.var.models.VaRCalculator;
-import org.wso2.siddhi.extension.var.models.util.Event;
-import org.wso2.siddhi.extension.var.models.util.asset.Asset;
-import org.wso2.siddhi.extension.var.models.util.asset.ParametricAsset;
-import org.wso2.siddhi.extension.var.models.util.portfolio.ParametricPortfolio;
-import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
+import org.wso2.extension.siddhi.execution.var.models.VaRCalculator;
+import org.wso2.extension.siddhi.execution.var.models.util.Event;
+import org.wso2.extension.siddhi.execution.var.models.util.asset.Asset;
+import org.wso2.extension.siddhi.execution.var.models.util.asset.ParametricAsset;
+import org.wso2.extension.siddhi.execution.var.models.util.portfolio.ParametricPortfolio;
+import org.wso2.extension.siddhi.execution.var.models.util.portfolio.Portfolio;
 
 /*
  * Created by dilip on 30/06/16.

@@ -1,10 +1,10 @@
-package org.wso2.siddhi.extension.var.models;
+package org.wso2.extension.siddhi.execution.var.models;
 
 import org.json.JSONObject;
-import org.wso2.siddhi.extension.var.models.util.Event;
-import org.wso2.siddhi.extension.var.models.util.RealTimeVaRConstants;
-import org.wso2.siddhi.extension.var.models.util.asset.Asset;
-import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
+import org.wso2.extension.siddhi.execution.var.models.util.Event;
+import org.wso2.extension.siddhi.execution.var.models.util.RealTimeVaRConstants;
+import org.wso2.extension.siddhi.execution.var.models.util.asset.Asset;
+import org.wso2.extension.siddhi.execution.var.models.util.portfolio.Portfolio;
 
 import java.util.HashMap;
 import java.util.Map;

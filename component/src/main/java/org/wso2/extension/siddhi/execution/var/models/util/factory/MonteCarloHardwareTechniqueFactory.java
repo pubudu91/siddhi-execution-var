@@ -1,8 +1,8 @@
-package org.wso2.siddhi.extension.var.models.util.factory;
+package org.wso2.extension.siddhi.execution.var.models.util.factory;
 
-import org.wso2.siddhi.extension.var.models.montecarlo.MonteCarloNativeSimulation;
-import org.wso2.siddhi.extension.var.models.montecarlo.MonteCarloStandardSimulation;
-import org.wso2.siddhi.extension.var.models.util.RealTimeVaRConstants;
+import org.wso2.extension.siddhi.execution.var.models.montecarlo.MonteCarloNativeSimulation;
+import org.wso2.extension.siddhi.execution.var.models.montecarlo.MonteCarloStandardSimulation;
+import org.wso2.extension.siddhi.execution.var.models.util.RealTimeVaRConstants;
 
 /**
  * Created by yellowflash on 4/8/17.

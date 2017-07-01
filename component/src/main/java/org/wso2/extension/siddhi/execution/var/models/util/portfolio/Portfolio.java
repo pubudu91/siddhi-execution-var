@@ -1,6 +1,6 @@
-package org.wso2.siddhi.extension.var.models.util.portfolio;
+package org.wso2.extension.siddhi.execution.var.models.util.portfolio;
 
-import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.extension.siddhi.execution.var.models.util.Event;
 
 import java.util.HashMap;
 import java.util.Map;

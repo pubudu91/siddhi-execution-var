@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.models.util;
+package org.wso2.extension.siddhi.execution.var.models.util;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.util.FastMath;

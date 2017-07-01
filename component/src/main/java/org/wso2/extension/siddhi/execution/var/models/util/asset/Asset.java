@@ -1,6 +1,6 @@
-package org.wso2.siddhi.extension.var.models.util.asset;
+package org.wso2.extension.siddhi.execution.var.models.util.asset;
 
-import org.wso2.siddhi.extension.var.models.util.CustomDescriptiveStatistics;
+import org.wso2.extension.siddhi.execution.var.models.util.CustomDescriptiveStatistics;
 
 /**
  * Created by flash on 6/30/16.

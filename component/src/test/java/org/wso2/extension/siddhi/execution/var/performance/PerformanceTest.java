@@ -1,16 +1,13 @@
-package org.wso2.siddhi.extension.var.performance;
+package org.wso2.extension.siddhi.execution.var.performance;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.wso2.siddhi.extension.var.models.VaRCalculator;
-import org.wso2.siddhi.extension.var.models.historical.HistoricalVaRCalculator;
-import org.wso2.siddhi.extension.var.models.montecarlo.MonteCarloVarCalculator;
-import org.wso2.siddhi.extension.var.models.parametric.ParametricVaRCalculator;
-import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.extension.siddhi.execution.var.models.VaRCalculator;
+import org.wso2.extension.siddhi.execution.var.models.parametric.ParametricVaRCalculator;
+import org.wso2.extension.siddhi.execution.var.models.util.Event;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Scanner;
 
 /**
  * Created by dilini92 on 1/17/17.

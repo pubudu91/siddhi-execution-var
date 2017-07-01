@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.models.montecarlo;
+package org.wso2.extension.siddhi.execution.var.models.montecarlo;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;

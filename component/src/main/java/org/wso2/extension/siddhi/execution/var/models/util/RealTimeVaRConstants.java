@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.models.util;
+package org.wso2.extension.siddhi.execution.var.models.util;
 
 /**
  * Created by dilini92 on 9/1/16.

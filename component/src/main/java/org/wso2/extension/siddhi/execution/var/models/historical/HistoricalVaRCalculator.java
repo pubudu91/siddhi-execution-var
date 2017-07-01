@@ -1,12 +1,12 @@
-package org.wso2.siddhi.extension.var.models.historical;
+package org.wso2.extension.siddhi.execution.var.models.historical;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.wso2.siddhi.extension.var.models.util.Event;
-import org.wso2.siddhi.extension.var.models.util.asset.Asset;
-import org.wso2.siddhi.extension.var.models.util.asset.HistoricalAsset;
-import org.wso2.siddhi.extension.var.models.util.portfolio.HistoricalPortfolio;
-import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
-import org.wso2.siddhi.extension.var.models.VaRCalculator;
+import org.wso2.extension.siddhi.execution.var.models.VaRCalculator;
+import org.wso2.extension.siddhi.execution.var.models.util.Event;
+import org.wso2.extension.siddhi.execution.var.models.util.portfolio.HistoricalPortfolio;
+import org.wso2.extension.siddhi.execution.var.models.util.asset.Asset;
+import org.wso2.extension.siddhi.execution.var.models.util.asset.HistoricalAsset;
+import org.wso2.extension.siddhi.execution.var.models.util.portfolio.Portfolio;
 
 import java.util.*;
 

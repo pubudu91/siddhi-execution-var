@@ -1,9 +1,7 @@
-package org.wso2.siddhi.extension.var.models.montecarlo;
+package org.wso2.extension.siddhi.execution.var.models.montecarlo;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.wso2.siddhi.extension.var.models.util.RealTimeVaRConstants;
-import org.wso2.siddhi.extension.var.models.util.asset.Asset;
 
 /**
  * Created by yellowflash on 1/24/17.

@@ -1,8 +1,7 @@
-package org.wso2.siddhi.extension.var.models.parametric;
+package org.wso2.extension.siddhi.execution.var.models.parametric;
 
 import org.junit.Test;
-import org.wso2.siddhi.extension.var.models.parametric.ParametricVaRCalculator;
-import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.extension.siddhi.execution.var.models.util.Event;
 
 import java.io.File;
 import java.io.FileNotFoundException;

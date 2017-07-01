@@ -1,8 +1,8 @@
-package org.wso2.siddhi.extension.var.models.historical;
+package org.wso2.extension.siddhi.execution.var.models.historical;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.wso2.siddhi.extension.var.models.util.Event;
+import org.wso2.extension.siddhi.execution.var.models.util.Event;
 
 /**
  * Created by dilini92 on 1/27/17.

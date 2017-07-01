@@ -1,4 +1,4 @@
-package org.wso2.siddhi.extension.var.models.util.portfolio;
+package org.wso2.extension.siddhi.execution.var.models.util.portfolio;
 
 import java.util.Map;
 

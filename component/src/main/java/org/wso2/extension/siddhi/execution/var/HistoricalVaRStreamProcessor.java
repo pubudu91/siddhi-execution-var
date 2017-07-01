@@ -1,5 +1,9 @@
-package org.wso2.siddhi.extension.var;
+package org.wso2.extension.siddhi.execution.var;
 
+import org.wso2.extension.siddhi.execution.var.models.VaRCalculator;
+import org.wso2.extension.siddhi.execution.var.models.historical.HistoricalVaRCalculator;
+import org.wso2.extension.siddhi.execution.var.models.util.Event;
+import org.wso2.extension.siddhi.execution.var.models.util.RealTimeVaRConstants;
 import org.wso2.siddhi.core.config.ExecutionPlanContext;
 import org.wso2.siddhi.core.event.ComplexEvent;
 import org.wso2.siddhi.core.event.ComplexEventChunk;
@@ -11,10 +15,6 @@ import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.query.processor.Processor;
 import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.extension.var.models.VaRCalculator;
-import org.wso2.siddhi.extension.var.models.historical.HistoricalVaRCalculator;
-import org.wso2.siddhi.extension.var.models.util.Event;
-import org.wso2.siddhi.extension.var.models.util.RealTimeVaRConstants;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.exception.ExecutionPlanValidationException;

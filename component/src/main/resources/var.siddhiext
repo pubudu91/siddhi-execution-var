@@ -15,6 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-historical=org.wso2.siddhi.extension.var.HistoricalVaRStreamProcessor
-parametric=org.wso2.siddhi.extension.var.ParametricVaRStreamProcessor
-montecarlo=org.wso2.siddhi.extension.var.MonteCarloVaRStreamProcessor
+historical=HistoricalVaRStreamProcessor
+parametric=ParametricVaRStreamProcessor
+montecarlo=MonteCarloVaRStreamProcessor
