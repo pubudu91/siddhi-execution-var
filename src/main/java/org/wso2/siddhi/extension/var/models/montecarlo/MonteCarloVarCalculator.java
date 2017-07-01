@@ -1,13 +1,14 @@
 package org.wso2.siddhi.extension.var.models.montecarlo;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.wso2.siddhi.extension.var.models.VaRCalculator;
 import org.wso2.siddhi.extension.var.models.util.Event;
 import org.wso2.siddhi.extension.var.models.util.RealTimeVaRConstants;
 import org.wso2.siddhi.extension.var.models.util.asset.Asset;
 import org.wso2.siddhi.extension.var.models.util.asset.MonteCarloAsset;
+import org.wso2.siddhi.extension.var.models.util.factory.MonteCarloHardwareTechniqueFactory;
 import org.wso2.siddhi.extension.var.models.util.portfolio.MonteCarloPortfolio;
 import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
-import org.wso2.siddhi.extension.var.models.VaRCalculator;
 
 import java.util.Map;
 
@@ -186,28 +187,15 @@ public class MonteCarloVarCalculator extends VaRCalculator {
         tempAsset = (MonteCarloAsset) getAssetPool().get(symbol);
         historicalReturnValueList = tempAsset.getReturnValues();
         String calculationTechnique = System.getenv(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_ENV_VARIABLE);
-        MonteCarloNativeSimulation calculatorNativeReference = new MonteCarloNativeSimulation();
-        MonteCarloStandardSimulation calculatorStandardReference = new MonteCarloStandardSimulation();
+        MonteCarloHardwareTechniqueFactory factory = new MonteCarloHardwareTechniqueFactory();
 
         if (historicalReturnValueList != null && historicalReturnValueList.length > 0) {
             Double mean = tempAsset.getMean();
             Double std = tempAsset.getStandardDeviation();
             tempAsset.setPreviousSimulatedList(tempAsset.getSimulatedList());
-
-            if (calculationTechnique != null && calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_AVX)) {
-                generatedTerminalStockValues = calculatorNativeReference.simulate(mean, std, timeSlice,
-                        tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
-                tempAsset.setSimulatedList(generatedTerminalStockValues);
-            } else if (calculationTechnique != null && calculationTechnique.equals(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_JAVA_CONCURRENT)) {
-                calculatorStandardReference = new MonteCarloStandardSimulation(horizontalSimulationsCount);
-                generatedTerminalStockValues = calculatorStandardReference.parallelSimulation(mean, std, timeSlice,
-                        tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
-                tempAsset.setSimulatedList(generatedTerminalStockValues);
-            } else {
-                generatedTerminalStockValues = calculatorStandardReference.simulation(mean, std, timeSlice,
-                        tempAsset.getCurrentStockPrice(), horizontalSimulationsCount, verticalSimulationsCount);
-                tempAsset.setSimulatedList(generatedTerminalStockValues);
-            }
+            generatedTerminalStockValues = factory.getTechnique(calculationTechnique, tempAsset.getCurrentStockPrice(), mean, std, timeSlice,
+                    verticalSimulationsCount, horizontalSimulationsCount);
+            tempAsset.setSimulatedList(generatedTerminalStockValues);
         }
     }
 

@@ -37,7 +37,6 @@ public class MonteCarloStandardSimulation {
     }
 
     private double getRandomZValThreadSafe() {
-//        System.out.println(rnd.nextDouble());
         randomZValue = this.getDistribution().inverseCumulativeProbability(rnd.nextDouble());
         return randomZValue;
     }
