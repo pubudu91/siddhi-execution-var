@@ -77,12 +77,6 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         nextProcessor.process(streamEventChunk); //process the next stream event
     }
 
-    /**
-     * @param inputDefinition
-     * @param attributeExpressionExecutors
-     * @param executionPlanContext
-     * @return
-     */
     @Override
     protected List<Attribute> init(AbstractDefinition inputDefinition,
                                    ExpressionExecutor[] attributeExpressionExecutors,

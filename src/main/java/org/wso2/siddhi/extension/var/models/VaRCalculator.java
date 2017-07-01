@@ -9,9 +9,6 @@ import org.wso2.siddhi.extension.var.models.util.portfolio.Portfolio;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by dilini92 on 6/26/16.
- */
 public abstract class VaRCalculator {
     private double confidenceInterval;
     private int batchSize;
@@ -20,8 +17,8 @@ public abstract class VaRCalculator {
     private Map<String, Asset> assetPool;
 
     /**
-     * @param batchSize
-     * @param confidenceInterval
+     * @param batchSize             The no. of events to consider for the VaR calculation
+     * @param confidenceInterval    The confidence level at which the VaR should be calculated
      */
     public VaRCalculator(int batchSize, double confidenceInterval) {
         this.confidenceInterval = confidenceInterval;
@@ -31,10 +28,6 @@ public abstract class VaRCalculator {
         assetPool = new HashMap<>();
     }
 
-    /**
-     * @param event
-     * @return
-     */
     public void addEvent(Event event) {
 
         //update portfolio pool
@@ -46,11 +39,6 @@ public abstract class VaRCalculator {
         updateAssetPool(event.getSymbol(), event.getPrice());
     }
 
-    /**
-     * @param symbol
-     * @param price
-     * @return update the asset pool when an event comes from the stock price stream
-     */
     private void updateAssetPool(String symbol, double price) {
         double previousPrice;
         Asset asset = assetPool.get(symbol);
@@ -72,10 +60,6 @@ public abstract class VaRCalculator {
 
     /**
      * update portfolio pool when an event comes from the portfolio stream
-     *
-     * @param portfolioID
-     * @param shares
-     * @param symbol
      */
     private void updatePortfolioPool(String portfolioID, int shares, String symbol) {
         Portfolio portfolio = portfolioPool.get(portfolioID);
@@ -93,18 +77,8 @@ public abstract class VaRCalculator {
         }
     }
 
-    /**
-     * @param portfolio
-     * @param event
-     * @return
-     */
     public abstract Double processData(Portfolio portfolio, Event event);
 
-    /**
-     *
-     * @param event
-     * @return
-     */
     public Object calculateValueAtRisk(Event event) {
 
         JSONObject result = new JSONObject();

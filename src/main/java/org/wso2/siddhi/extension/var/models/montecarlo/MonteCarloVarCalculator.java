@@ -50,12 +50,7 @@ public class MonteCarloVarCalculator extends VaRCalculator {
         this.timeSlice = timeSlice;
 
     }
-
-    /**
-     * @param portfolio
-     * @param event
-     * @return
-     */
+    
     @Override
     public Double processData(Portfolio portfolio, Event event) {
         MonteCarloPortfolio monteCarloPortfolio = (MonteCarloPortfolio) portfolio;
