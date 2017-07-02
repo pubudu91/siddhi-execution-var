@@ -1,3 +1,21 @@
+/*
+ * Copyright (c)  2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.extension.siddhi.execution.var;
 
 import org.wso2.extension.siddhi.execution.var.models.VaRCalculator;
@@ -23,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by dilini92 on 6/26/16.
+ * Stream processor for Historical Simulation approach of VaR calculation
  */
 public class HistoricalVaRStreamProcessor extends StreamProcessor {
     private int batchSize = 251;                           // Maximum # of events, used for var calculation
@@ -38,7 +56,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
      */
     @Override
     protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
-                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
+            StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
@@ -47,22 +65,22 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
 
                 //Portfolio ID
                 Object portfolioID;
-                if ((portfolioID = attributeExpressionExecutors[RealTimeVaRConstants.PORTFOLIO_ID_INDEX].execute
-                        (complexEvent)) != null) {
+                if ((portfolioID = attributeExpressionExecutors[RealTimeVaRConstants.PORTFOLIO_ID_INDEX]
+                        .execute(complexEvent)) != null) {
                     event.setPortfolioID(portfolioID.toString());
                 }
                 //Quantity
                 Object quantity;
-                if ((quantity = attributeExpressionExecutors[RealTimeVaRConstants.QUANTITY_INDEX].execute
-                        (complexEvent)) != null) {
+                if ((quantity = attributeExpressionExecutors[RealTimeVaRConstants.QUANTITY_INDEX].execute(complexEvent))
+                        != null) {
                     event.setQuantity((Integer) quantity);
                 }
                 //Symbol
                 event.setSymbol(attributeExpressionExecutors[RealTimeVaRConstants.SYMBOL_INDEX].execute(complexEvent)
                         .toString());
                 //Price
-                event.setPrice((Double) attributeExpressionExecutors[RealTimeVaRConstants.PRICE_INDEX].execute
-                        (complexEvent));
+                event.setPrice(
+                        (Double) attributeExpressionExecutors[RealTimeVaRConstants.PRICE_INDEX].execute(complexEvent));
 
                 Object outputData[] = new Object[1];
                 outputData[0] = varCalculator.calculateValueAtRisk(event);
@@ -79,32 +97,32 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
 
     @Override
     protected List<Attribute> init(AbstractDefinition inputDefinition,
-                                   ExpressionExecutor[] attributeExpressionExecutors,
-                                   ExecutionPlanContext executionPlanContext) {
+            ExpressionExecutor[] attributeExpressionExecutors, ExecutionPlanContext executionPlanContext) {
         // Capture batch size
         if (attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX] instanceof ConstantExpressionExecutor) {
             if (attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX].execute(null) instanceof Integer) {
-                batchSize =
-                        ((Integer) attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX].execute(null));
+                batchSize = ((Integer) attributeExpressionExecutors[RealTimeVaRConstants.BATCH_SIZE_INDEX]
+                        .execute(null));
             } else {
                 throw new ExecutionPlanCreationException("Batch size should be an integer");
             }
         } else {
-            throw new ExecutionPlanValidationException("Dynamic batch size values are not supported. Batch size " +
-                    "should be a constant.");
+            throw new ExecutionPlanValidationException(
+                    "Dynamic batch size values are not supported. Batch size " + "should be a constant.");
         }
 
         // Capture confidence level
         if (attributeExpressionExecutors[RealTimeVaRConstants.CI_INDEX] instanceof ConstantExpressionExecutor) {
             if (attributeExpressionExecutors[RealTimeVaRConstants.CI_INDEX].execute(null) instanceof Double) {
-                confidenceInterval =
-                        ((Double) attributeExpressionExecutors[RealTimeVaRConstants.CI_INDEX].execute(null));
+                confidenceInterval = ((Double) attributeExpressionExecutors[RealTimeVaRConstants.CI_INDEX]
+                        .execute(null));
             } else {
-                throw new ExecutionPlanCreationException("Confidence interval should be a double value between 0 and 1");
+                throw new ExecutionPlanCreationException(
+                        "Confidence interval should be a double value between 0 and 1");
             }
         } else {
-            throw new ExecutionPlanValidationException("Dynamic confidence interval values are not supported. " +
-                    "Confidence interval should be a constant");
+            throw new ExecutionPlanValidationException("Dynamic confidence interval values are not supported. "
+                    + "Confidence interval should be a constant");
         }
 
         //validate portfolioID
@@ -114,20 +132,21 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
         }
 
         //validate asset quantity
-        if (!(RealTimeVaRConstants.INTEGER.equals(attributeExpressionExecutors[RealTimeVaRConstants.QUANTITY_INDEX]
-                .getReturnType().toString()))) {
+        if (!(RealTimeVaRConstants.INTEGER
+                .equals(attributeExpressionExecutors[RealTimeVaRConstants.QUANTITY_INDEX].getReturnType()
+                        .toString()))) {
             throw new ExecutionPlanValidationException("Quantity should be a integer value");
         }
 
         //validate asset symbol
-        if (!(RealTimeVaRConstants.STRING.equals(attributeExpressionExecutors[RealTimeVaRConstants.SYMBOL_INDEX]
-                .getReturnType().toString()))) {
+        if (!(RealTimeVaRConstants.STRING
+                .equals(attributeExpressionExecutors[RealTimeVaRConstants.SYMBOL_INDEX].getReturnType().toString()))) {
             throw new ExecutionPlanValidationException("Symbol should be a String value");
         }
 
         //validate price
-        if (!(RealTimeVaRConstants.DOUBLE.equals(attributeExpressionExecutors[RealTimeVaRConstants.PRICE_INDEX]
-                .getReturnType().toString()))) {
+        if (!(RealTimeVaRConstants.DOUBLE
+                .equals(attributeExpressionExecutors[RealTimeVaRConstants.PRICE_INDEX].getReturnType().toString()))) {
             throw new ExecutionPlanValidationException("Price should be a double value");
         }
 
@@ -159,7 +178,7 @@ public class HistoricalVaRStreamProcessor extends StreamProcessor {
 
     @Override
     public Object[] currentState() {
-        Object[] currentStateObjects = {varCalculator};
+        Object[] currentStateObjects = { varCalculator };
         return currentStateObjects;
     }
 

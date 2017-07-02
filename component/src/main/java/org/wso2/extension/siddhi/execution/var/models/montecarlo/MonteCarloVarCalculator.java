@@ -1,3 +1,21 @@
+/*
+ * Copyright (c)  2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.extension.siddhi.execution.var.models.montecarlo;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -41,16 +59,15 @@ public class MonteCarloVarCalculator extends VaRCalculator {
     private int verticalSimulationsCount;
     private double timeSlice;
 
-    public MonteCarloVarCalculator(int batchSize, double confidenceInterval,
-                                   int horizontalSimulationsCount, int verticalSimulationsCount, double
-                                           timeSlice) {
+    public MonteCarloVarCalculator(int batchSize, double confidenceInterval, int horizontalSimulationsCount,
+            int verticalSimulationsCount, double timeSlice) {
         super(batchSize, confidenceInterval);
         this.horizontalSimulationsCount = horizontalSimulationsCount;
         this.verticalSimulationsCount = verticalSimulationsCount;
         this.timeSlice = timeSlice;
 
     }
-    
+
     @Override
     public Double processData(Portfolio portfolio, Event event) {
         MonteCarloPortfolio monteCarloPortfolio = (MonteCarloPortfolio) portfolio;
@@ -75,10 +92,10 @@ public class MonteCarloVarCalculator extends VaRCalculator {
              * get the latest number of shares
              */
             currentSharesCount = monteCarloPortfolio.getCurrentAssetQuantities(symbol);
+
             /**
              * get the number of shares that particular asset hold for corresponding portfolio before change happens
              */
-
             if (monteCarloPortfolio.getCurrentAssetQuantities(symbol) >= 0) {
                 previousSharesCount = monteCarloPortfolio.getPreviousAssetQuantities(symbol);
             }
@@ -87,7 +104,6 @@ public class MonteCarloVarCalculator extends VaRCalculator {
              * retrieve latest simulated list
              */
             generatedTerminalStockValues = tempAsset.getSimulatedList();
-
 
             simulatedListBeforeAssetUpdate = tempAsset.getPreviousSimulatedList();
 
@@ -99,8 +115,7 @@ public class MonteCarloVarCalculator extends VaRCalculator {
             /**
              * get the final distribution vector before the portfolio being changed
              */
-            finalPortfolioValuesBeforeAssetUpdate = monteCarloPortfolio
-                    .getFinalPortfolioValueList();
+            finalPortfolioValuesBeforeAssetUpdate = monteCarloPortfolio.getFinalPortfolioValueList();
 
             /**
              * following condition decide whether the calculation is done for first time or not.
@@ -130,10 +145,11 @@ public class MonteCarloVarCalculator extends VaRCalculator {
                          * currentSharesCount +
                          * unchangedSimulatedListCollection[i]);
                          */
-                        finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
-                                currentSharesCount + (previousPortfolioMarketValue -
-                                (simulatedListBeforeAssetUpdate[i] * previousSharesCount +
-                                        finalPortfolioValuesBeforeAssetUpdate[i])));
+                        finalPortfolioValues[i] =
+                                latestMarketValue - (generatedTerminalStockValues[i] * currentSharesCount + (
+                                        previousPortfolioMarketValue - (
+                                                simulatedListBeforeAssetUpdate[i] * previousSharesCount
+                                                        + finalPortfolioValuesBeforeAssetUpdate[i])));
                     }
                 } else {
                     for (int i = 0; i < horizontalSimulationsCount; i++) {
@@ -145,16 +161,16 @@ public class MonteCarloVarCalculator extends VaRCalculator {
                          * unchangedSimulatedListCollection[i]);
                          */
 
-                        finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
-                                currentSharesCount + (previousPortfolioMarketValue -
-                                (finalPortfolioValuesBeforeAssetUpdate[i])));
+                        finalPortfolioValues[i] =
+                                latestMarketValue - (generatedTerminalStockValues[i] * currentSharesCount + (
+                                        previousPortfolioMarketValue - (finalPortfolioValuesBeforeAssetUpdate[i])));
                     }
                 }
             } else {
                 latestMarketValue = tempAsset.getCurrentStockPrice() * currentSharesCount;
                 for (int i = 0; i < horizontalSimulationsCount; i++) {
-                    finalPortfolioValues[i] = latestMarketValue - (generatedTerminalStockValues[i] *
-                            currentSharesCount);
+                    finalPortfolioValues[i] =
+                            latestMarketValue - (generatedTerminalStockValues[i] * currentSharesCount);
                 }
             }
             monteCarloPortfolio.setPreviousPortfolioValue(latestMarketValue);
@@ -181,15 +197,17 @@ public class MonteCarloVarCalculator extends VaRCalculator {
         double[] generatedTerminalStockValues;
         tempAsset = (MonteCarloAsset) getAssetPool().get(symbol);
         historicalReturnValueList = tempAsset.getReturnValues();
-        String calculationTechnique = System.getenv(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_ENV_VARIABLE);
+        String calculationTechnique = System
+                .getenv(RealTimeVaRConstants.MONTE_CARLO_CALCULATION_TECHNIQUE_ENV_VARIABLE);
         MonteCarloHardwareTechniqueFactory factory = new MonteCarloHardwareTechniqueFactory();
 
         if (historicalReturnValueList != null && historicalReturnValueList.length > 0) {
             Double mean = tempAsset.getMean();
             Double std = tempAsset.getStandardDeviation();
             tempAsset.setPreviousSimulatedList(tempAsset.getSimulatedList());
-            generatedTerminalStockValues = factory.getTechnique(calculationTechnique, tempAsset.getCurrentStockPrice(), mean, std, timeSlice,
-                    verticalSimulationsCount, horizontalSimulationsCount);
+            generatedTerminalStockValues = factory
+                    .getTechnique(calculationTechnique, tempAsset.getCurrentStockPrice(), mean, std, timeSlice,
+                            verticalSimulationsCount, horizontalSimulationsCount);
             tempAsset.setSimulatedList(generatedTerminalStockValues);
         }
     }
@@ -203,5 +221,4 @@ public class MonteCarloVarCalculator extends VaRCalculator {
     public Asset createAsset(int windowSize) {
         return new MonteCarloAsset(windowSize);
     }
-
 }

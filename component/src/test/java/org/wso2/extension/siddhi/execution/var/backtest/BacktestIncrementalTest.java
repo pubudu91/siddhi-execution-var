@@ -1,3 +1,20 @@
+/*
+ * Copyright (c)  2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 package org.wso2.extension.siddhi.execution.var.backtest;
 
@@ -16,9 +33,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-/**
- * Created by pubudu on 2/3/17.
- */
 public class BacktestIncrementalTest {
     private static final int BATCH_SIZE = 251;
 
@@ -27,8 +41,8 @@ public class BacktestIncrementalTest {
      **/
     private static final double VAR_CI = 0.99;
     private static final String DATA_SET = "set-3";
-//    private static final String METHOD = "historical";
-//    private static final String METHOD = "parametric";
+    //    private static final String METHOD = "historical";
+    //    private static final String METHOD = "parametric";
     private static final String METHOD = "montecarlo";
     /**
      * end
@@ -40,8 +54,8 @@ public class BacktestIncrementalTest {
     private static final String PORTFOLIO_KEY = "Portfolio 1";
     private ArrayList<Double> varList;
     private ArrayList<Double> lossList;
-//    private double previousPortfolioValue;
-//    private double currentPortfolioValue;
+    //    private double previousPortfolioValue;
+    //    private double currentPortfolioValue;
 
     public BacktestIncrementalTest() {
         varList = new ArrayList();
@@ -89,7 +103,9 @@ public class BacktestIncrementalTest {
 
                 varList.add(calculatedVar);                                     // should filter
 
-                double actualLoss = getPortfolioValuation(portfolio, varCalculator.getAssetPool()) - getPreviousPortfolioValuation(portfolio, varCalculator.getAssetPool());
+                double actualLoss =
+                        getPortfolioValuation(portfolio, varCalculator.getAssetPool()) - getPreviousPortfolioValuation(
+                                portfolio, varCalculator.getAssetPool());
                 lossList.add(actualLoss);
                 //System.out.printf(" Loss : %.3f", actualLoss);
             }
@@ -128,7 +144,8 @@ public class BacktestIncrementalTest {
                 failCount++;
             }
         }
-        System.out.println("Success Rate : " + (((double) NUMBER_OF_SAMPLES - failCount) / (NUMBER_OF_SAMPLES)) * 100 + " %");
+        System.out.println(
+                "Success Rate : " + (((double) NUMBER_OF_SAMPLES - failCount) / (NUMBER_OF_SAMPLES)) * 100 + " %");
     }
 
     private void runViolationTest() {
@@ -139,8 +156,10 @@ public class BacktestIncrementalTest {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        DescriptiveStatistics lossStat = new DescriptiveStatistics(lossList.stream().mapToDouble(Double::doubleValue).toArray());
-        DescriptiveStatistics varStat = new DescriptiveStatistics(varList.stream().mapToDouble(Double::doubleValue).toArray());
+        DescriptiveStatistics lossStat = new DescriptiveStatistics(
+                lossList.stream().mapToDouble(Double::doubleValue).toArray());
+        DescriptiveStatistics varStat = new DescriptiveStatistics(
+                varList.stream().mapToDouble(Double::doubleValue).toArray());
         DescriptiveStatistics violationStat = new DescriptiveStatistics();
         int failCount = 0;
         int numberOfData = varList.size();
@@ -192,7 +211,8 @@ public class BacktestIncrementalTest {
 
     public ArrayList<Event> readBacktestData() throws FileNotFoundException {
         ClassLoader classLoader = getClass().getClassLoader();
-        Scanner scan = new Scanner(new File(classLoader.getResource("backtest-data-aio-" + DATA_SET + ".csv").getFile()));
+        Scanner scan = new Scanner(
+                new File(classLoader.getResource("backtest-data-aio-" + DATA_SET + ".csv").getFile()));
         ArrayList<Event> list = new ArrayList();
         Event event;
         String[] split;

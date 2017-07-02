@@ -1,3 +1,21 @@
+/*
+ * Copyright (c)  2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.extension.siddhi.execution.var.models.montecarlo;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -8,14 +26,14 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Created by yellowflash on 2/3/17.
+ * Class for the generic Monte Carlo Simulation
  */
 public class MonteCarloStandardSimulation {
-
 
     private NormalDistribution distribution = null;
     private DescriptiveStatistics stat = null;
     private double randomZValue = 0.0;
+
     public static double[] finalSimulatedValues;
     Random rnd = new Random(3);
 
@@ -49,10 +67,11 @@ public class MonteCarloStandardSimulation {
      */
     public double getBrownianMotionOutput(Map<String, Double> parameters) {
 
-        double drift = (parameters.get("distributionMean") - (parameters.get("standardDeviation") *
-                parameters.get("standardDeviation")) / 2) * parameters.get("timeSlice");
-        double stochasticOffset = parameters.get("standardDeviation") * parameters.get("randomValue") *
-                Math.sqrt(parameters.get("timeSlice"));
+        double drift = (parameters.get("distributionMean")
+                - (parameters.get("standardDeviation") * parameters.get("standardDeviation")) / 2) * parameters
+                .get("timeSlice");
+        double stochasticOffset = parameters.get("standardDeviation") * parameters.get("randomValue") * Math
+                .sqrt(parameters.get("timeSlice"));
         return parameters.get("currentStockValue") * Math.exp(drift + stochasticOffset);
     }
 
@@ -65,8 +84,8 @@ public class MonteCarloStandardSimulation {
      * @param currentStockPrice
      * @return
      */
-    public double[] simulation(double mean, double std, double timeSlice, double
-            currentStockPrice, int numberOfTrials, int calculationsPerDay) {
+    public double[] simulation(double mean, double std, double timeSlice, double currentStockPrice, int numberOfTrials,
+            int calculationsPerDay) {
         double terminalStockValues[] = new double[numberOfTrials];
 
         Map<String, Double> parameters;
@@ -112,8 +131,8 @@ public class MonteCarloStandardSimulation {
      * @param currentStockPrice
      * @return
      */
-    public double[] parallelSimulation(double mean, double std, double timeSlice, double
-            currentStockPrice, int numberOfTrials, int calculationsPerDay) {
+    public double[] parallelSimulation(double mean, double std, double timeSlice, double currentStockPrice,
+            int numberOfTrials, int calculationsPerDay) {
         int cores = Runtime.getRuntime().availableProcessors();
         int taskForOneThread = numberOfTrials / cores;
         int remainingTask = numberOfTrials % cores;
@@ -137,7 +156,7 @@ public class MonteCarloStandardSimulation {
             try {
                 threads[i].join();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                //TODO: log the error
             }
         }
 
@@ -153,7 +172,7 @@ public class MonteCarloStandardSimulation {
         private double currentStockPrice;
 
         public ParallelSimulation(int numberOfTrials, int calculationsPerDay, double mean, double std, double timeSlice,
-                                  double currentStockPrice, int startingPoint) {
+                double currentStockPrice, int startingPoint) {
 
             this.numberOfTrials = numberOfTrials;
             this.calculationsPerDay = calculationsPerDay;
@@ -184,4 +203,3 @@ public class MonteCarloStandardSimulation {
         }
     }
 }
-

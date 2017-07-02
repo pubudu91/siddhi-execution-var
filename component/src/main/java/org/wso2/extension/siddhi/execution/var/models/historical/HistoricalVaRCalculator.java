@@ -1,17 +1,35 @@
+/*
+ * Copyright (c)  2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.extension.siddhi.execution.var.models.historical;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.wso2.extension.siddhi.execution.var.models.VaRCalculator;
 import org.wso2.extension.siddhi.execution.var.models.util.Event;
-import org.wso2.extension.siddhi.execution.var.models.util.portfolio.HistoricalPortfolio;
 import org.wso2.extension.siddhi.execution.var.models.util.asset.Asset;
 import org.wso2.extension.siddhi.execution.var.models.util.asset.HistoricalAsset;
+import org.wso2.extension.siddhi.execution.var.models.util.portfolio.HistoricalPortfolio;
 import org.wso2.extension.siddhi.execution.var.models.util.portfolio.Portfolio;
 
-import java.util.*;
+import java.util.Map;
 
 /**
- * Created by dilini92 on 6/26/16.
+ * Class for calculating the VaR according to the Historical Simulation approach
  */
 public class HistoricalVaRCalculator extends VaRCalculator {
 
@@ -39,11 +57,11 @@ public class HistoricalVaRCalculator extends VaRCalculator {
         double[] cumulativeLossValues = historicalPortfolio.getCumulativeLossValues();
 
         //there should be at least one return value
-        if(asset.getNumberOfReturnValues() > 0) {
+        if (asset.getNumberOfReturnValues() > 0) {
             DescriptiveStatistics descriptiveStatistics = new DescriptiveStatistics(currentSimulatedPriceList.length);
 
             //first time for the portfolio
-            if(cumulativeLossValues == null){
+            if (cumulativeLossValues == null) {
                 cumulativeLossValues = new double[getBatchSize() - 1];
             }
 
@@ -55,9 +73,8 @@ public class HistoricalVaRCalculator extends VaRCalculator {
             //new cumulative loss value = previous loss value + adjustment
             for (int i = 0; i < currentSimulatedPriceList.length; i++) {
                 //2nd time for the portfolio
-                if(i < previousSimulatedPriceList.length){
-                    cumulativeLossValues[i] = cumulativeLossValues[i] -
-                            (previousSimulatedPriceList[i] * previousQty);
+                if (i < previousSimulatedPriceList.length) {
+                    cumulativeLossValues[i] = cumulativeLossValues[i] - (previousSimulatedPriceList[i] * previousQty);
                 }
 
                 //incrementally calculate the cumulative loss value
@@ -85,9 +102,9 @@ public class HistoricalVaRCalculator extends VaRCalculator {
             double[] currentSimulatedPriceList = asset.getCurrentSimulatedPriceList();
 
             //if there are no current simulated price values
-            if(currentSimulatedPriceList == null){
+            if (currentSimulatedPriceList == null) {
                 asset.setPreviousSimulatedPriceList(new double[1]);
-            }else{
+            } else {
                 //set the current simulated list as the previous one
                 asset.setPreviousSimulatedPriceList(currentSimulatedPriceList);
             }

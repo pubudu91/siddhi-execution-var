@@ -1,3 +1,21 @@
+/*
+ * Copyright (c)  2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.extension.siddhi.execution.var.models.util.portfolio;
 
 import org.wso2.extension.siddhi.execution.var.models.util.Event;
@@ -7,10 +25,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by dilini92 on 8/3/16.
+ * A class representing a financial portfolio
  */
 public abstract class Portfolio {
-    private String ID;
+    private String id;
     private Map<String, Integer> currentAssetQuantities;
     private Map<String, Integer> previousAssetQuantities;
     private double totalPortfolioValue;
@@ -19,14 +37,14 @@ public abstract class Portfolio {
         currentAssetQuantities = new HashMap<>();
     }
 
-    public Portfolio(String ID, Map<String, Integer> assets) {
-        this.ID = ID;
+    public Portfolio(String id, Map<String, Integer> assets) {
+        this.id = id;
         this.currentAssetQuantities = assets;
         previousAssetQuantities = new HashMap<>();
     }
 
-    public String getID() {
-        return ID;
+    public String getId() {
+        return id;
     }
 
     public Integer getCurrentAssetQuantities(String symbol) {
@@ -46,8 +64,9 @@ public abstract class Portfolio {
     }
 
     public int getPreviousAssetQuantities(String symbol) {
-        if (previousAssetQuantities.get(symbol) != null)
+        if (previousAssetQuantities.get(symbol) != null) {
             return previousAssetQuantities.get(symbol);
+        }
         return 0;
     }
 
@@ -55,12 +74,12 @@ public abstract class Portfolio {
         return totalPortfolioValue;
     }
 
-    public void updatePortfolioValue(Event event, double previousPrice){
+    public void updatePortfolioValue(Event event, double previousPrice) {
         String symbol = event.getSymbol();
         //first event for the portfolio
-        if(Double.compare(totalPortfolioValue, 0.0) == 0){
+        if (Double.compare(totalPortfolioValue, 0.0) == 0) {
             totalPortfolioValue = event.getPrice() * getCurrentAssetQuantities(symbol);
-        }else{  //portfolio already have data
+        } else {  //portfolio already have data
             int previousShares = getPreviousAssetQuantities(symbol);
             totalPortfolioValue -= previousPrice * previousShares;
 

@@ -1,3 +1,21 @@
+/*
+ * Copyright (c)  2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.extension.siddhi.execution.var.models;
 
 import org.json.JSONObject;
@@ -9,6 +27,9 @@ import org.wso2.extension.siddhi.execution.var.models.util.portfolio.Portfolio;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A VaR calculator with common functionalities for all 3 methods
+ */
 public abstract class VaRCalculator {
     private double confidenceInterval;
     private int batchSize;
@@ -17,8 +38,8 @@ public abstract class VaRCalculator {
     private Map<String, Asset> assetPool;
 
     /**
-     * @param batchSize             The no. of events to consider for the VaR calculation
-     * @param confidenceInterval    The confidence level at which the VaR should be calculated
+     * @param batchSize          The no. of events to consider for the VaR calculation
+     * @param confidenceInterval The confidence level at which the VaR should be calculated
      */
     public VaRCalculator(int batchSize, double confidenceInterval) {
         this.confidenceInterval = confidenceInterval;
@@ -29,7 +50,6 @@ public abstract class VaRCalculator {
     }
 
     public void addEvent(Event event) {
-
         //update portfolio pool
         if (event.getPortfolioID() != null) {
             updatePortfolioPool(event.getPortfolioID(), event.getQuantity(), event.getSymbol());
@@ -64,14 +84,14 @@ public abstract class VaRCalculator {
     private void updatePortfolioPool(String portfolioID, int shares, String symbol) {
         Portfolio portfolio = portfolioPool.get(portfolioID);
 
-        if (portfolio == null) {//first time for the portfolio
+        if (portfolio == null) { //first time for the portfolio
             Map<String, Integer> assets = new HashMap<>();
             assets.put(symbol, shares);
             portfolio = createPortfolio(portfolioID, assets);
             portfolioPool.put(portfolioID, portfolio);
-        } else if (portfolio.getCurrentAssetQuantities(symbol) == null) {//first time for the asset within portfolio
+        } else if (portfolio.getCurrentAssetQuantities(symbol) == null) { //first time for the asset within portfolio
             portfolio.setCurrentAssetQuantities(symbol, shares);
-        } else {//portfolio exists, asset within portfolio exists
+        } else { //portfolio exists, asset within portfolio exists
             int currentShares = portfolio.getCurrentAssetQuantities(symbol);
             portfolio.setCurrentAssetQuantities(symbol, shares + currentShares);
         }
@@ -80,9 +100,7 @@ public abstract class VaRCalculator {
     public abstract Double processData(Portfolio portfolio, Event event);
 
     public Object calculateValueAtRisk(Event event) {
-
         JSONObject result = new JSONObject();
-
         String symbol = event.getSymbol();
 
         addEvent(event);
@@ -99,15 +117,16 @@ public abstract class VaRCalculator {
                 //calculate value at risk
                 Double var = processData(portfolio, event);
                 if (var != null) {
-                    result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getID(), var.doubleValue());
+                    result.put(RealTimeVaRConstants.PORTFOLIO + portfolio.getId(), var.doubleValue());
                 }
                 portfolio.setPreviousAssetQuantities(symbol, portfolio.getCurrentAssetQuantities(symbol));
             }
         });
 
         //if no var has been calculated
-        if (result.length() == 0)
+        if (result.length() == 0) {
             return null;
+        }
         return result.toString();
     }
 
@@ -126,7 +145,9 @@ public abstract class VaRCalculator {
         return confidenceInterval;
     }
 
-    public int getBatchSize() {return batchSize;}
+    public int getBatchSize() {
+        return batchSize;
+    }
 
     public Map<String, Portfolio> getPortfolioPool() {
         return portfolioPool;

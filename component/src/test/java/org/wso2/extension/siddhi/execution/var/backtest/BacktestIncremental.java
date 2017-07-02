@@ -1,3 +1,21 @@
+/*
+ * Copyright (c)  2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.extension.siddhi.execution.var.backtest;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -12,9 +30,6 @@ import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Stream;
 
-/**
- * Created by pubudu on 2/3/17.
- */
 public class BacktestIncremental {
     private static final int BATCH_SIZE = 251;
     private static final double VAR_CI = 0.90;
@@ -32,14 +47,14 @@ public class BacktestIncremental {
     public void runTest() throws FileNotFoundException {
 
         Formatter formatter = new Formatter(new File("MonteCarloBacktestResults.csv"));
-        formatter.format("%s%n", "date,varclose,varavg,varmax,corrloss,varmedian,varmode,lossclose,lossavg,lossmax," +
-                "corrvar,lossmedian,lossmode");
-        String[] dates = {"jan-23", "jan-24", "jan-25", "jan-26", "jan-27", "jan-30", "jan-31", "feb-1", "feb-2",
-                "feb-3"};
+        formatter.format("%s%n", "date,varclose,varavg,varmax,corrloss,varmedian,varmode,lossclose,lossavg,lossmax,"
+                + "corrvar,lossmedian,lossmode");
+        String[] dates = { "jan-23", "jan-24", "jan-25", "jan-26", "jan-27", "jan-30", "jan-31", "feb-1", "feb-2",
+                "feb-3" };
         String write = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s";
-//        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
+        //        VaRCalculator varCalculator = new HistoricalVaRCalculator(BATCH_SIZE, VAR_CI);
         VaRCalculator varCalculator = new ParametricVaRCalculator(BATCH_SIZE, VAR_CI);
-//        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
+        //        VaRCalculator varCalculator = new MonteCarloVarCalculator(BATCH_SIZE, VAR_CI, 2500, 100, 0.01);
 
         Map<String, Integer> assets = initPortfolio();
         Portfolio portfolio = varCalculator.createPortfolio("1", assets);
@@ -85,13 +100,12 @@ public class BacktestIncremental {
                 //System.out.println();
             }
 
-
-            double[] vars = Stream.of(varMap.values().toArray(new Double[varMap.size()])).mapToDouble
-                    (Double::doubleValue).toArray();
+            double[] vars = Stream.of(varMap.values().toArray(new Double[varMap.size()]))
+                    .mapToDouble(Double::doubleValue).toArray();
             DescriptiveStatistics statVar = new DescriptiveStatistics(vars);
 
-            double[] losses = Stream.of(lossMap.values().toArray(new Double[lossMap.size()])).mapToDouble
-                    (Double::doubleValue).toArray();
+            double[] losses = Stream.of(lossMap.values().toArray(new Double[lossMap.size()]))
+                    .mapToDouble(Double::doubleValue).toArray();
             DescriptiveStatistics statLoss = new DescriptiveStatistics(losses);
 
             System.out.println("Daily VaR CLOSE  : " + var);
@@ -106,7 +120,7 @@ public class BacktestIncremental {
                     minIndex = e.getKey();
             }
 
-            if(lossMap.get(minIndex) == null)
+            if (lossMap.get(minIndex) == null)
                 corrLoss = "NO LOSS";
             else
                 corrLoss = lossMap.get(minIndex).toString();
@@ -128,7 +142,7 @@ public class BacktestIncremental {
                     minIndex = e.getKey();
             }
 
-            if(varMap.get(minIndex) == null)
+            if (varMap.get(minIndex) == null)
                 corrVar = "NO VAR";
             else
                 corrVar = varMap.get(minIndex).toString();
@@ -137,9 +151,10 @@ public class BacktestIncremental {
             System.out.println("Daily Loss MEDIAN  : " + statLoss.getPercentile(50));
             System.out.println("Daily Loss MODE    : " + mode(statLoss.getValues()));
 
-            formatter.format("%s%n", String.format(write, dates[d - START_DATE], var, statVar.getMean(), statVar
-                            .getMin(), corrLoss, statVar.getPercentile(50), mode(statVar.getValues()), loss, statLoss.getMean(),
-                    statLoss.getMin(),corrVar, statLoss.getPercentile(50), mode(statLoss.getValues())));
+            formatter.format("%s%n",
+                    String.format(write, dates[d - START_DATE], var, statVar.getMean(), statVar.getMin(), corrLoss,
+                            statVar.getPercentile(50), mode(statVar.getValues()), loss, statLoss.getMean(),
+                            statLoss.getMin(), corrVar, statLoss.getPercentile(50), mode(statLoss.getValues())));
 
         }
 
@@ -148,8 +163,8 @@ public class BacktestIncremental {
 
     public ArrayList<Event> readBacktestData(int id) throws FileNotFoundException {
         ClassLoader classLoader = getClass().getClassLoader();
-        Scanner scan = new Scanner(new File(classLoader.getResource("without_duplicates/backtest-data-" + id + "" +
-                ".csv").getFile()));
+        Scanner scan = new Scanner(
+                new File(classLoader.getResource("without_duplicates/backtest-data-" + id + "" + ".csv").getFile()));
         ArrayList<Event> list = new ArrayList();
         Event event;
         String[] split;
@@ -184,7 +199,8 @@ public class BacktestIncremental {
             double value = array[i];
             int count = 1;
             for (int j = 0; j < array.length; j++) {
-                if (array[j] == value) count++;
+                if (array[j] == value)
+                    count++;
                 if (count > maxCount) {
                     mode = value;
                     maxCount = count;
@@ -195,33 +211,33 @@ public class BacktestIncremental {
     }
 
     //    private void runStandardCoverageTest() {
-//
-//        BinomialDistribution dist = new BinomialDistribution(VAR_PER_SAMPLE, 1 - VAR_CI);
-//        double leftEnd = dist.inverseCumulativeProbability(BACKTEST_CI / 2);
-//        double rightEnd = dist.inverseCumulativeProbability(1 - (BACKTEST_CI / 2));
-//
-//        System.out.println("Left End :" + leftEnd);
-//        System.out.println("Right End :" + rightEnd);
-//
-//        NUMBER_OF_SAMPLES = lossList.size() / VAR_PER_SAMPLE;
-//
-//        int numberOfExceptions;
-//        int failureRate = 0;
-//        for (int j = 0; j < NUMBER_OF_SAMPLES; j++) {
-//            numberOfExceptions = 0;
-//            for (int i = j * VAR_PER_SAMPLE; i < (j + 1) * VAR_PER_SAMPLE; i++) {
-//                if (lossList.get(i + 1) < 0) {
-//                    if (lossList.get(i + 1) <= varList.get(i))
-//                        numberOfExceptions++;
-//                }
-//            }
-//            System.out.println("Sample Set : " + (j + 1) + " Exceptions : " + numberOfExceptions);
-//
-//            if (numberOfExceptions < leftEnd || rightEnd < numberOfExceptions) {
-//                failureRate++;
-//            }
-//        }
-//        System.out.println("Failure Rate : " + (((double) failureRate) / (NUMBER_OF_SAMPLES)) * 100 + " %");
-//    }
+    //
+    //        BinomialDistribution dist = new BinomialDistribution(VAR_PER_SAMPLE, 1 - VAR_CI);
+    //        double leftEnd = dist.inverseCumulativeProbability(BACKTEST_CI / 2);
+    //        double rightEnd = dist.inverseCumulativeProbability(1 - (BACKTEST_CI / 2));
+    //
+    //        System.out.println("Left End :" + leftEnd);
+    //        System.out.println("Right End :" + rightEnd);
+    //
+    //        NUMBER_OF_SAMPLES = lossList.size() / VAR_PER_SAMPLE;
+    //
+    //        int numberOfExceptions;
+    //        int failureRate = 0;
+    //        for (int j = 0; j < NUMBER_OF_SAMPLES; j++) {
+    //            numberOfExceptions = 0;
+    //            for (int i = j * VAR_PER_SAMPLE; i < (j + 1) * VAR_PER_SAMPLE; i++) {
+    //                if (lossList.get(i + 1) < 0) {
+    //                    if (lossList.get(i + 1) <= varList.get(i))
+    //                        numberOfExceptions++;
+    //                }
+    //            }
+    //            System.out.println("Sample Set : " + (j + 1) + " Exceptions : " + numberOfExceptions);
+    //
+    //            if (numberOfExceptions < leftEnd || rightEnd < numberOfExceptions) {
+    //                failureRate++;
+    //            }
+    //        }
+    //        System.out.println("Failure Rate : " + (((double) failureRate) / (NUMBER_OF_SAMPLES)) * 100 + " %");
+    //    }
 
 }

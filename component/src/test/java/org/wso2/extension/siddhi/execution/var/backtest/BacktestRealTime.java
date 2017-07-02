@@ -1,3 +1,21 @@
+/*
+ * Copyright (c)  2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.extension.siddhi.execution.var.backtest;
 
 import org.apache.commons.math3.distribution.BinomialDistribution;
@@ -8,14 +26,10 @@ import org.wso2.extension.siddhi.execution.var.models.util.Event;
 import org.wso2.extension.siddhi.execution.var.models.util.asset.Asset;
 import org.wso2.extension.siddhi.execution.var.models.util.portfolio.Portfolio;
 
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-/**
- * Created by dilip on 09/01/17.
- */
 public class BacktestRealTime {
 
     private static final int BATCH_SIZE = 251;
@@ -81,7 +95,7 @@ public class BacktestRealTime {
         System.out.println("Right End :" + rightEnd);
 
         int numberOfExceptions = 0;
-//        int successCount = 0;
+        //        int successCount = 0;
         for (int j = 0; j < SAMPLE_SIZE * NUMBER_OF_ASSETS; j++) {
             for (int i = j * VAR_PER_SAMPLE; i < (j + 1) * VAR_PER_SAMPLE; i++) {
                 //System.out.println(actualVarList.get(i) + " " + calculatedVarList.get(i));
@@ -90,9 +104,9 @@ public class BacktestRealTime {
             }
             System.out.println("Sample Set : " + (j + 1) + " Exceptions : " + numberOfExceptions);
 
-//            if (rightEnd >= numberOfExceptions && leftEnd <= numberOfExceptions) {
-//                successCount++;
-//            }
+            //            if (rightEnd >= numberOfExceptions && leftEnd <= numberOfExceptions) {
+            //                successCount++;
+            //            }
         }
         System.out.println("Failure Rate : " + (((double) numberOfExceptions) / (VAR_PER_SAMPLE)) * 100);
 

@@ -1,13 +1,28 @@
+/*
+ * Copyright (c)  2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.extension.siddhi.execution.var.models.parametric;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
-
-import java.util.*;
-
-import com.google.common.collect.Table;
-import com.google.common.collect.HashBasedTable;
 import org.wso2.extension.siddhi.execution.var.models.VaRCalculator;
 import org.wso2.extension.siddhi.execution.var.models.util.Event;
 import org.wso2.extension.siddhi.execution.var.models.util.asset.Asset;
@@ -15,9 +30,13 @@ import org.wso2.extension.siddhi.execution.var.models.util.asset.ParametricAsset
 import org.wso2.extension.siddhi.execution.var.models.util.portfolio.ParametricPortfolio;
 import org.wso2.extension.siddhi.execution.var.models.util.portfolio.Portfolio;
 
-/*
- * Created by dilip on 30/06/16.
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Class for calculating the VaR according to the Parametric approach
  */
+
 public class ParametricVaRCalculator extends VaRCalculator {
     private final Table<String, String, Double> covarianceTable;
 
@@ -44,8 +63,8 @@ public class ParametricVaRCalculator extends VaRCalculator {
             RealMatrix weightageMatrix = new Array2DRowRealMatrix(getWeightageMatrix(portfolio));
             RealMatrix meanMatrix = new Array2DRowRealMatrix(getMeanMatrix(portfolio));
 
-            RealMatrix portfolioVarianceMatrix = weightageMatrix.multiply(varCovarMatrix).multiply(weightageMatrix
-                    .transpose());
+            RealMatrix portfolioVarianceMatrix = weightageMatrix.multiply(varCovarMatrix)
+                    .multiply(weightageMatrix.transpose());
             RealMatrix portfolioMeanMatrix = weightageMatrix.multiply(meanMatrix.transpose());
 
             double portfolioVariance = portfolioVarianceMatrix.getData()[0][0];
@@ -81,8 +100,9 @@ public class ParametricVaRCalculator extends VaRCalculator {
             for (int j = i; j < symbols.length; j++) {
                 covariance = covarianceTable.get(symbols[i], symbols[j]);
                 varCovarMatrix[i][j] = covariance;
-                if (i != j)
+                if (i != j) {
                     varCovarMatrix[j][i] = covariance;
+                }
             }
         }
         return varCovarMatrix;
@@ -97,11 +117,12 @@ public class ParametricVaRCalculator extends VaRCalculator {
         int numberOfAssets = keys.size();
         double[][] weightageMatrix = new double[1][numberOfAssets];
 
-        final int[] i = {0};
+        final int[] i = { 0 };
         keys.forEach((symbol) -> {
             Asset asset = getAssetPool().get(symbol);
-            weightageMatrix[0][i[0]] = asset.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities(symbol) /
-                    portfolio.getTotalPortfolioValue();
+            weightageMatrix[0][i[0]] =
+                    asset.getCurrentStockPrice() * portfolio.getCurrentAssetQuantities(symbol) / portfolio
+                            .getTotalPortfolioValue();
             i[0]++;
         });
 
@@ -116,7 +137,7 @@ public class ParametricVaRCalculator extends VaRCalculator {
         Set<String> keys = portfolio.getAssetListKeySet();
         double[][] meanMatrix = new double[1][keys.size()];
 
-        final int[] i = {0};
+        final int[] i = { 0 };
         keys.forEach((symbol) -> {
             meanMatrix[0][i[0]] = getAssetPool().get(symbol).getMean();
             i[0]++;
@@ -151,10 +172,11 @@ public class ParametricVaRCalculator extends VaRCalculator {
             double[] iterateExcessReturns = ((ParametricAsset) getAssetPool().get(iterateSymbol)).getExcessReturns();
             int min;
             double covariance = 0.0;
-            if (excessReturns.length > iterateExcessReturns.length)
+            if (excessReturns.length > iterateExcessReturns.length) {
                 min = iterateExcessReturns.length;
-            else
+            } else {
                 min = excessReturns.length;
+            }
 
             for (int j = 0; j < min; j++) {
                 covariance += excessReturns[j] * iterateExcessReturns[j];
